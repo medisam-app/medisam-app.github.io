@@ -1,49 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-/* ==== §C1 — Style « Téléphone v3 » (dans le head, donc chargé AVANT le grand style §C2) ====
-   ⚠ Comme §C2 vient après, ses règles gagnent à précision égale : c'est pourquoi celles-ci
-   utilisent !important. Retirer un !important ici peut annuler la règle sans bruit. */
-/* ===== Téléphone v3 : en-tête et bandeau compacts, onglets en barre du bas, liste des items resserrée.
-   Tout est limité aux écrans étroits (≤ 700 px) : l'affichage ordinateur ne change pas. ===== */
-@media (max-width:700px){
-  body{padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(104px + env(safe-area-inset-bottom,0px))}
-  .logo{width:min(168px,48vw)!important}
-  .top{margin-bottom:10px;gap:6px}
-  .date{margin-top:4px;font-size:13px}
-  .topr{width:100%;flex-wrap:nowrap!important;gap:6px!important;justify-content:space-between}
-  .topr .sync{flex:none;width:40px;height:40px!important;padding:0!important;gap:0;justify-content:center}
-  .topr .sync #sync-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .topr .theme-btn{flex:none;width:40px!important;height:40px!important}
-  .topr .todo-open{flex:1 1 auto;min-width:0;height:40px!important;justify-content:center;padding:0 8px!important;gap:6px!important;white-space:nowrap}
-  .hero{padding:14px 14px 12px!important;gap:8px 12px!important;border-radius:20px!important}
-  .ring{width:64px!important;height:64px!important}
-  .ringv{font-size:24px!important}
-  .kick{margin-bottom:6px!important;padding-right:40px}
-  .stat dd{font-size:28px!important}
-  .stat dd small{font-size:13px!important}
-  .cap{margin-top:6px!important;font-size:13px}
-  .st-btn{top:-6px!important;width:34px!important;height:34px!important}
-  .spark{padding:8px 12px 6px!important;gap:6px!important;border-radius:14px!important}
-  .bars{height:30px!important}
-  .spark figcaption{font-size:12px}
-  .bar{position:fixed!important;left:0;right:0;bottom:0;top:auto!important;margin:0!important;padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px))!important;z-index:8;border-radius:0!important;background:color-mix(in srgb,var(--bg) 90%,transparent)!important;-webkit-backdrop-filter:blur(18px) saturate(160%)!important;backdrop-filter:blur(18px) saturate(160%)!important;box-shadow:0 -1px 0 var(--line)!important;animation:none!important}
-  .bar .tabs{max-width:520px;margin:0 auto}
-  .toast{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}
-  .tools{padding-top:10px;gap:8px}
-  .row{grid-template-columns:40px minmax(0,1fr) auto!important;grid-template-areas:"num main main" ". tours anki"!important;row-gap:8px!important;column-gap:10px!important;padding:12px 12px!important}
-  .ext{justify-self:end!important}
-  .ext .anki{flex:none}
-  .tours{min-width:0}
-  .quick,.qcm,.anki{height:40px}
-  .wk{margin-top:12px}
-  .wkt{font-size:26px!important}
-  .wkt small{font-size:12px}
-  .wknav{gap:6px}
-  .stlegend{font-size:12px;gap:4px 12px}
-  .jmbar .jmst{display:none}
-  .set-seg{display:flex!important;flex-wrap:wrap;width:100%}
-  .set-seg button{flex:1 1 auto;padding:8px 10px}
-}
-</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!-- ======================================================================
   MÉDISAM : PLAN DU FICHIER (commentaires de repérage, sans effet sur la page)
   Un seul fichier, dans cet ordre :
@@ -59,6 +14,21 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index39 : les préférences sont aussi enregistrées sur le compte (champ `prefs` de la ligne progress) :
+              réglages (cfg : taille, thème auto, unité du décompte, libellé Anki, rattrapage…), tri des items,
+              filtre « références », durées pomodoro perso. prefsObj / applyPrefs (§J7), persist() appelé par
+              cfgSave, saisie du libellé, tri, filtre, pomodoro perso. leave() efface aussi ces clés locales.
+              Non synchronisés volontairement : onglet / collège affichés, dernière position (navigation).
+    index38 : sauvegarde sur le compte même dans l'artéfact. Si Supabase est injoignable (cadre bloquant le réseau),
+              l'appli s'ouvre directement et enregistre dans la base de l'artéfact (capacité db), espace privé
+              data/users/<id>/progress, au même format que la ligne Supabase progress (cloudSb / cloudStart, §J34).
+              Plus d'« aperçu non enregistré » tant que le compte Claude est disponible (le bouton aperçu reste le
+              dernier recours). Exports CSV / .json : via la capacité downloads dans l'artéfact. Publier avec capabilities {db:{}, user:{}, downloads:true}. Sur ton site avec Supabase : inchangé.
+    index37 : (1) flèche « pas fini » : plus de fenêtre de choix du jour, la suite va toujours au lendemain
+              (pour la repousser, rappuyer sur la flèche de la suite : manuel, un jour à la fois). pcOpen reste
+              dans §J14 mais n'est plus appelé. (2) ordinateur : ouvrir l'onglet Planning depuis un autre
+              onglet affiche « Aujourd'hui » (pv='today') ; téléphone inchangé (Planning = semaine, Aujourd'hui
+              a son propre onglet).
     index36 : anti-perte de données (stage et réglages J disparus en ligne, voir §J27) :
               (1) adopt() remplace tous les applyRemote de lecture : champ absent en ligne = on garde celui de
               l'appareil et on répare la ligne ; données en ligne nettement plus pauvres = copie de secours puis
@@ -3643,7 +3613,25 @@ function saveLocal(){
 }
 /* Ce qui part en ligne (et dans la sauvegarde .json) : noms courts, voir la règle des 6 endroits */
 function dataObj(){
-  return { v:1, tours:state.tours, plan:state.plan, days:state.days, stw:state.stw, anki:state.anki, todos:state.todos, notes:state.notes, dl:state.deadlines, jm:state.jm, ign:state.ign, pin:state.pins, cur:state.cur, skip:seedSkip, tour:(tourSeen ? 1 : 0) };
+  return { v:1, tours:state.tours, plan:state.plan, days:state.days, stw:state.stw, anki:state.anki, todos:state.todos, notes:state.notes, dl:state.deadlines, jm:state.jm, ign:state.ign, pin:state.pins, cur:state.cur, skip:seedSkip, tour:(tourSeen ? 1 : 0), prefs:prefsObj() };
+}
+/* Préférences gardées sur le compte (index39) : réglages (cfg), tri, filtre « références », durées pomodoro perso */
+function prefsObj(){
+  var pomo = null;
+  try{ var c = JSON.parse(localStorage.getItem('medisam-pomo-custom') || 'null'); if(c && c.w && c.b) pomo = { w:+c.w, b:+c.b }; }catch(e){}
+  return { cfg:(typeof cfg !== 'undefined' ? JSON.parse(JSON.stringify(cfg)) : {}), sort:sortBy, ref:(refOnly ? 1 : 0), pomo:pomo };
+}
+/* Applique les préférences lues en ligne. Renvoie true si quelque chose a changé à l'écran. */
+function applyPrefs(p){
+  if(!p || typeof p !== 'object') return false;
+  var before = JSON.stringify([cfg, sortBy, refOnly]), c = p.cfg;
+  if(c && typeof c === 'object') Object.keys(cfg).forEach(function(k){ if(c[k] !== undefined && typeof c[k] === typeof cfg[k]) cfg[k] = c[k]; });
+  if(typeof p.sort === 'string' && SORTS[p.sort]) sortBy = p.sort;
+  if(p.ref === 0 || p.ref === 1) refOnly = p.ref === 1;
+  if(p.pomo && p.pomo.w >= 1 && p.pomo.b >= 1) lsSet('medisam-pomo-custom', JSON.stringify({ w:Math.min(240, Math.round(p.pomo.w)), b:Math.min(60, Math.round(p.pomo.b)) }));
+  lsSet(LS_CFG, JSON.stringify(cfg)); lsSet(LS_SORT, sortBy); lsSet(LS_REF, refOnly ? '1' : '0');
+  cfgApply();
+  return JSON.stringify([cfg, sortBy, refOnly]) !== before;
 }
 function persist(){
   saveLocal();
@@ -4244,7 +4232,8 @@ document.addEventListener('keydown', function(e){
 
 /* ======================================================================
    §J14 — Cours sur plusieurs jours (#pc)
-   Gère : Choix du jour où reprendre un cours commencé (lendemain ou plus tard), plContinueTo.
+   Gère : plContinueTo (suite d'un cours commencé, placée le lendemain). index37 : la fenêtre #pc / pcOpen
+   (choix du jour) n'est plus ouverte par la flèche ; code laissé en place, inutilisé.
    Utilise : §J5 §J6 §J7 §J11 §J13 §J16 §J17 §J22
    Utilisé par : §J22
    ====================================================================== */
@@ -4689,7 +4678,7 @@ function slotHTML(day,s,i){
   return '<div class="slot'+(s.x?' ok':'')+(it?'':' free')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+'" data-h="'+hue+'" data-day="'+day+'" data-i="'+i+'">'+numH+chn+
     '<div class="main"><div class="ttl mvb">'+esc(title)+'</div><span class="meta">'+meta+'</span></div>'+
     '<div class="act"><button class="vbtn" data-act="pl-done" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(s.x?'true':'false')+'" aria-label="'+(s.x?'Annuler la validation de ':'Valider ')+esc(title)+'">'+ICON_CHECK+(s.x?'Fait':'Valider')+'</button>'+
-      (s.x ? '' : '<button type="button" class="nxb'+(s.c ? ' on' : '')+'" data-act="pl-cont" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(!!s.c)+'" aria-label="'+(s.c ? 'Annuler la suite de ' : 'Pas fini : choisir le jour de la suite, ')+esc(title)+'" title="'+(s.c ? 'Annuler la suite' : 'Pas fini : choisir le jour de la suite')+'">'+ICON_NEXT+'</button>')+'</div>'+
+      (s.x ? '' : '<button type="button" class="nxb'+(s.c ? ' on' : '')+'" data-act="pl-cont" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(!!s.c)+'" aria-label="'+(s.c ? 'Annuler la suite de ' : 'Pas fini : finir demain, ')+esc(title)+'" title="'+(s.c ? 'Annuler la suite' : 'Pas fini : finir demain')+'">'+ICON_NEXT+'</button>')+'</div>'+
     '<button class="rmb" data-act="pl-rm" data-day="'+day+'" data-i="'+i+'" aria-label="Retirer '+esc(title)+' du planning">'+ICON_X+'</button></div>';
 }
 function toggleHTML(){
@@ -5250,11 +5239,13 @@ document.addEventListener('click', function(e){
   } else if(a === 'pick'){
     chooseCol(el.dataset.id);
   } else if(a === 'tab'){
-    var want = el.dataset.tab;
+    var want = el.dataset.tab, wasTab = tab;
     fxTab(want, function(){
       tab = want === 'today' ? 'plan' : want; lsSet(LS_TAB, tab);
       if(want === 'today'){ pv = 'today'; wk = mondayOf(today()); lsSet(LS_PV, pv); addDay = null; sug = []; }
       else if(want === 'plan' && pv === 'today' && isMob()){ pv = 'week'; lsSet(LS_PV, pv); addDay = null; sug = []; }
+      /* index37 : sur ordinateur, arriver sur Planning depuis un autre onglet ouvre « Aujourd'hui » (pas la dernière vue) */
+      else if(want === 'plan' && !isMob() && wasTab !== 'plan'){ pv = 'today'; wk = mondayOf(today()); lsSet(LS_PV, pv); addDay = null; sug = []; }
       applyHue(); renderHero(); renderBanner(); renderTabs(); if(tab === 'plan') renderPlan(); if(tab === 'colleges') renderColleges(); if(tab === 'plan') setTimeout(catchupMaybe, 450);
     });
   } else if(a === 'hw-toggle'){
@@ -5276,11 +5267,11 @@ document.addEventListener('click', function(e){
   } else if(a === 'clock'){
     openClock();
   } else if(a === 'sort'){
-    sortBy = el.dataset.s; lsSet(LS_SORT, sortBy); renderSort(); renderList(); fxFilter('sort', '[data-act="sort"][data-s="'+sortBy+'"]'); focusLater('[data-act="sort"][data-s="'+sortBy+'"]');
+    sortBy = el.dataset.s; lsSet(LS_SORT, sortBy); persist(); renderSort(); renderList(); fxFilter('sort', '[data-act="sort"][data-s="'+sortBy+'"]'); focusLater('[data-act="sort"][data-s="'+sortBy+'"]');
   } else if(a === 'filter'){
     filter = el.dataset.f; renderChips(); renderList(); fxFilter('filter', '[data-act="filter"][data-f="'+filter+'"]'); focusLater('[data-f="'+filter+'"]');
   } else if(a === 'refonly'){
-    refOnly = !refOnly; lsSet(LS_REF, refOnly ? '1' : '0'); renderChips(); renderList(); fxFilter('ref', '[data-act="refonly"]'); focusLater('[data-act="refonly"]');
+    refOnly = !refOnly; lsSet(LS_REF, refOnly ? '1' : '0'); persist(); renderChips(); renderList(); fxFilter('ref', '[data-act="refonly"]'); focusLater('[data-act="refonly"]');
   } else if(a === 'col'){
     var cid = el.dataset.id, wasOpen = openCols[cid] !== false, sec = el.closest('.col');
     if(wasOpen && sec){
@@ -5397,7 +5388,9 @@ document.addEventListener('click', function(e){
     var cday = el.dataset.day, cs = slotsOf(cday)[Number(el.dataset.i)];
     if(!cs || cs.x) return;
     if(cs.c){ mutate(function(){ dropSuite(cs, cday); }, 'Suite annulée'); return; }
-    pcOpen(cday, Number(el.dataset.i), el);
+    /* index37 : plus de fenêtre de choix, la suite est toujours le lendemain ; pour décaler encore, on
+       rappuie sur la flèche de la suite (le lendemain de ce jour-là), donc tout reste manuel. */
+    plContinueTo(cday, Number(el.dataset.i), addDays(cday, 1));
   } else if(a === 'pl-rm'){
     var rday = el.dataset.day, ri = Number(el.dataset.i);
     fxCollapse(el.closest('.slot'), function(){ mutate(function(){
@@ -5728,7 +5721,7 @@ document.addEventListener('keydown', function(e){
 
 /* ======================================================================
    §J25 — Réglages de l'appareil, suggestions et import
-   Gère : cfg (réglages propres à l'appareil, clé LS_CFG), panneau #set-pop en accordéon, envoi de
+   Gère : cfg (réglages, clé LS_CFG, aussi envoyés sur le compte depuis index39 : voir prefsObj/applyPrefs §J7/§J27), panneau #set-pop en accordéon, envoi de
    suggestions (sugSend vers Supabase), import CSV / XLSX (importFile).
    Utilise : §J1 §J5 §J6 §J7 §J9 §J10 §J12 §J19 §J27 §J28 §J29 §J31 §J33 §J35
    Utilisé par : §J9 §J18 §J22 §J24 §J27 §J28 §J35
@@ -5752,7 +5745,7 @@ function cfgApply(){
   if(typeof FX !== 'undefined' && FX) FX.reduce = cfg.reduce || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var ap = $('app'); if(ap) ap.style.zoom = cfg.size === 100 ? '' : String(cfg.size / 100);
 }
-function cfgSave(){ lsSet(LS_CFG, JSON.stringify(cfg)); cfgApply(); }
+function cfgSave(){ lsSet(LS_CFG, JSON.stringify(cfg)); cfgApply(); persist(); }
 /* Onglet au démarrage (index33, plus de réglage) :
    - ouverture normale : premier onglet disponible = Aujourd'hui sur téléphone, Collèges sur ordinateur ;
    - rechargement de la page : on revient là où on était. Le repère est écrit dans sessionStorage à la
@@ -5776,7 +5769,7 @@ var LS_SESS = 'medisam-sess';
 function saveSess(){ try{ sessionStorage.setItem(LS_SESS, JSON.stringify({ tab:tab, pv:pv })); }catch(e){} }
 window.addEventListener('pagehide', saveSess);
 document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') saveSess(); });
-var setAnimT = null, setHideT = null, setPop = $('set-pop'), setScrim = $('set-scrim');
+var persoP = null, setAnimT = null, setHideT = null, setPop = $('set-pop'), setScrim = $('set-scrim');
 function segHTML(name, opts, cur){
   return '<div class="set-seg" role="group">' + opts.map(function(o){ return '<button type="button" data-set="'+name+'" data-v="'+o[0]+'" aria-pressed="'+(String(cur)===String(o[0]))+'">'+o[1]+'</button>'; }).join('') + '</div>';
 }
@@ -5915,7 +5908,7 @@ setPop.addEventListener('click', function(e){
 var persoT = null;
 setPop.addEventListener('input', function(e){
   if(e.target.id === 'set-perso'){
-    cfg.ankiLabel = e.target.value.slice(0, 14); lsSet(LS_CFG, JSON.stringify(cfg));
+    cfg.ankiLabel = e.target.value.slice(0, 14); lsSet(LS_CFG, JSON.stringify(cfg)); clearTimeout(persoP); persoP = setTimeout(persist, 700);
     clearTimeout(persoT); persoT = setTimeout(function(){ renderList(); }, 220);
     return;
   }
@@ -6108,6 +6101,7 @@ $('cm-custom').addEventListener('submit', function(e){
   w = (w >= 1 ? Math.min(w, 240) : 25); b = (b >= 1 ? Math.min(b, 60) : 5);
   $('cm-w').value = w; $('cm-b').value = b;
   try{ localStorage.setItem('medisam-pomo-custom', JSON.stringify({w:w, b:b})); }catch(er){}
+  persist();
   pStart(w, b); setCm(false); clockEl.focus();
 });
 
@@ -6208,6 +6202,7 @@ function applyRemote(d){
   state.ign = sanitizeIgn(d.ign);
   state.pins = sanitizePins(d.pin);
   state.cur = sanitizeCur(d.cur);
+  if(applyPrefs(d.prefs) && ready){ try{ renderSort(); renderChips(); renderList(); }catch(e){} }
   if(d.skip){ seedSkip = true; lsSet(LS_SKIP, '1'); }
   if(d.tour){ tourSeen = true; lsSet(tourKey(), '1'); }
   lsSet(LS, JSON.stringify(state.tours));
@@ -6503,11 +6498,20 @@ function leave(){
   uid = null; ref = null; ready = false; remoteStamp = null; clearTimeout(loadTimer);
   holdWrites = false; needPush = false; lossAsking = false; snapMem = null;   /* LS_SNAP-<uid> reste volontairement */
   tourSeen = false; isAdmin = false; admBtn.hidden = true; admClose(true); tourEnd('quiet'); annEl.hidden = true;
-  [LS, LS_PLAN, LS_DAYS, LS_STW, LS_ANKI, LS_TODO, LS_NOTES, LS_DL, LS_JM, LS_IGN, LS_PIN, LS_CUR, LS_SKIP, LS_PV, LS_CU].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  [LS, LS_PLAN, LS_DAYS, LS_STW, LS_ANKI, LS_TODO, LS_NOTES, LS_DL, LS_JM, LS_IGN, LS_PIN, LS_CUR, LS_SKIP, LS_PV, LS_CU, LS_CFG, LS_SORT, LS_REF, 'medisam-pomo-custom'].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
 }
 
 /* Export CSV : simple téléchargement navigateur */
 downloadsNS = { save: function(o){
+  /* index38 : dans l'artéfact, le téléchargement passe par la capacité « downloads » (le lien direct est bloqué) */
+  if(window.claude && window.claude.use){
+    return window.claude.use('downloads').then(function(dl){
+      if(dl && dl.save) return dl.save({ filename:o.filename, data:o.data }).then(function(){});
+      return downloadsNS.anchor(o);
+    });
+  }
+  return downloadsNS.anchor(o);
+}, anchor: function(o){
   return new Promise(function(res){
     var b = new Blob([o.data], { type:(o.type || 'text/csv') + ';charset=utf-8' });
     var a = document.createElement('a');
@@ -6592,6 +6596,7 @@ function initCapabilities(){
   /* Les appels Supabase ne doivent pas être faits directement dans ce rappel : on diffère. */
   sb.auth.onAuthStateChange(function(ev, session){
     setTimeout(function(){
+      if(cloud) return;   /* mode compte Claude (index38) : Supabase n'intervient plus */
       if(ev === 'PASSWORD_RECOVERY'){ recovery = true; showAuth(true); setMode('rec'); return; }
       if(recovery) return;
       if(session && session.user){ if(uid !== session.user.id) enter(session.user); }
@@ -7939,7 +7944,8 @@ window.addEventListener('resize', function(){ if(tourOn && !tourBusy){ $('tr-spo
 
 /* ======================================================================
    §J34 — Aperçu sans compte (démo)
-   Gère : demoSb : faux Supabase en mémoire, proposé quand le serveur est injoignable (artéfact). Rien
+   Gère : cloudSb / cloudStart (index38 : enregistrement sur le compte Claude quand Supabase est injoignable),
+           demoSb : faux Supabase en mémoire, dernier recours si même le compte Claude est indisponible. Rien
    n'est envoyé.
    Utilise : §J5 §J7 §J27 §J31
    Utilisé par : rien d’autre
@@ -7995,20 +8001,74 @@ function demoSb(){
     }
   };
 }
+/* ---------- Compte Claude (index38) ----------
+   Quand Supabase est injoignable (cas de l'artéfact : le cadre bloque le réseau), les données sont
+   enregistrées dans la base de l'artéfact (capacité « db »), dans l'espace PRIVÉ de la personne qui
+   ouvre la page : data/users/<son id>/progress. Même format que la ligne Supabase `progress` : on
+   réutilise donc tout le reste (adopt, snapshots, fusion multi-appareils) sans rien changer.
+   ⚠ Limite : un document fait 256 Ko maximum. ⚠ Il faut le niveau « Collaborateur » (Contributor) dans le
+   menu Partager pour pouvoir écrire ; en « Lecteur » la pastille passe en erreur d'enregistrement. */
+var cloud = false;
+function cloudSb(db, id){
+  var docRef = db.collection('data/users/' + id).doc('progress');
+  var off = { data:null, error:{ message:'indisponible dans ce mode', code:'offline' } };
+  function fail(e){ return { data:null, error:{ message:(e && e.message) || 'db', code:(e && e.code) || 'db' } }; }
+  function mk(table){
+    var b = {};
+    ['select', 'order', 'limit', 'single', 'eq', 'gt', 'neq', 'insert', 'update', 'delete'].forEach(function(m){ b[m] = function(){ return b; }; });
+    b.upsert = function(p){
+      if(table !== 'progress') return Promise.resolve(off);
+      return docRef.set({ data:p.data, updated_at:p.updated_at }).then(function(){ return { error:null }; }, fail);
+    };
+    b.maybeSingle = function(){
+      if(table !== 'progress') return Promise.resolve({ data:null, error:null });
+      return docRef.get().then(function(sn){
+        var d = sn.exists ? sn.data() : null;
+        return { data:(d && d.data && typeof d.data === 'object') ? { data:JSON.parse(JSON.stringify(d.data)), updated_at:d.updated_at || null } : null, error:null };
+      }, fail);
+    };
+    b.then = function(a, r){ return Promise.resolve(off).then(a, r); };
+    return b;
+  }
+  return { auth:{ signOut:function(){ return Promise.resolve(); } }, from:mk, rpc:function(){ return Promise.resolve(off); } };
+}
+function cloudStart(){
+  if(uid || cloud) return Promise.resolve(true);
+  var cl = window.claude;
+  if(!cl || !cl.use) return Promise.resolve(false);
+  return Promise.all([cl.use('db'), cl.use('user')]).then(function(a){
+    var db = a[0], user = a[1];
+    if(!db || !user || !user.id) return false;
+    return Promise.resolve(user.id()).then(function(id){
+      if(!id || uid) return !!uid;
+      id = String(id);
+      sb = cloudSb(db, id); cloud = true;
+      var lo = $('btn-logout'); if(lo) lo.hidden = true;   /* l'identité est celle du compte Claude : pas de déconnexion */
+      enter({ id:id, email:'' });
+      return true;
+    });
+  }).then(function(ok){ return ok; }, function(){ cloud = false; return false; });
+}
 (function(){
   var btn = $('au-demo'), c = window.MEDISAM_CONFIG || {};
   function show(){ btn.hidden = false; }
-  if(!cfgOk()){ show(); }
+  /* serveur injoignable : d'abord le compte Claude, sinon seulement l'aperçu non enregistré */
+  function offline(){ cloudStart().then(function(ok){ if(!ok) show(); }); }
+  if(!cfgOk()){ offline(); }
   else if(window.fetch){
-    var done = false, t = setTimeout(function(){ if(!done) show(); }, 4000);
-    fetch(c.url + '/auth/v1/health', { headers:{ apikey:c.key } }).then(function(){ done = true; clearTimeout(t); }, function(){ done = true; clearTimeout(t); show(); });
+    var done = false, t = setTimeout(function(){ if(!done) offline(); }, 4000);
+    fetch(c.url + '/auth/v1/health', { headers:{ apikey:c.key } }).then(function(){ done = true; clearTimeout(t); }, function(){ done = true; clearTimeout(t); offline(); });
   }
   btn.addEventListener('click', function(){
     demo = true; sb = demoSb();
     enter({ id:'demo', email:ADMIN_EMAIL, email_confirmed_at:new Date().toISOString() });
   });
   var ss = setSync;
-  setSync = function(k){ ss(k); if(demo) $('sync-t').textContent = 'Aperçu, non enregistré'; };
+  setSync = function(k){
+    ss(k);
+    if(demo) $('sync-t').textContent = 'Aperçu, non enregistré';
+    else if(cloud && k === 'ok'){ $('sync-t').textContent = 'Synchronisé avec ton compte Claude'; $('sync').title = 'Synchronisé avec ton compte Claude'; }
+  };
 })();
 
 /* ======================================================================
