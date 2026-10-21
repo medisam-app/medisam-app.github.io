@@ -1813,6 +1813,9 @@ body[data-auth="in"] #auth{display:none}
 .jm-hint b{color:var(--ink);font-weight:600}
 
 /* ===== v17 : réglages et méthode des J plus vivants ===== */
+.set-r[hidden]{display:none}
+.set-perso input{appearance:none;flex:none;width:9.5em;max-width:44%;height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px var(--f-body)}
+.set-perso input:focus{outline:none;border-color:var(--g,var(--c));box-shadow:0 0 0 3px color-mix(in srgb,var(--g,var(--c)) 20%,transparent)}
 .set-grp{margin:12px 0 0;animation:setIn .42s cubic-bezier(.2,.8,.3,1) both;animation-delay:calc(var(--i,0)*50ms + 50ms)}
 .set-pop:not(.anim) .set-grp{animation:none}
 .set-g{appearance:none;display:flex;align-items:center;gap:11px;width:100%;padding:10px 12px;border:0;border-radius:16px;background:color-mix(in srgb,var(--g) 13%,var(--surface));color:var(--ink);font:inherit;cursor:pointer;text-align:left;transition:background .2s,transform .15s}
@@ -3343,7 +3346,7 @@ function sparkItems(items){
 }
 function sparkPlan(days){
   var t0 = today(), max = 0, month = days.length > 7;
-  var rows = days.map(function(d){ var sl = slotsOf(d), dn = 0; sl.forEach(function(s){ if(s.x) dn++; }); if(sl.length > max) max = sl.length; return { d:d, n:sl.length, x:dn }; });
+  var rows = days.map(function(d){ var sl = slotsOf(d).filter(function(s){ return s.k; }), dn = 0; sl.forEach(function(s){ if(s.x) dn++; }); if(sl.length > max) max = sl.length; return { d:d, n:sl.length, x:dn }; });
   var bars = rows.map(function(r,k){
     var h = max ? Math.round(r.n/max*100) : 0, v = r.n ? Math.round(r.x/r.n*100) : 0;
     return '<i class="pl'+(r.d === t0 ? ' t' : '')+(r.n ? '' : ' z')+'" style="--h:'+h+'%;--k:'+k+'" title="'+esc(fmtTip.format(parse(r.d)))+' · '+r.x+'/'+r.n+' validé'+(r.x>1?'s':'')+'"><b style="--v:'+v+'%"></b></i>';
@@ -3468,11 +3471,12 @@ function stepsHTML(key,t){
   return h;
 }
 var ICON_CHECK_S = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>';
-function ankiMode(){ var m = (typeof cfg !== 'undefined' && cfg.ankiMode) || 'anki'; return m === 'fiche' || m === 'off' ? m : 'anki'; }
+function ankiMode(){ var m = (typeof cfg !== 'undefined' && cfg.ankiMode) || 'anki'; return m === 'fiche' || m === 'perso' || m === 'off' ? m : 'anki'; }
+function ankiLabel(m){ return m === 'fiche' ? 'Fiche' : m === 'perso' ? ((typeof cfg !== 'undefined' && cfg.ankiLabel || '').trim() || 'Perso') : 'Anki'; }
 function ankiHTML(key){
   var m = ankiMode(); if(m === 'off') return '';
-  var lbl = m === 'fiche' ? 'Fiche' : 'Anki';
-  return '<button type="button" class="anki" data-act="anki" data-num="'+key+'" aria-pressed="'+(!!state.anki[key])+'" aria-label="'+(m === 'fiche' ? 'Fiche prête pour cet item' : 'Cartes Anki prêtes pour cet item')+'"><span class="bx">'+ICON_CHECK_S+'</span>'+lbl+'</button>';
+  var lbl = esc(ankiLabel(m));
+  return '<button type="button" class="anki" data-act="anki" data-num="'+key+'" aria-pressed="'+(!!state.anki[key])+'" aria-label="'+(m === 'fiche' ? 'Fiche prête pour cet item' : m === 'perso' ? lbl+' : fait pour cet item' : 'Cartes Anki prêtes pour cet item')+'"><span class="bx">'+ICON_CHECK_S+'</span>'+lbl+'</button>';
 }
 /* Pages QCM EDN.fr : identifiant de chaque item, dans l'ordre 1 → 367 */
 var EDN_IDS = '7ZFJZ877SYB5JVYRMWYJNWJPG1 5C190BQCEZB1YTF708QXX85QXJ 2SSNJEXHKCBN8SPCDZ9AVRWH7N 6P3FR28TK4BCVTNMTGAXRRT0Y5 0X4Z30GJJYBV29DXT7HW8112FJ 7SV7Y9CQA5AW9BNS39ERA83GYB 1HKVTCACYQA0JANTEWFA0ZZQD4 37WTNKJEN9AMDSNPFXKQJBHZR9 472BQHQ31FBQKS4QGZEAKY5RFC 0QQAHCQQPRAT0VEKKN5J0R9TD2 0HGWDNHH1AB8KV5PXPYYH9858Q 2Q4NAYF1MVABDBH5T8A795B7W2 7J22NGTTPBBQZVH5VVTDBYC1PQ 5VNFS474RJAKCVS1624RKP1KQF 02DSBWT24QAM9SAQEQDSSG2WY3 2B4DFW8SATBBK84K9CND18HKNV 66FM89BT7CANRSWCS99AGH3AV8 7Y7GPYWEGVAP7VR0PSH7DCCEK3 5SEXC542DFB0CAJNZW286CE6HK 3V4VHB64NPAJMAA5XYV9V9NR76 70PR1F4GECA5RT8B7GXV7TT79C 368A4D82HNBJ1A8MWNXEHD2BG5 60BCQVMQ1TBK9SVSGRG7EV2MNZ 1Y8MCZM5VAAP4V71TXTMCNQCGH 4BCR6DNXX5BFAS4VAH7D4EAT5X 08PCCJG12BA4RT3T6WV4KPQQMB 1PAX6CHVXAA6RATH6A8QWSB41F 5RAZEZDK5RB0X8ZQWYWZANP9M2 0WRBRSW6N4BS6VB4NBYY2E3GFS 6PGK2XFTEFBBT9PV5N51KZYJND 0FVRVGY02BA0AAKG4YHWN2Z6KP 7J33AJ4F35AJDRZXW2QK3WAY2G 0EFTZ1F0N1AYD9251T1YSBDTTR 6A2Q6ZDGZEB7HTA5ZWQ9QHAF72 51ZXWPRKXKBQQR69ZSFWFW8WFA 69W9BRX7SNATPSDWAF3RKW3VMH 6FRKHBX172ACH9Q9RAAK00PNQK 606R76PYBQAXJRJBS2N8HVFGEJ 7739H79NAZB4B9JXY4FPJF9V8F 6J6N9WV08GAN8A94YC7WVMPCKY 08JX0GBGREAAG93ARGTD17VTQP 3QK02166X6BNB8M2K84YENGM69 6J9A0TRRJFBAF8RCBWCSRRSS2X 5F183E9CXPBKFV1K6TZFMHX0HM 22S0XG63VHB0DT35265PPMTR4N 584602F3B7B58SWDQE80SJDC3D 3F2VEE22H0AR58N1ZY2KN35JE9 2FWW9CJ1Y8B9RVM7G3A861532T 3Y29P6H5QHB65BQE9PJRYJD8T0 2456G454MXAPR9410C9PHW5ZX3 612PTWTZ8KA8JA1J9BPY0X8PAK 2WHX1K3D0FA9ZR1F0BTGV0D1C2 663Z7VSGMEB3AACHCTB5VWW26T 17KVT2998TA6CA8621J1V643AB 752VZYFF2NBGF9XZYW12ZTMF08 76HVWH5EX0AFARWP1BZV8ZFV5H 6Q372HJKDZACRV0K3PJXZ0ABZV 6HWSZJDSWFBKBB4KN9N3JKPYAF 2WC8B9VGT1B2ZS30WM094YNX9B 5SH1DWV4EVBAJRTV341NT5RZ7Y 1S5W0YA0KJAD1TZN154G4W7ME8 066PNTFBKRAACSPXQ8ZHGYZ7HG 1YACT1T5BSASGSNP7J5BTEGFBY 2KBAQ6BZBNBEYAYF6A8H39JZ35 7A8K65D6WSB3K9DWFPX6PRG27Z 41JQ4N94HFAQNBG9ZKB7KEH937 29E9F8EGBQAWYAC4JPS5QY5PGC 04P20Y0BXSBVXTRD69KXMQQBEZ 150NH72P0GBKSAWMXWNSK8K8B7 282R06454NB3D9FXB8Q3XKSEW2 7G0QQYWSKYBJW8QWQEY9CR2EYJ 1H80D6ADNVAEJ9R1Q8P15K2NC5 2BK1RP2Z0HAVQVY80GGB8MF9BE 0R93G6B870A2QT11Y6VWDVVVPG 7AAAKPXCNEA62TZC32YG0X8FCF 5YB5M1FADPBJVVRGQG7VVFQKQ3 3MZ6V4FTZYBK5RB0A63R3CVJBW 4W1ZAEXR5XA24R2SJVA0D09K6S 0NQ8G5RASGBESSXM5NPNK04BFE 3K66R94B5JB27RAAXX6RS7DFE8 78GDB2X2RHB5QVHC1AKQB9WZJH 41AH6SE4S1AT4RXQZWQ0THKZHS 7ZDT01M81HATNRN4G4S5MW700X 12GFGNE62KAWD8PDWSBK3W2CNF 3T0DF59H7GBKBR6C88T0GMDDMX 2H7A1FD41WA6RS2XNQB3XPKFYD 0ZTNKP4F46B8PTX4XR6QVPC61G 6BHEX57730ANT9Q7B05A7V33F2 573JEDJ1ZNA41TZDXJC8FR4CS1 2V5CVYGK64BZ2S3FR6NEEWNCDQ 6M6F0P4F0YA8TRRYVYZ57SPBRD 1YT4NPVRW2B6F93CEYAFAZ98NR 5T1XG92SDGAZVTFHDSQRNNAFW4 0CDGPRFC5VBPGAKJ7H3TG6EKWX 7RC63JK66ZBA2TR4TRVC6818HR 5KRRMCDQPNA5FV768H5DKP8XNM 3MDQWV87ZMB6GRFEZBSTSFGX2A 4QKGN7E8STAA7SKE1DAY64FS3V 2EX8A96P1CA848WA5WFKNQWF3W 7SG2VTTJ93AP2AGXPFTQ3RPKEA 096FHDZZ9ABC9S2PVCYT9RPNAY 3SMYD3T6K1BT2VWRRR5F0ZR2SE 05THV9PEC5AW2RBB1GEWAECCNP 7R71HNTK54BR6SNKCN2S1XXZTZ 1SFS7JYERYBX6A9AZXFYG17E3M 7JYQ74HGKJBRNSXS083C9G25WA 0N6GWMZHTYBW68JQAMAKFWE37K 4QN8493TEMAVTAKW1SA0ZWSS8W 6ZQRRT0XS4BGC9QNY5VA8FSEXF 2BZY3544JTA249FAVKMMTBBD2T 0Z6W2VB1H5AYZBRF1DQGAXB6M6 21T6FPZFZ4AH9T31KDS5658ST0 70HZJ2V2Q1BVYAPAKCKG9QB7SP 2TRVJDPDYFBSA81ZG1C65J3BQ9 57R7S7FSDBB47A2RTTX6YRFRPA 1SD92FTFWGBX8AHJW8AWPKXJK4 2HK9YVBCH5BG0BAZBHY7AG945A 6JNM3SMFFNBNZ87YTQ8TR5EB4V 500DBR1Y6BA0SAJYPN2Y4M54ZW 1HJ9KMYNGVBQ29GVECAYNX884G 226CNKMXNGBSK99M48BX0QVGCN 1HBA4V1FQ5A6TSQX2NQCJGD7G3 1NX3V1A39PB5JTKBKD4K1K432W 552B1VV9TMB5ZV8W3B9H82866R 3ZVGHE3V5JA0ETE7QYET4N9QHZ 0JM6HZPXTSBDMRYHDTM56TWT32 2SRVP6TEE3AE1RDCG5MDB02100 769EV28CWXAD6T79ZPQD9459YC 6XP6QA23XQARG9E771Z6DD5WMK 67K2VAY7N1BQCRABX1CMWJWTFH 4ERDMQQ0C8AQDBHZ0B64W5PVZ2 2GVNW3RRANBKF8H4BNPP7RTQVZ 4ZFX22SKPFACTSS25N1B4HWGW0 2TW7KEG4HJADS8GVC3QGXP457B 071A9MPN6BAN7TZQC9JJKM1HT7 0KBF2JBV3QBZBRP0HDMNCZH430 2B5HRB7E5DB8NAV4HCWE92JQJE 7BK24ZQ2NYBCFA25EF5ZB139D0 2Q7AJ4FRHZB7BAWDQEP5VGM1E0 1D6AWXHEP0AHEBS8EQEDK5VZ6N 09DAKDCPVRAWBVF7B4MBH4EG5T 7GNGB12M1GASBT7DFRJJG45QYA 3TTSVSVJ83AKD8Y4FXR0A27TCC 5R1WVCH20QAESTDYR88WM66VSB 24Y05B1BN2ABMTEN7JKA1NX9Z9 39KVHX2Q42BZ3B9020DW4MRBHK 6Q7XWZHX3FARHB2GN794PQYRB9 35EXZ0E9G6A63ASMM9RSC72K46 31C10YEA1DBZFSHJBMMJ9V1BPP 6C8TDYVNSWB4QAY5W6W4F05SJH 0DFJ9YA1AYA8HSKM3S5NDSNXFJ 7C8ZP47H7JB9T9C26N6X7TC8HR 3A1HFZ2TV1APRAW0ZJT7QP0Y78 0F61QD495WABJBSY7BS6JFJ9N1 11N6Y4N4F9BXST3J016E4G9F2G 1X4XV4F1TPBFV845G0WRQW9X87 7ETN5PT96VAQZBJ3FPEQNSKD9G 7PR3WMAEK4A2WVV937ZR3ZCQTW 7MR3WV6FRQB1T9EW4A3N8HA7C4 5WCKC7KMA6A92V253XG493DSTN 75ZTS2Q4GTBS1TBZ3VRM73V4BM 005Q5EY67ZBV8S0G69NQAATCCR 070MSEH7VNA90B55JHHKNJNAH0 5C1NX06M5DB28BGRHFATYF3Y96 7T8TQPX4NYA02BYDT9BT09WSEW 651B68V5CMAM09D5SB8BJK61JX 16MPKWXHZGBEMSMS794YT51VYW 349D2EM2DDB9HTCMJ15TP8RJG3 37BSERQRJVB3VRGZWRRMZ7S236 3JPWWTF83BA9ZA1G99Q0J2JJ2Y 0KC5JWV9MVA36S8G8P964KSC5K 3E50QVT7VNAY1BRMRJY80FFT0N 4JBQAD1A2DACPR01ZQ4FKQGX0R 2XXPMWY782ANK9PAMXXD8V304W 19VVAPR677B81AVGX1XQRY3MCZ 6SYX2CAY4ZBKE8WQRRH21Q5PTQ 60ESVGAQD1ABVVD94PFK2G0K0W 5A4J7DSXSWAKE89RZ9VPPP825R 15BC3CPMKMA2Y9FMV12CJG9C9D 1A2N4Z8EQ8B7TVBCX3NNDGV51W 1A6HZ03QXDBV6R1072CVF938DG 5ERVJSAWZ7BPVT0DQGK3WR8X47 51P4MTWDHEB9NV5G594KCK94GB 5FK9YGMG95BKAA7AH9GCV78NRK 46FD03DBEBA45T8015D5T637A3 4ZNWER6ZDPBRX8H1EHGDC454N6 1A0BHGYY9EBSVATC1AZE5AXXAS 33AT90RNFNBGYRGPV2SQTWSPY9 6FH3M14BWWAZJ92Z9ASCCMWBEY 35X3R0DG7RBRB9ZRY0DVAWCYXS 4YJJ28Z56MA79AZ5NJBS5VV5JF 459CE0SZEMA4CR65CMV2B4NKHN 31QZ6QJ07DATN9TG6WYW6BBVQT 6YZD4GS5W0B10A05PWKYPN63HN 6GP2XERFSJA0JTMK3AM31GETRQ 4Q8XNNKVE1BGGS6H87SJ90K1RV 0Q5MQ7J7DEADW8D8JVKFNJ70C1 19WTMX1Y9VB3JT8YVYSZM9PZYG 6Y6W4WHEM2BZGTXDTCK23KBGNZ 7N2W27DSW7B05R9FVFXC5K9HR3 0QRS1ME3F8BKKRYBT43J26T82C 3T5Z1V0Q54BN6SCC4AZNEV7CBB 0KPYPAQ9B4AHZ9MZ6WEQ1D43J5 1MAKD0BJQ6BSMV8EM9CFSMA7S7 7E1S32C704BHPAS20DBCC5ED5S 4ZD0FZT9NSAVZBQFRHDPR4DZAY 4G0BW81VH6A8M92PA4GJ1XDHE6 7XBCKQ8KDKAZZ8ZR5C4MEGMM9G 4PC8HQCXYNBXGT3WVN0E9W3STX 44MRHK0M8QB97S92PST8J6ZZBC 6T7DQV4M7ZACA9TG33TR7ZWCYM 0C9WV8W8MNACBSQV87NXAVNWPX 4QEDY0SCEBAH9R00EDGW8YVRF0 25RJZBYYQCAH0TT7PWTDT6TQDG 0E26VA2GW5ASFRTS84WVJAJKT2 4VB56TK16YBRZA1TT705GP4YMB 5KE39T05H6B2JVFB9RMYVVSWF4 2S74E2DFZMAZ1TASZPQQJHP31K 1HNZ6KS5G3BQW8A575VXMY6ZS9 5A4083D3R6B388P26NF57Z8XY5 119WXVM39CAGHRX8EPMFKYM1A0 7KG0A8B6QTBBFBJCTY4KRZVQRX 52W0RYZQE3A0HTBE37KRVVVDBA 2B3P67V2RGA1EBXK19C25FAZR3 6V9EG049JJBTTAJMEG324THHJK 62H9JBF3QEBAKRYT0C3H4RRP4K 5XCB7EBVC3BGD8VQA5CEYRXF06 3RWZW174ZMBQR9G13HHWR9ZP9H 4YNTM753CSA3MA09NJ3060SP1S 60F1YF2H56A6K9H175G1NGZKB5 2YQWDXH25SAXRSJSK4CNHRTJJ2 7ESQ9QTXZYBW8V2C4E48S0GJTD 5D417JMJCRBAATEXTNJ4RFG158 1QXPTEXJXDBMN9WM33BAJTPG9N 2TCKMN5AZ9BNWSX161786RTS61 7KEVQ0ZCBVAF7SVQE77G34JJGJ 1NHCMHZN0ABTV95647ZMDBN829 0WCDK2E1ZAA2D8SR92WR94WD8Z 0WWZ4MKSG1B3PBQEQV8VAZ2G5F 0JJQ7JR9JVBJQRVQ6BYSSGVE1B 4N7CJXS88SBP89PWFAVQHK6CXR 5X0TB2PCW6BHTR5CATBD2W8PF8 56AVH9K00JAQKTWA9DC53FQ00E 4ENESJKNZPBRS8KZ6NCVP3ZZPS 4WVNM115B9BDASN9VXHXZKG8KN 5DTBVK95FCBT780RHSHN5V0AA5 5J3WR94D3PBEWRBYEEXH3T35DC 6XK7VGV6VAAQ5AZJ6ZHW7KKA6R 1ETGZ1J0VXACSAMEZ6G8DBGMEA 4JXEA59BVYB9H80CDSCRNVN3YA 62171RJTGRAJH8BT31HB4MKWAS 386QCM9RWFA8ARD14QCM783B4E 25CYP5KV2GBCPBBVZG1GFA2YM7 61S425VKBFANZAMD1XJ7VHVMVQ 39VJSKHC00ARCTQ45J5P7WRGW0 5SV68QPXR6ANNTB128JMTKNHC8 0Y236XH88AAC7VRG4X5BXC0YW7 7NCF0MS1BNA4SAV7M703MM0AFB 5E2VHAWEFKATYSVA2YQFXRBYV9 17VAQ85H9NBWMA9NJX938BVHAF 3CFH58VV6WAFXB6RBCF3RCDHNT 74XBTM2HR9BQRSSKA62260A8BE 0Z9JC54VXEADNB7B5P9XFRZMXS 0N5G91WJSEA9GTARNKNVW5R06S 3883S078BVA5RTRDP55HX8MYSA 17S7291RA4B2VBP101SMYWSFKW 5EB92XW091ASWRA2WCA22TFFSS 60F4M23CCCAH6VQ4KA4VSQCRA5 0JYG93M8GCAH1SJVV1W486SQPV 059S6MNF9EB679J7FXA7SNB102 5G0Q2C8Q52BT88XXCT1JZCTKTF 6T9FGA6PG3BK5ACE19P040XKJE 47RPQCCRW3A5TAHPK1157MCJ6H 2Q36R1B3W9BNHTGHRT3Y975SY2 6PJ35SYYRRAZ2TVHDJSAMP30FC 069AH7HJWFAMETA46RM528WDT3 2WPWXWFH3JBJNVC1MKAPHT9F61 3GGH8M15GMBWQ9EQEHH700R10H 61AXFYGMN8ACB8KNF1XNA42FYE 50HZ9WRQFFB33RQG3MHF6V0WGP 4SE1A46789B83RB3YHC736TBEV 5FP54E0BYNAA1AXD9H7BE5W67D 6JE967N55JAG8R15D3MB5XB1SM 3HN12FRT43AC2VPF8ZRBP19SGF 1GNS4G58WGA0A8ABSNMP2HJV0K 299MDQJAJGAG79CFKZ7PJ92G06 52WKRT3W7SB1FVT596H5Y2EZTV 4NSMKDP71QBXMA60KKK2XX13GV 0ABQ64PX1PBD5SHZ7YF1T9Z7YG 2GY244XYNMA6M89994JRH0J1E6 6ZZS7BY4XJBDYS2M1VHNNZ54BZ 0QRR8E2E71ARQBSHWTN89EJBG2 35FGD171KWBFPRK0TYZ5EGJ7E1 1SDM5TQYY2BP5BSY8BFYSM8F5X 6T98348H8YBHWSC32NPNCT1X2Q 2YMT4WT1F6A5W8KCND6SZT61QZ 7BFT3CBDAKA718BX2T0XYM7WFF 44RW3SJP3TBRGB4XCATNGMFRBZ 4TAHGG2QGSBTDRE5YQA5M99SX1 7VRM9BR8X5A7DB8GXQQXZFA6C9 1KR8J5G4D4AJGAKFKV45BYZ3W1 21QT20T15ZBVRAQSFK8GP6R0WW 11SGZ4GS2FBW1BVRANJJB86VZP 1GB459X8RVBP68CP70J4N1AHMH 7VJ12JCGAFBACRSX7SG7WK371P 5CN1B9VRF8BYDBSYKQDA52QN07 05DTVEGQGHB07SQEPGZXN1F986 4PVS99Z9S9AB1BE4144C6TWHR2 7G0F1RN5VQB3X9G82W961ZGHBD 4TP7VAV5ANAQ6S8C7GJJPKSB0Y 4SFQSZ0QGAAVZTS4TMCFA2XEM0 4Z1H593NMSBX7A4N7Y4YS6SYE5 2T3MARCCETAT696DVN6AMX5QAN 3NX4VMH63AAMHRAMG97HWYFNSX 4KY7EV1NW2A348FYSKF7XFFXZR 2E63R45BC4AWESSKGAZPQMVVX0 08JWA8TTVZAGDBCWP9PMP994AT 7QF2YE1MCHB50V62KXRSFG7KDC 4YRK9EF9CBAP1R3FXREA5BPV93 00Q38H282SAF7RE8EBM60KJT92 7ZJT5ANN88AD0BFA1MNNXCGNX6 7TSVB1D8MVA0WA4A2HGWQJ0NZX 2WS9TM932CBC6APCE9X87V9XG8 3Y7P065T8QA308KSFGNEA8F8Q2 6863K38R85BV1S0RHTBAE2SXYX 6DQ9HDFM42AWD8YT75ZVPED2TX 1VPH7H4FA3B6ZTMS8PZ5V0G4PQ 2QDTR3X8GHB4VVNK95NXVV20X0 66MC7D0C3WB3NB56FS725M9NHR 5Y094TE6G3AZSAW12R8RRA8XJZ 1NYW0BGQW3A0KVHY0NHTETW7ZR 0EEAG4CGKABW1A3WYGFAHMDVB5 4WWVWX53YRAZ2BMVK52X9QSTE1 2D039MYNBQAGVTFA9KSXAXQWF2 0RXR5CJNQNAZH9W0Z5PVNA5FE7 2BZ7XYZ4VSBS7RNR4C9G20SFTJ 335PTNJQCTB019QWXZ8SESWK4P 13CP5MYH1TAQMT66ZQW5MJVWFG 6TCE5K6VFJBGYS157298JJDQT8 1RM2JKFR4TAAYR4FDPJ31NK83A 0A22VDRYTQAMVRGVJ9XCFZDJF9 1Q3PQ4ENR0BX0VCGZJ90VQV0M1 5GQ94FW037BTM8DT786MN44CPJ 6BN8ZMSRA0AC0A7N4R8PVTNQ5S 0Q1DTPSFW8B0ARQXDEFMPD1F0K 7RCRT4M49CBRGRMYSWD5R4ANYD 52SS8M3J3MBCMR4MH7S83HG133 70EPEMEFEJA4P9J3TJGH2H7T6W 2732FB3YMNBDTB0HNNS4GQ1MHB 31VSP37ZNSA0QSNCEBRZHDHDB9 27ZPFYYQ3AAMASVA99W4M70CB4 0ZM3SPXN7XBRNBN1EKJGJ1C0YT 3HYHH80DRKAQPB0QYK81560Y1M 0XKZGBPV2YBXVBJN5GSCV3Y20Y 3W55RPT66PB60ACBAN4ATSZJAN 1KA1R5XF5DA71TYK4Y13K9GKG7 3M4EP57M4SA3YRG186M4ZDJC1F 1AT6XHWHAGBT6AQ3DYFD4Y2QWQ 7S9BEXZ9DHA9KVQ3VM8T7Z7F0T 4HFGK9RPSTBP0VMGZY371XMXJ4 42M3PH6WVSBMETS7VK14QXNQ12 3MJX35PC47BR3TKYHRFADSGW6F 6EFH224KB6A8WTET5CNQCPRBDG 7SR4EFNBTXBCBBNMG8MC2XSMZF 4JJZJ5DH4BBN98X6ZE5FFGEAJE 7GC69HM27EBZC9V5VP342D24GN 3G8JVMARE6AD6S70T29BPRZQRX'.split(' ');
@@ -4185,21 +4189,21 @@ function pickCurrent(){
 }
 
 function renderHeroPlan(){
-  var t0 = today(), sun = parse(t0).getDay() === 0, wkMode = sun && heroWk && pv !== 'month';
+  var t0 = today(), wkMode = heroWk && pv !== 'month';
   var view = [], scope = [], i;
-  /* Barres du bandeau : les jours affichés (ou la semaine en cours pour le bilan du dimanche) */
+  /* Barres du bandeau : les jours affichés (ou la semaine affichée pour le bilan de la semaine) */
   if(pv === 'month'){ var m = parse(mo), len = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate(); for(i=0;i<len;i++) view.push(addDays(mo,i)); scope = view; }
-  else if(wkMode){ var w0 = mondayOf(t0); for(i=0;i<7;i++) view.push(addDays(w0,i)); scope = view; }
+  else if(wkMode){ var w0 = pv === 'd3' ? mondayOf(d3) : wk; for(i=0;i<7;i++) view.push(addDays(w0,i)); scope = view; }
   else {
     if(pv === 'd3'){ for(i=0;i<3;i++) view.push(addDays(d3,i)); } else { for(i=0;i<7;i++) view.push(addDays(wk,i)); }
     scope = [t0];
   }
   var n = 0, dn = 0;
-  scope.forEach(function(d){ slotsOf(d).forEach(function(s){ if(s.c) return; n++; if(s.x) dn++; }); });
+  scope.forEach(function(d){ slotsOf(d).forEach(function(s){ if(s.c || !s.k) return; n++; if(s.x) dn++; }); });
   var per = pv === 'month' ? 'ce mois-ci' : wkMode ? 'cette semaine' : 'aujourd’hui', left = n - dn;
   var cap2 = !n ? 'Rien de planifié '+per+'.' : left ? left+' item'+(left>1?'s restent':' reste')+' à valider '+per+'.' : 'Tout est validé '+per+'.';
-  var kick = pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : wkMode ? 'bilan de la semaine '+isoWeek(mondayOf(t0)) : 'aujourd’hui · '+esc(fmtMv.format(parse(t0)));
-  var btn = sun && pv !== 'month' ? '<button type="button" class="hw-btn" data-act="hw-toggle" aria-pressed="'+wkMode+'">'+(wkMode ? 'Voir le jour' : 'Voir les statistiques de la semaine')+'</button>' : '';
+  var kick = pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : wkMode ? 'bilan de la semaine '+isoWeek(pv === 'd3' ? mondayOf(d3) : wk) : 'aujourd’hui · '+esc(fmtMv.format(parse(t0)));
+  var btn = pv !== 'month' ? '<button type="button" class="hw-btn" data-act="hw-toggle" aria-pressed="'+wkMode+'">'+(wkMode ? 'Voir les statistiques du jour' : 'Voir les statistiques de la semaine')+'</button>' : '';
   $('hero').innerHTML = ringHTML({ n:n, started:dn, second:dn, tours:0 }, 'validés', dn+' items validés sur '+n+' planifiés '+per)+
     '<div><p class="kick"><i class="kd"></i>Planning · '+kick+'</p><dl class="stats">'+
     '<div class="stat"><dt>Planifiés</dt><dd>'+n+'</dd></div>'+
@@ -5183,8 +5187,9 @@ document.addEventListener('keydown', function(e){
 
 
 /* ---------- Réglages (propres à cet appareil, gardés dans le navigateur) ---------- */
-var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, startTab:'colleges', wake:false, cdUnit:'d', ankiMode:'anki' };
+var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, startTab:'colleges', wake:false, cdUnit:'d', ankiMode:'anki', ankiLabel:'' };
 try{ var rc = JSON.parse(lsGet(LS_CFG) || '{}'); if(rc && typeof rc === 'object') Object.keys(cfg).forEach(function(k){ if(rc[k] !== undefined && typeof rc[k] === typeof cfg[k]) cfg[k] = rc[k]; }); }catch(e){}
+if(cfg.cdUnit === 'mo') cfg.cdUnit = 'w';
 var wakeLock = null;
 function wakeSet(on){
   try{
@@ -5229,9 +5234,10 @@ function renderSettings(){
     '</div></section>'+
     '<section class="set-grp" style="--g:var(--violet);--i:2"><button type="button" class="set-g" data-set-grp aria-expanded="true"><span class="set-gi" aria-hidden="true">'+SIC.loop+'</span><span class="set-gt">Révisions</span><span class="set-gn">4</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card">'+
     '<div class="set-r" style="--i:5"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.home+'</span><div><b>Onglet au démarrage</b><small>Celui affiché à l’ouverture de Médisam.</small></div>'+segHTML('startTab', [['last','Dernier'],['colleges','Collèges'],['items','Items'],['plan','Planning']], cfg.startTab)+'</div>'+
-    '<div class="set-r" style="--i:6"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.hourglass+'</span><div><b>Décompte jusqu’au 21 octobre 2028</b></div>'+segHTML('cdUnit', [['s','Secondes'],['m','Minutes'],['d','Jours'],['mo','Mois']], cfg.cdUnit)+'</div>'+
-    '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>Bouton sur chaque item</b><small>Pour marquer tes cartes ou ta fiche comme prêtes.</small></div>'+segHTML('ankiMode', [['anki','Anki'],['fiche','Fiche'],['off','Aucun']], ankiMode())+'</div>'+
+    '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>Bouton sur chaque item</b><small>Pour marquer tes cartes ou ta fiche comme prêtes.</small></div>'+segHTML('ankiMode', [['anki','Anki'],['fiche','Fiche'],['perso','Personnalisé'],['off','Aucun']], ankiMode())+'</div>'+
+    '<div class="set-r set-perso" id="set-perso-r" style="--i:7"'+(ankiMode() === 'perso' ? '' : ' hidden')+'><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>Nom du bouton</b><small>Par exemple Résumé, Schéma, Flashcards.</small></div><input type="text" id="set-perso" maxlength="14" value="'+esc(cfg.ankiLabel)+'" placeholder="Perso" aria-label="Nom du bouton personnalisé" autocomplete="off"></div>'+
     '<div class="set-r" style="--i:8"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.j+'</span><div><b>Méthode des J</b><small>Quand revoir chaque item : le planning se remplit tout seul.</small></div><button type="button" class="set-b" data-set-jm>Configurer</button></div>'+
+    '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.hourglass+'</span><div><b>Décompte jusqu’au 21 octobre 2028</b></div>'+segHTML('cdUnit', [['s','Secondes'],['m','Minutes'],['d','Jours'],['w','Semaines']], cfg.cdUnit)+'</div>'+
     '</div></section>'+
     '<section class="set-grp" style="--g:var(--teal);--i:4"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.help+'</span><span class="set-gt">Aide et données</span><span class="set-gn">4</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
     '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.chat+'</span><div><b>Une suggestion ?</b><small>Une idée, un oubli, un bug : écris-le ici.</small></div><button type="button" class="set-b" data-set-sug aria-expanded="false" aria-controls="set-sug">Écrire…</button></div>'+
@@ -5245,6 +5251,8 @@ function renderSettings(){
 }
 
 function syncSettings(){
+  var pr = setPop.querySelector('#set-perso-r');
+  if(pr){ var want = cfg.ankiMode === 'perso'; if(pr.hidden === want){ pr.hidden = !want; if(want){ fxIn(pr, { t:'0 -6px', d:320 }); } } }
   Array.prototype.forEach.call(setPop.querySelectorAll('[data-set]'), function(b){
     var n = b.dataset.set;
     if(b.classList.contains('set-sw')) b.setAttribute('aria-checked', String(!!cfg[n]));
@@ -5327,7 +5335,13 @@ setPop.addEventListener('click', function(e){
   cfgSave(); syncSettings(); cdTick();
   if(n === 'autoTheme' && window.medisamThemeRefresh) window.medisamThemeRefresh();
 });
+var persoT = null;
 setPop.addEventListener('input', function(e){
+  if(e.target.id === 'set-perso'){
+    cfg.ankiLabel = e.target.value.slice(0, 14); lsSet(LS_CFG, JSON.stringify(cfg));
+    clearTimeout(persoT); persoT = setTimeout(function(){ renderList(); }, 220);
+    return;
+  }
   if(e.target.id !== 'set-sug-t') return;
   var v = e.target.value, n = $('set-sug-n'), sb2 = setPop.querySelector('[data-set-sug-send]');
   if(n) n.textContent = v.length + ' / 600'; if(sb2) sb2.disabled = !v.trim();
@@ -7024,10 +7038,10 @@ function demoSb(){
 
 /* ---------- Décompte jusqu'au 21 octobre 2028 (affiché dans le bandeau, unité réglable) ---------- */
 var CD_END = new Date(2028, 9, 21, 0, 0, 0);
-var CD_LAB = { s:'S-', m:'MIN-', d:'J-', mo:'M-' };
+var CD_LAB = { s:'S-', m:'MIN-', d:'J-', w:'SEM-' };
 function cdText(){ var ms = Math.max(0, CD_END.getTime() - Date.now()), u = CD_LAB[cfg.cdUnit] ? cfg.cdUnit : 's', v, t;
-  if(u==='m') v=Math.floor(ms/6e4); else if(u==='d') v=Math.floor(ms/864e5); else if(u==='mo') v=ms/(864e5*30.4375); else v=Math.floor(ms/1000);
-  t = u==='mo' ? v.toLocaleString('fr-FR',{minimumFractionDigits:1,maximumFractionDigits:1}) : v.toLocaleString('fr-FR');
+  if(u==='m') v=Math.floor(ms/6e4); else if(u==='d') v=Math.floor(ms/864e5); else if(u==='w') v=Math.floor(ms/(864e5*7)); else v=Math.floor(ms/1000);
+  t = v.toLocaleString('fr-FR');
   return CD_LAB[u]+t; }
 function cdTick(){ var t = cdText(); Array.prototype.forEach.call(document.querySelectorAll('[data-cd]'), function(e){ if(e.textContent !== t) e.textContent = t; }); }
 setInterval(cdTick, 1000);
