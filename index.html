@@ -1898,8 +1898,7 @@ body[data-auth="in"] #auth{display:none}
 
 .cgw{position:relative;display:grid;min-width:0}
 .cgw>.cg{min-width:0}
-.cgw .cg-h{padding-right:96px}
-.cgw .cg-go{position:absolute;top:-7px;right:53px;width:30px;height:30px;padding:7px;box-sizing:border-box;margin:0}
+.cgw .cg-h{padding-right:70px}
 .cgc{position:absolute;top:11px;right:41px;z-index:3;appearance:none;border:0;background:none;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;padding:0;color:var(--ink2);opacity:.32;cursor:pointer;transition:opacity .2s,background .2s,color .2s,transform .25s cubic-bezier(.3,1.5,.5,1)}
 .cgc svg{width:16px;height:16px;transition:transform .35s cubic-bezier(.3,1.5,.5,1)}
 .cgw:hover .cgc,.cgc:focus-visible{opacity:.8}
@@ -1944,6 +1943,18 @@ body[data-auth="in"] #auth{display:none}
 .slot.ok.suit,[data-skin="ios"] .slot.ok.suit{box-shadow:inset 4px 0 0 rgba(255,255,255,.6)}
 .slot.ok.cont.suit,[data-skin="ios"] .slot.ok.cont.suit{box-shadow:inset 4px 0 0 rgba(255,255,255,.6),inset -4px 0 0 rgba(255,255,255,.6)}
 .slot.ok.cont .meta{color:rgba(255,255,255,.85)}
+.pc-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:0 0 12px}
+.pc-d{appearance:none;border:0;cursor:pointer;display:grid;gap:2px;justify-items:center;padding:8px 0 7px;border-radius:12px;background:color-mix(in srgb,var(--ink2) 12%,transparent);color:var(--ink);font-family:var(--f-body);transition:background .15s,transform .12s}
+.pc-d b{font:600 10px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+.pc-d span{font:600 16px/1 var(--f-body);font-variant-numeric:tabular-nums}
+.pc-d:hover{background:color-mix(in srgb,var(--c) 22%,transparent)}
+.pc-d:active{transform:scale(.94)}
+.pc-d.first{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 70%,transparent)}
+.pc-d:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.hw-btn{appearance:none;border:1px solid var(--c-mid);background:var(--c-soft);color:var(--c-ink);font:600 12.5px var(--f-body);padding:5px 12px;border-radius:999px;cursor:pointer;transition:background .15s,transform .12s}
+.hw-btn:hover{background:color-mix(in srgb,var(--c) 22%,var(--surface))}
+.hw-btn:active{transform:scale(.96)}
+.hw-btn[aria-pressed="true"]{background:var(--c);color:#fff;border-color:transparent}
 .slot .chn{position:absolute;top:15px;right:44px;font:600 10.5px/1 var(--f-mono);letter-spacing:.02em;font-variant-numeric:tabular-nums;color:var(--ink2);opacity:.75;padding:3px 6px;border-radius:999px;background:color-mix(in srgb,var(--c) 12%,transparent);pointer-events:none}
 .slot.ok .chn{color:#fff;background:rgba(255,255,255,.2);opacity:.9}
 .slot.cont .meta,.slot.suit .meta{color:var(--ink2)}
@@ -2062,6 +2073,7 @@ body[data-auth="in"] #auth{display:none}
 <div class="jm-sw"><div><b>Semaines de stage plus légères</b><small>Moitié moins d’items proposés les jours de stage.</small></div><button type="button" class="set-sw" role="switch" data-jmw="stg" aria-checked="true" aria-label="Alléger les semaines de stage"></button></div></div>
 </div>
 <div class="jm-act"><button type="button" class="jm-one" id="jm-one"></button><button type="button" class="jm-all" id="jm-all">Appliquer pour tous les collèges</button><p class="jm-note" id="jm-note" hidden></p><div class="jm-foot"><button type="button" class="jm-ghost" id="jm-cancel">Annuler</button><button type="button" class="jm-ghost warn" id="jm-off" hidden>Tout désactiver</button></div></div></div></div>
+<div id="pc" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="pc-t"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h8M7.5 4.5L11 8l-3.5 3.5"/><path d="M13.6 3.5v9"/></svg></div><h2 id="pc-t">Continuer quel jour ?</h2><p class="tc-n" id="pc-n"></p><div class="pc-days" id="pc-days" role="group" aria-label="Jour de la suite"></div><label class="tc-date"><span>Un autre jour</span><input type="date" id="pc-date"></label><div class="cf-act"><button type="button" class="cf-no" data-pcs="no">Annuler</button><button type="button" class="cf-ok" id="pc-ok" data-pcs="ok" disabled>Choisir</button></div></div></div>
 <div id="pf" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="pf-t"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></div><h2 id="pf-t">Comment s’est passé ce tour ?</h2><p class="tc-n" id="pf-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-pfs="ok" class="tc-ok-b"><i></i>Bien compris</button><button type="button" data-pfs="mid" class="tc-mid-b"><i></i>À consolider</button><button type="button" data-pfs="low" class="tc-low-b"><i></i>Difficile</button></div><div class="cf-act"><button type="button" class="cf-no" data-pfs="no">Annuler</button></div></div></div>
 <div id="tc" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="tc-t" aria-describedby="tc-d"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg></div><h2 id="tc-t">Un tour pour tout le collège ?</h2><p class="tc-n" id="tc-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-tcs="ok" class="tc-ok-b" aria-pressed="true"><i></i>Bien compris</button><button type="button" data-tcs="mid" class="tc-mid-b" aria-pressed="false"><i></i>À consolider</button><button type="button" data-tcs="low" class="tc-low-b" aria-pressed="false"><i></i>Difficile</button></div><label class="tc-date"><span>Date du tour</span><input type="date" id="tc-date"></label><p id="tc-d" class="tc-d"></p><div class="cf-act"><button type="button" class="cf-no" data-tc="no">Annuler</button><button type="button" class="cf-ok" data-tc="ok">Ajouter</button></div></div></div>
 <div id="cf" class="cf" hidden><div class="cf-box" role="alertdialog" aria-modal="true" aria-labelledby="cf-t" aria-describedby="cf-d"><div class="cf-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="13" height="12" rx="3"/><path d="M2.5 7.5h13M6 2v3M12 2v3"/></svg></div><h2 id="cf-t">Passer en semaine de stage ?</h2><p id="cf-d"></p><div class="cf-act"><button type="button" class="cf-no" data-cf="no">Annuler</button><button type="button" class="cf-ok" data-cf="ok">Passer en stage</button></div></div></div>
@@ -2103,7 +2115,7 @@ window.MEDISAM_CONFIG = {
   var root = document.documentElement;
   var MOON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.5 12.3A7 7 0 0 1 7.7 3.5a7 7 0 1 0 8.8 8.8z"/></svg>';
   var SUN = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4"/></svg>';
-  var OVK = 'medisam-theme-ov', GEOK = 'medisam-geo';
+  var OVK = 'medisam-theme-ov', GEOK = 'medisam-geo', MANK = 'medisam-theme-man', CFGK = 'medisam-cfg';
   /* anciens réglages du mode nuit (remise en mode jour à 6 h) : supprimés */
   try{ localStorage.removeItem('carnet-edn-theme'); localStorage.removeItem('medisam-theme'); }catch(e){}
 
@@ -2147,7 +2159,12 @@ window.MEDISAM_CONFIG = {
     return null;
   }
   function writeOv(t){ try{ localStorage.setItem(OVK, JSON.stringify({ t:t, until:nextSwitch() })); }catch(e){} }
-  function wanted(){ var o = readOv(); return o ? o.t : (isNightNow() ? 'dark' : 'light'); }
+  /* Réglage « Mode jour / nuit automatique » (Paramètres > Affichage). Désactivé : le thème reste celui qu'on a choisi à la main. */
+  function autoOn(){ try{ var c = JSON.parse(localStorage.getItem(CFGK) || '{}'); return c.autoTheme !== false; }catch(e){ return true; } }
+  function wanted(){
+    if(!autoOn()){ var m = null; try{ m = localStorage.getItem(MANK); }catch(e){} return m === 'dark' || m === 'light' ? m : (root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'); }
+    var o = readOv(); return o ? o.t : (isNightNow() ? 'dark' : 'light');
+  }
   function isDark(){ return root.getAttribute('data-theme') === 'dark'; }
   function reduced(){ return root.getAttribute('data-reduce') === '1' || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
   function paint(anim){
@@ -2174,6 +2191,10 @@ window.MEDISAM_CONFIG = {
     root.setAttribute('data-theme', w); paint(fade);
     if(fade) setTimeout(function(){ root.classList.remove('theme-fade'); }, 450);
   }
+  window.medisamThemeRefresh = function(){
+    try{ localStorage.removeItem(OVK); if(!autoOn()) localStorage.setItem(MANK, isDark() ? 'dark' : 'light'); }catch(e){}
+    autoCheck();
+  };
   setInterval(autoCheck, 30000);
   document.addEventListener('visibilitychange', function(){ if(!document.hidden) autoCheck(); });
   window.addEventListener('focus', autoCheck);
@@ -2193,7 +2214,7 @@ window.MEDISAM_CONFIG = {
     if(!e.target.closest || !e.target.closest('#theme-btn')) return;
     var next = isDark() ? 'light' : 'dark', rd = reduced();
     function apply(){
-      root.setAttribute('data-theme', next); writeOv(next); paint(!rd);
+      root.setAttribute('data-theme', next); if(autoOn()) writeOv(next); else { try{ localStorage.setItem(MANK, next); }catch(e){} } paint(!rd);
     }
     if(rd){ apply(); return; }
     if(document.startViewTransition){
@@ -3554,6 +3575,7 @@ function renderList(){
 
 /* ---------- Rendu : planning de la semaine ---------- */
 var wk = mondayOf(today()), addDay = null, sug = [], sugI = 0, planKey = '';
+var heroWk = false;
 var pv = (function(v){ return v === 'month' || v === 'd3' ? v : 'week'; })(lsGet(LS_PV)), mo = monthStart(today()), d3 = today();
 var fmtMonth = new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'});
 function monthStart(s){ var d = parse(s); return iso(new Date(d.getFullYear(), d.getMonth(), 1)); }
@@ -3816,6 +3838,57 @@ document.addEventListener('keydown', function(e){
   if(e.key === 'Escape'){ e.preventDefault(); tcClose(false); }
   else if(e.key === 'Tab'){
     var bs = Array.prototype.filter.call(document.querySelectorAll('#tc button, #tc input'), function(x){ return !x.disabled; }), first = bs[0], last = bs[bs.length-1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+});
+
+/* ---------- Planning : jour de la suite d'un cours commencé (lendemain, ou plus tard avec des pauses) ---------- */
+var pcCtx = null, pcBack = null, pcPick = null, fmtWdS = new Intl.DateTimeFormat('fr-FR', { weekday:'short' });
+function plContinueTo(cday, i, nd){
+  var cs = slotsOf(cday)[i];
+  if(!cs || cs.x || cs.c || !/^\d{4}-\d{2}-\d{2}$/.test(nd) || nd <= cday) return;
+  mutate(function(){
+    cs.c = nd;
+    var ex = null, arr = state.plan[nd] || [];
+    for(var q = 0; q < arr.length; q++){ if(sameSlot(cs, arr[q])){ ex = arr[q]; break; } }
+    if(ex){ if(!ex.s) ex.s = cday; }
+    else (state.plan[nd] = state.plan[nd] || []).unshift(cs.k ? { k:cs.k, s:cday } : { t:cs.t, s:cday });
+  }, 'Suite placée le '+fmtMv.format(parse(nd)));
+}
+function pcOpen(cday, i, from){
+  var cs = slotsOf(cday)[i]; if(!cs) return;
+  pcCtx = { day:cday, i:i }; pcBack = from || document.activeElement; pcPick = null;
+  var box = document.querySelector('#pc .cf-box'); box.setAttribute('data-h', cs.k ? collegeOfKey(cs.k).hue : 'hema');
+  $('pc-n').textContent = slotTitle(cs);
+  var h = '';
+  for(var k = 1; k <= 7; k++){ var d = addDays(cday, k), dt = parse(d); h += '<button type="button" class="pc-d'+(k === 1 ? ' first' : '')+'" data-pcd="'+d+'" aria-label="'+esc(cap(fmtLong.format(dt)))+(k === 1 ? ' (lendemain)' : '')+'"><b>'+fmtWdS.format(dt).replace('.', '')+'</b><span>'+dt.getDate()+'</span></button>'; }
+  $('pc-days').innerHTML = h;
+  var di = $('pc-date'); di.min = addDays(cday, 1); di.value = '';
+  $('pc-ok').disabled = true;
+  dlgOpen($('pc'));
+  var f = document.querySelector('#pc .pc-d.first'); if(f) f.focus({ preventScroll:true });
+}
+function pcClose(date){
+  var c = pcCtx; pcCtx = null;
+  dlgClose($('pc'));
+  if(date && c) plContinueTo(c.day, c.i, date);
+  var back = pcBack; pcBack = null; if(back && back.isConnected && back.focus) back.focus({ preventScroll:true });
+}
+document.addEventListener('click', function(e){
+  if(!pcCtx) return;
+  var d = e.target.closest && e.target.closest('[data-pcd]');
+  if(d){ pcClose(d.dataset.pcd); return; }
+  var b = e.target.closest && e.target.closest('[data-pcs]');
+  if(b){ if(b.dataset.pcs === 'ok'){ var v = $('pc-date').value; if(v && v > pcCtx.day){ pcClose(v); } } else pcClose(null); return; }
+  if(e.target === $('pc')) pcClose(null);
+});
+document.addEventListener('input', function(e){ if(pcCtx && e.target.id === 'pc-date'){ var v = e.target.value; $('pc-ok').disabled = !(v && v > pcCtx.day); } });
+document.addEventListener('keydown', function(e){
+  if(!pcCtx) return;
+  if(e.key === 'Escape'){ e.preventDefault(); pcClose(null); }
+  else if(e.key === 'Tab'){
+    var bs = Array.prototype.filter.call(document.querySelectorAll('#pc button, #pc input'), function(x){ return !x.disabled; }), first = bs[0], last = bs[bs.length-1];
     if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
     else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
   }
@@ -4112,20 +4185,27 @@ function pickCurrent(){
 }
 
 function renderHeroPlan(){
-  var days = [], i, n = 0, dn = 0, tn = 0, td = 0;
-  if(pv === 'month'){ var m = parse(mo), len = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate(); for(i=0;i<len;i++) days.push(addDays(mo,i)); }
-  else if(pv === 'd3'){ for(i=0;i<3;i++) days.push(addDays(d3,i)); }
-  else { for(i=0;i<7;i++) days.push(addDays(wk,i)); }
-  days.forEach(function(d){ slotsOf(d).forEach(function(s){ if(s.c) return; n++; if(s.x) dn++; }); });
-  slotsOf(today()).forEach(function(s){ if(s.c) return; tn++; if(s.x) td++; });
-  var per = pv === 'month' ? 'ce mois-ci' : pv === 'd3' ? 'sur ces 3 jours' : 'cette semaine', left = n - dn;
+  var t0 = today(), sun = parse(t0).getDay() === 0, wkMode = sun && heroWk && pv !== 'month';
+  var view = [], scope = [], i;
+  /* Barres du bandeau : les jours affichés (ou la semaine en cours pour le bilan du dimanche) */
+  if(pv === 'month'){ var m = parse(mo), len = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate(); for(i=0;i<len;i++) view.push(addDays(mo,i)); scope = view; }
+  else if(wkMode){ var w0 = mondayOf(t0); for(i=0;i<7;i++) view.push(addDays(w0,i)); scope = view; }
+  else {
+    if(pv === 'd3'){ for(i=0;i<3;i++) view.push(addDays(d3,i)); } else { for(i=0;i<7;i++) view.push(addDays(wk,i)); }
+    scope = [t0];
+  }
+  var n = 0, dn = 0;
+  scope.forEach(function(d){ slotsOf(d).forEach(function(s){ if(s.c) return; n++; if(s.x) dn++; }); });
+  var per = pv === 'month' ? 'ce mois-ci' : wkMode ? 'cette semaine' : 'aujourd’hui', left = n - dn;
   var cap2 = !n ? 'Rien de planifié '+per+'.' : left ? left+' item'+(left>1?'s restent':' reste')+' à valider '+per+'.' : 'Tout est validé '+per+'.';
+  var kick = pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : wkMode ? 'bilan de la semaine '+isoWeek(mondayOf(t0)) : 'aujourd’hui · '+esc(fmtMv.format(parse(t0)));
+  var btn = sun && pv !== 'month' ? '<button type="button" class="hw-btn" data-act="hw-toggle" aria-pressed="'+wkMode+'">'+(wkMode ? 'Voir le jour' : 'Voir la semaine')+'</button>' : '';
   $('hero').innerHTML = ringHTML({ n:n, started:dn, second:dn, tours:0 }, 'validés', dn+' items validés sur '+n+' planifiés '+per)+
-    '<div><p class="kick"><i class="kd"></i>Planning · '+(pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : pv === 'd3' ? '3 jours' : 'semaine '+isoWeek(wk))+'</p><dl class="stats">'+
+    '<div><p class="kick"><i class="kd"></i>Planning · '+kick+'</p><dl class="stats">'+
     '<div class="stat"><dt>Planifiés</dt><dd>'+n+'</dd></div>'+
     '<div class="stat"><dt>Validés</dt><dd>'+dn+'</dd></div>'+
-    '<div class="stat"><dt>Aujourd’hui</dt><dd>'+td+'<small>/'+tn+'</small></dd></div></dl>'+
-    '<p class="cap">'+cap2+'</p></div>'+sparkPlan(days);
+    '<div class="stat"><dt>Restants</dt><dd>'+left+'</dd></div></dl>'+
+    '<div class="capline"><p class="cap">'+cap2+'</p>'+btn+'</div></div>'+sparkPlan(view);
 }
 var ICON_NEXT = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8h8M7.5 4.5L11 8l-3.5 3.5"/><path d="M13.6 3.5v9"/></svg>';
 function sameSlot(a, b){ return a.k ? a.k === b.k : (!b.k && a.t === b.t); }
@@ -4184,7 +4264,7 @@ function slotHTML(day,s,i){
   return '<div class="slot'+(s.x?' ok':'')+(it?'':' free')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+'" data-h="'+hue+'" data-day="'+day+'" data-i="'+i+'">'+numH+chn+
     '<div class="main"><div class="ttl mvb">'+esc(title)+'</div><span class="meta">'+meta+'</span></div>'+
     '<div class="act"><button class="vbtn" data-act="pl-done" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(s.x?'true':'false')+'" aria-label="'+(s.x?'Annuler la validation de ':'Valider ')+esc(title)+'">'+ICON_CHECK+(s.x?'Fait':'Valider')+'</button>'+
-      (s.x ? '' : '<button type="button" class="nxb'+(s.c ? ' on' : '')+'" data-act="pl-cont" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(!!s.c)+'" aria-label="'+(s.c ? 'Annuler la suite de ' : 'Pas fini : continuer demain, ')+esc(title)+'" title="'+(s.c ? 'Annuler la suite' : 'Pas fini : continuer demain')+'">'+ICON_NEXT+'</button>')+'</div>'+
+      (s.x ? '' : '<button type="button" class="nxb'+(s.c ? ' on' : '')+'" data-act="pl-cont" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(!!s.c)+'" aria-label="'+(s.c ? 'Annuler la suite de ' : 'Pas fini : choisir le jour de la suite, ')+esc(title)+'" title="'+(s.c ? 'Annuler la suite' : 'Pas fini : choisir le jour de la suite')+'">'+ICON_NEXT+'</button>')+'</div>'+
     '<button class="rmb" data-act="pl-rm" data-day="'+day+'" data-i="'+i+'" aria-label="Retirer '+esc(title)+' du planning">'+ICON_X+'</button></div>';
 }
 function toggleHTML(){
@@ -4340,7 +4420,7 @@ function renderColleges(){
     if(cur) tags = '<span class="curt">'+ICON_CUR+'En cours</span>'+tags;
     return '<div class="cgw'+(pin ? ' is-pin' : '')+(cur ? ' is-cur' : '')+'" data-h="'+c.hue+'" data-id="'+c.id+'"><button type="button" class="cg'+(p.started ? '' : ' is-zero')+'" data-h="'+c.hue+'" data-m="'+c.id+'" data-act="opencol" data-id="'+c.id+'" aria-label="'+esc(aria)+'">'+
       '<span class="cg-h"><span class="cg-dot"></span><span class="cg-n">'+esc(c.name)+'</span>'+
-      '<svg class="cg-go" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5l4.5 4.5L6 12.5"/></svg></span>'+
+      '</span>'+
       '<span class="cg-pct">'+p1+'%<small>vus</small></span>'+
       '<span class="cg-cnt"><b>'+p.started+'</b>/'+p.n+' items</span>'+
       meterHTML(p1,p2)+
@@ -4502,9 +4582,13 @@ function moveSlot(from,i,to,pos){
   if(from === to){ if(pos != null) reorderSlot(from, i, pos > i ? pos-1 : pos); return; }
   var dup = slotsOf(to).some(function(x){ return s.k ? x.k === s.k : (!x.k && norm(x.t) === norm(s.t)); });
   if(dup){ toast('C’est déjà prévu le '+fmtMv.format(parse(to))+'.'); return; }
+  if(s.s && to <= s.s){ toast('Une suite ne peut pas passer avant le début du cours.'); return; }
+  if(s.c && to >= s.c){ toast('Le début ne peut pas passer après sa suite.'); return; }
   mutate(function(){
     var a = state.plan[from]; if(!a) return;
     var o = a.splice(i,1)[0];
+    if(o.s) (state.plan[o.s] || []).forEach(function(x){ if(x.c === from && sameSlot(o, x)) x.c = to; });
+    if(o.c) (state.plan[o.c] || []).forEach(function(x){ if(x.s === from && sameSlot(o, x)) x.s = to; });
     if(!a.length) delete state.plan[from];
     var b = state.plan[to] = state.plan[to] || [];
     if(pos != null && pos < b.length) b.splice(Math.max(0,pos),0,o); else b.push(o);
@@ -4647,6 +4731,9 @@ document.addEventListener('click', function(e){
     chooseCol(el.dataset.id);
   } else if(a === 'tab'){
     fxTab(el.dataset.tab, function(){ tab = el.dataset.tab; lsSet(LS_TAB, tab); applyHue(); renderHero(); renderBanner(); renderTabs(); if(tab === 'plan') renderPlan(); if(tab === 'colleges') renderColleges(); });
+  } else if(a === 'hw-toggle'){
+    heroWk = !heroWk; renderHero();
+    var hb = document.querySelector('#hero .hw-btn'); if(hb){ try{ hb.focus({ preventScroll:true }); }catch(e){} }
   } else if(a === 'pincol'){
     pinToggle(el.dataset.id);
   } else if(a === 'curcol'){
@@ -4782,11 +4869,7 @@ document.addEventListener('click', function(e){
     var cday = el.dataset.day, cs = slotsOf(cday)[Number(el.dataset.i)];
     if(!cs || cs.x) return;
     if(cs.c){ mutate(function(){ dropSuite(cs, cday); }, 'Suite annulée'); return; }
-    var cnd = addDays(cday, 1);
-    mutate(function(){
-      cs.c = cnd;
-      if(!slotsOf(cnd).some(function(x){ return sameSlot(cs, x); })) (state.plan[cnd] = state.plan[cnd] || []).unshift(cs.k ? { k:cs.k, s:cday } : { t:cs.t, s:cday });
-    }, 'Suite placée le '+fmtMv.format(parse(cnd)));
+    pcOpen(cday, Number(el.dataset.i), el);
   } else if(a === 'pl-rm'){
     var rday = el.dataset.day, ri = Number(el.dataset.i);
     fxCollapse(el.closest('.slot'), function(){ mutate(function(){
@@ -5100,7 +5183,7 @@ document.addEventListener('keydown', function(e){
 
 
 /* ---------- Réglages (propres à cet appareil, gardés dans le navigateur) ---------- */
-var cfg = { clockFs:false, reduce:false, size:100, startTab:'colleges', wake:false, cdUnit:'d', ankiMode:'anki' };
+var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, startTab:'colleges', wake:false, cdUnit:'d', ankiMode:'anki' };
 try{ var rc = JSON.parse(lsGet(LS_CFG) || '{}'); if(rc && typeof rc === 'object') Object.keys(cfg).forEach(function(k){ if(rc[k] !== undefined && typeof rc[k] === typeof cfg[k]) cfg[k] = rc[k]; }); }catch(e){}
 var wakeLock = null;
 function wakeSet(on){
@@ -5137,8 +5220,9 @@ var SIC = (function(){
 function renderSettings(){
   setPop.innerHTML =
  '<div class="set-h"><h2 id="set-title">Réglages</h2><button type="button" class="set-x" data-set-close aria-label="Fermer">×</button></div>'+
-    '<section class="set-grp" style="--g:var(--blue);--i:0"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.eye+'</span><span class="set-gt">Affichage</span><span class="set-gn">4</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
+    '<section class="set-grp" style="--g:var(--blue);--i:0"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.eye+'</span><span class="set-gt">Affichage</span><span class="set-gn">5</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
     '<div class="set-r" style="--i:1"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.clock+'</span><div><b>Écran Heure</b><small>Pleine page dans Médisam, ou plein écran complet du navigateur. Raccourci : touche H.</small></div>'+segHTML('clockFs', [['0','Page'],['1','Plein écran']], cfg.clockFs ? 1 : 0)+'</div>'+
+    '<div class="set-r" style="--i:1"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.sun+'</span><div><b>Mode jour / nuit automatique</b><small>Mode sombre à la tombée de la nuit, mode clair au lever du soleil. Désactivé, le thème reste celui que tu choisis avec le bouton lune.</small></div>'+swHTML('autoTheme', cfg.autoTheme, 'Mode jour / nuit automatique')+'</div>'+
     '<div class="set-r" style="--i:2"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.sun+'</span><div><b>Garder l’écran allumé</b><small>Pendant l’écran Heure (si l’appareil le permet).</small></div>'+swHTML('wake', cfg.wake, 'Garder l’écran allumé')+'</div>'+
     '<div class="set-r" style="--i:3"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.wind+'</span><div><b>Réduire les animations</b><small>Supprime les transitions et effets.</small></div>'+swHTML('reduce', cfg.reduce, 'Réduire les animations')+'</div>'+
     '<div class="set-r" style="--i:4"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.text+'</span><div><b>Taille d’écriture</b><small>Agrandit ou réduit toute l’interface.</small></div>'+segHTML('size', [[90,'A−'],[100,'A'],[112,'A+'],[125,'A++']], cfg.size)+'</div>'+
@@ -5241,6 +5325,7 @@ setPop.addEventListener('click', function(e){
   else if(n === 'ankiMode'){ cfg.ankiMode = b.dataset.v; cfgSave(); syncSettings(); renderList(); return; }
   else cfg[n] = !cfg[n];
   cfgSave(); syncSettings(); cdTick();
+  if(n === 'autoTheme' && window.medisamThemeRefresh) window.medisamThemeRefresh();
 });
 setPop.addEventListener('input', function(e){
   if(e.target.id !== 'set-sug-t') return;
