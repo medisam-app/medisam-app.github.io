@@ -1,4 +1,46 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* ===== Téléphone v3 : en-tête et bandeau compacts, onglets en barre du bas, liste des items resserrée.
+   Tout est limité aux écrans étroits (≤ 700 px) : l'affichage ordinateur ne change pas. ===== */
+@media (max-width:700px){
+  body{padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(104px + env(safe-area-inset-bottom,0px))}
+  .logo{width:min(168px,48vw)!important}
+  .top{margin-bottom:10px;gap:6px}
+  .date{margin-top:4px;font-size:13px}
+  .topr{width:100%;flex-wrap:nowrap!important;gap:6px!important;justify-content:space-between}
+  .topr .sync{flex:none;width:40px;height:40px!important;padding:0!important;gap:0;justify-content:center}
+  .topr .sync #sync-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .topr .theme-btn{flex:none;width:40px!important;height:40px!important}
+  .topr .todo-open{flex:1 1 auto;min-width:0;height:40px!important;justify-content:center;padding:0 8px!important;gap:6px!important;white-space:nowrap}
+  .hero{padding:14px 14px 12px!important;gap:8px 12px!important;border-radius:20px!important}
+  .ring{width:64px!important;height:64px!important}
+  .ringv{font-size:24px!important}
+  .kick{margin-bottom:6px!important;padding-right:40px}
+  .stat dd{font-size:28px!important}
+  .stat dd small{font-size:13px!important}
+  .cap{margin-top:6px!important;font-size:13px}
+  .st-btn{top:-6px!important;width:34px!important;height:34px!important}
+  .spark{padding:8px 12px 6px!important;gap:6px!important;border-radius:14px!important}
+  .bars{height:30px!important}
+  .spark figcaption{font-size:12px}
+  .bar{position:fixed!important;left:0;right:0;bottom:0;top:auto!important;margin:0!important;padding:8px 14px calc(8px + env(safe-area-inset-bottom,0px))!important;z-index:8;border-radius:0!important;background:color-mix(in srgb,var(--bg) 90%,transparent)!important;-webkit-backdrop-filter:blur(18px) saturate(160%)!important;backdrop-filter:blur(18px) saturate(160%)!important;box-shadow:0 -1px 0 var(--line)!important;animation:none!important}
+  .bar .tabs{max-width:520px;margin:0 auto}
+  .toast{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}
+  .tools{padding-top:10px;gap:8px}
+  .row{grid-template-columns:40px minmax(0,1fr) auto!important;grid-template-areas:"num main main" ". tours anki"!important;row-gap:8px!important;column-gap:10px!important;padding:12px 12px!important}
+  .ext{justify-self:end!important}
+  .ext .anki{flex:none}
+  .tours{min-width:0}
+  .quick,.qcm,.anki{height:40px}
+  .wk{margin-top:12px}
+  .wkt{font-size:26px!important}
+  .wkt small{font-size:12px}
+  .wknav{gap:6px}
+  .stlegend{font-size:12px;gap:4px 12px}
+  .jmbar .jmst{display:none}
+  .set-seg{display:flex!important;flex-wrap:wrap;width:100%}
+  .set-seg button{flex:1 1 auto;padding:8px 10px}
+}
+</style></head><body>
 <title>Médisam</title>
 <script>document.documentElement.setAttribute('data-skin','ios');document.documentElement.setAttribute('data-theme','light');document.body.setAttribute('data-auth','load');</script>
 <link rel="icon" href="data:,">
@@ -1147,6 +1189,8 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
 .cm-custom input::-webkit-outer-spin-button,.cm-custom input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .cm-custom input:focus{outline:2px solid rgba(255,255,255,.55);outline-offset:1px}
 .cm-go{justify-content:center;background:rgba(255,255,255,.16);font-weight:600;margin-top:2px}
+.cm-panel{max-height:calc(100vh - 84px - env(safe-area-inset-top,0px));max-height:calc(100dvh - 84px - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain}
+.cm-custom input{font-size:16px}
 @media (prefers-reduced-motion:reduce){.cm-panel{animation:none}.pomo-bar i{transition:none}}
 
 /* ===== Animations liées aux actions (ajout d'un tour, validation, Anki, to-do, changement de matière) ===== */
@@ -3285,7 +3329,7 @@ function cmpItems(a,b){
 /* ---------- Sauvegarde ---------- */
 function setSync(k){
   var m = { load:'Chargement…', loaderr:'Connexion impossible, nouvelle tentative…', ok:'Synchronisé', save:'Enregistrement…', err:'Échec de l’enregistrement, copie gardée sur cet appareil', local:'Mode local : données gardées dans ce navigateur seulement' };
-  $('sync').dataset.k = k; $('sync-t').textContent = m[k];
+  $('sync').dataset.k = k; $('sync-t').textContent = m[k]; $('sync').title = m[k];
 }
 function persist(){
   lsSet(LS, JSON.stringify(state.tours));
@@ -5161,20 +5205,22 @@ function closeClock(){
 }
 clockEl.addEventListener('click', function(e){
   if(e.target.closest && e.target.closest('.clock-menu')) return;
-  if(cmOpen){ setCm(false); return; }
+  if(cmOpen){ var ae = document.activeElement; if(ae && ae.blur && ae.closest && ae.closest('.clock-menu')) ae.blur(); setCm(false); return; }
   if(Date.now() - clockAt > 250) closeClock();
 });
 document.addEventListener('keydown', function(e){
   if(!clockOpen) return;
   var k = e.key || '';
   var tg = e.target;
-  if(tg && tg.tagName === 'INPUT' && tg.closest && tg.closest('.clock-menu') && k !== 'Escape'){ e.stopImmediatePropagation(); return; }
+  var ae2 = document.activeElement, inMenu = function(n){ return !!(n && n.closest && n.closest('.clock-menu')); };
+  if((inMenu(tg) || inMenu(ae2)) && k !== 'Escape'){ e.stopImmediatePropagation(); return; }
+  if(cmOpen && (k === 'Unidentified' || k === 'Process' || e.keyCode === 229)){ e.stopImmediatePropagation(); return; }
   if((k === 'Enter' || k === ' ') && e.target && e.target.closest && e.target.closest('.clock-menu')){ e.stopImmediatePropagation(); return; }
   e.preventDefault(); e.stopImmediatePropagation();
   if(k === 'Escape' && cmOpen){ setCm(false); clockEl.focus(); return; }
   if(!e.repeat && Date.now() - clockAt > 250) closeClock();
 }, true);
-document.addEventListener('fullscreenchange', function(){ if(clockOpen && !document.fullscreenElement && Date.now() - clockAt > 500) closeClock(); });
+document.addEventListener('fullscreenchange', function(){ if(clockOpen && !document.fullscreenElement && Date.now() - clockAt > 500 && !cmOpen) closeClock(); });
 document.addEventListener('visibilitychange', function(){ if(clockOpen) clockTick(); });
 document.addEventListener('keydown', function(e){
   if((e.key || '').toLowerCase() !== 'h' || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
