@@ -59,6 +59,17 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index36 : anti-perte de données (stage et réglages J disparus en ligne, voir §J27) :
+              (1) adopt() remplace tous les applyRemote de lecture : champ absent en ligne = on garde celui de
+              l'appareil et on répare la ligne ; données en ligne nettement plus pauvres = copie de secours puis
+              fenêtre de choix (holdWrites = écritures en pause, pastille « Synchronisation en pause »).
+              (2) copies de secours locales par compte (quotidienne x7, meilleure copie, précaution), écran
+              Réglages > Aide et données > Copies de secours, copie aussi avant « Remplacer » d'un import.
+              (3) makeRef.set garde la version en ligne avant de l'écraser par bien moins.
+              (4) ADM_SQL2 (espace modérateur > Outils) : trigger SQL qui conserve les champs oubliés par une
+              écriture et archive les versions dans progress_history. ⚠ À lancer une fois dans Supabase.
+              À FAIRE côté hébergement : remplacer index.html par la dernière version (une ancienne page
+              ouverte peut réécrire la ligne sans les champs récents).
     index35 : vue Aujourd'hui : l'estimation de durée (« ≈ 50 min ») est retirée, TDY_MIN supprimé.
               Ne pas la remettre : le temps passé sur un item est trop variable.
     index32 : téléphone (≤ 700 px) : la barre du bas passe à 4 onglets (Aujourd'hui, Collèges, Items,
@@ -2327,7 +2338,7 @@ window.MEDISAM_CONFIG = {
      §J24  Heure plein écran (#clock)
      §J25  Réglages de l'appareil, suggestions et import
      §J26  Minuteur pomodoro (dans l'écran Heure)
-     §J27  Comptes et sauvegarde en ligne (Supabase)
+     §J27  Comptes et sauvegarde en ligne (Supabase) + garde-fous anti-perte et copies de secours (index36)
      §J28  Animations liées aux actions
      §J29  Couche d'animation générale
      §J30  Statistiques de la matière (#st-pop)
@@ -2354,6 +2365,8 @@ window.MEDISAM_CONFIG = {
      4. applyRemote : lecture depuis Supabase et localStorage   (§J27)
      5. snapKey (détection de changement)                   (§J27)
      6. leave : effacement des clés à la déconnexion        (§J27)
+     7. (index36) SCHEMA_KEYS, SCHEMA_LAB et cleanData       (§J27) : sinon adopt ne protège pas le champ
+        et, si le champ est comptable, LOSS_KEYS
      et, si besoin, le faux Supabase de l'aperçu            (§J34)
 
    ⚠ POINTS FRAGILES GÉNÉRAUX
@@ -3610,7 +3623,7 @@ function cmpItems(a,b){
    ====================================================================== */
 /* ---------- Sauvegarde ---------- */
 function setSync(k){
-  var m = { load:'Chargement…', loaderr:'Connexion impossible, nouvelle tentative…', ok:'Synchronisé', save:'Enregistrement…', err:'Échec de l’enregistrement, copie gardée sur cet appareil', local:'Mode local : données gardées dans ce navigateur seulement' };
+  var m = { load:'Chargement…', loaderr:'Connexion impossible, nouvelle tentative…', ok:'Synchronisé', save:'Enregistrement…', err:'Échec de l’enregistrement, copie gardée sur cet appareil', local:'Mode local : données gardées dans ce navigateur seulement', hold:'Synchronisation en pause : touche ici pour choisir quelles données garder' };
   $('sync').dataset.k = k; $('sync-t').textContent = m[k]; $('sync').title = m[k];
 }
 /* Copie locale de tout state (appelée aussi après une fusion, §J27) */
@@ -3634,7 +3647,8 @@ function dataObj(){
 }
 function persist(){
   saveLocal();
-  if(!ref) return;
+  if(!ref || holdWrites) return;   /* holdWrites : l'utilisateur doit d'abord choisir (adopt, §J27) */
+  snapAuto();
   if(writing){ again = true; return; }
   writing = true; setSync('save');
   /* ref.set reçoit dataObj (fonction) : il est appelé APRÈS la vérification multi-appareils (§J27) */
@@ -5797,7 +5811,7 @@ function renderSettings(){
     '<div class="set-r" style="--i:8"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.loop+'</span><div><b>Rattrapage des items d’hier</b><small>À l’ouverture du planning, propose de décaler à aujourd’hui ce qui n’a pas été validé.</small></div>'+swHTML('catchup', cfg.catchup, 'Rattrapage des items d’hier')+'</div>'+
     '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.hourglass+'</span><div><b>Décompte jusqu’au 21 octobre 2028</b></div>'+segHTML('cdUnit', [['s','Secondes'],['m','Minutes'],['d','Jours'],['w','Semaines']], cfg.cdUnit)+'</div>'+
     '</div></section>'+
-    '<section class="set-grp" style="--g:var(--teal);--i:4"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.help+'</span><span class="set-gt">Aide et données</span><span class="set-gn">6</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
+    '<section class="set-grp" style="--g:var(--teal);--i:4"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.help+'</span><span class="set-gt">Aide et données</span><span class="set-gn">7</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
     '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.chat+'</span><div><b>Une suggestion ?</b><small>Une idée, un oubli, un bug : écris-le ici.</small></div><button type="button" class="set-b" data-set-sug aria-expanded="false" aria-controls="set-sug">Écrire…</button></div>'+
     '<div class="set-sug" id="set-sug" hidden><textarea id="set-sug-t" maxlength="600" rows="4" placeholder="Ce que tu aimerais voir dans Médisam…" aria-label="Ta suggestion"></textarea>'+
     '<div class="set-sug-f"><span id="set-sug-n">0 / 600</span><button type="button" class="set-b set-b-pri" data-set-sug-send disabled>Envoyer</button></div></div>'+
@@ -5806,6 +5820,7 @@ function renderSettings(){
     '<div class="set-r" style="--i:12"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.up+'</span><div><b>Exporter mes tours</b><small>Téléchargement en CSV.</small></div><button type="button" class="set-b" data-set-export>Exporter</button></div>'+
     '<div class="set-r" style="--i:13"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.up+'</span><div><b>Sauvegarde complète</b><small>Un fichier .json avec tout : tours, planning, tâches, notes, échéances et réglages de la méthode des J.</small></div><button type="button" class="set-b" data-set-bk-export>Exporter</button></div>'+
     '<div class="set-r" style="--i:14"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.down+'</span><div><b>Restaurer une sauvegarde</b><small>Choisis un fichier .json exporté depuis Médisam : tu pourras fusionner ou remplacer.</small></div><button type="button" class="set-b" data-set-bk-import>Choisir…</button></div>'+
+    '<div class="set-r" style="--i:15"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.loop+'</span><div><b>Copies de secours</b><small>Médisam garde sur cet appareil une copie par jour et une copie avant tout écrasement suspect. Utile si des données disparaissent.</small></div><button type="button" class="set-b" data-set-snaps>Voir…</button></div>'+
     '</div></section>'+
     '<input type="file" id="set-file" accept=".xlsx,.xls,.csv,.txt" hidden><input type="file" id="set-bk-file" accept=".json,application/json" hidden>';
 }
@@ -5865,6 +5880,7 @@ setPop.addEventListener('click', function(e){
   if(e.target.closest('[data-set-import]')){ $('set-file').click(); return; }
   if(e.target.closest('[data-set-bk-export]')){ bkExport(); return; }
   if(e.target.closest('[data-set-bk-import]')){ $('set-bk-file').click(); return; }
+  if(e.target.closest('[data-set-snaps]')){ setSettings(false); setTimeout(function(){ snapOpen(0); }, 320); return; }
   var gb = e.target.closest('[data-set-grp]');
   if(gb){
     var card = gb.nextElementSibling, openNow = gb.getAttribute('aria-expanded') === 'true';
@@ -6097,11 +6113,14 @@ $('cm-custom').addEventListener('submit', function(e){
 
 /* ======================================================================
    §J27 — Comptes et sauvegarde en ligne (Supabase)
-   Gère : Connexion, inscription, mot de passe oublié, loadRemote / applyRemote (lecture de la ligne
-   progress), enter / leave (entrée et sortie de compte), initCapabilities (appelé au démarrage).
+   Gère : Connexion, inscription, mot de passe oublié, loadRemote / refreshRemote / applyRemote (lecture de la
+   ligne progress), adopt (lecture protégée : jamais d'écrasement silencieux, index36), copies de secours
+   locales (snapTake / snapAuto / snapOpen), mergeRemote, makeRef, enter / leave, initCapabilities.
    Utilise : §J1 §J5 §J6 §J7 §J17 §J18 §J25 §J31 §J32 §J33
    Utilisé par : §J12 §J13 §J16 §J18 §J22 §J25 §J29 §J30 §J31 §J32 §J33 §J34 §J36
    ⚠ applyRemote et leave listent les champs de state un par un : voir la règle des 6 endroits.
+   ⚠ Ne JAMAIS appeler applyRemote directement sur une lecture en ligne : passer par adopt (sinon une ligne
+     appauvrie par une ancienne page est recopiée sur l'appareil, c'est ce qui a fait disparaître le stage).
    ====================================================================== */
 /* ---------- Comptes et sauvegarde (Supabase) ---------- */
 var uemail = '';
@@ -6237,6 +6256,186 @@ function mergeRemote(d){
     if(!m) state.todos.push(x); else if(x.x && !m.x) m.x = 1;
   });
 }
+/* ---------- Garde-fous anti-perte (index36) ----------
+   POURQUOI : en octobre 2026 les semaines de stage, les jours marqués et les réglages J ont disparu des données
+   en ligne. Cause probable : une ANCIENNE page (qui ne connaît pas ces champs) a réécrit toute la ligne
+   `progress` sans eux ; puis la lecture automatique (loadRemote / refreshRemote) a recopié ce manque sur les
+   autres appareils. Trois défenses, de la plus proche de l'utilisateur à la plus profonde :
+   1. adopt() : une lecture en ligne n'écrase JAMAIS cet appareil en silence.
+      a) champ ABSENT en ligne (clé manquante, pas un objet vide) = écrit par un client qui ne le connaît pas :
+         on garde la valeur de l'appareil et on répare la ligne en ligne (needPush).
+      b) champ présent mais nettement plus pauvre que l'appareil (lossOf) : copie de secours puis fenêtre de
+         choix (garder l'appareil / prendre les données en ligne / décider plus tard = holdWrites, écritures en pause).
+   2. copies de secours LOCALES (snapTake, clé LS_SNAP-<uid>) : une par jour (7 gardées), une « meilleure copie »
+      (record, jamais remplacée par un état appauvri), et des copies de précaution avant tout écrasement
+      suspect. Elles survivent à la déconnexion (leave ne les efface pas : une déconnexion automatique est
+      justement le moment où on en a besoin). Restauration : Réglages > Aide et données > Copies de secours.
+   3. SERVEUR : script ADM_SQL2 (espace modérateur > Outils) : un trigger garde les anciens champs quand une
+      écriture ne les contient pas et archive l'ancienne version dans progress_history.
+   ⚠ Les seuils de lossOf (LOSS_KEYS) sont un compromis : trop bas = fenêtre inutile à chaque suppression
+     légitime faite sur un autre appareil ; trop haut = une vraie perte passe. todos et ign n'y sont pas (volatils).
+   ⚠ Toute nouvelle donnée de state doit être ajoutée à SCHEMA_KEYS et cleanData (règle des 6 endroits, +2). */
+var LS_SNAP = 'medisam-snaps', SNAP_AUTO_MAX = 7, SNAP_EVT_MAX = 6, SNAP_AUTO_GAP = 20 * 36e5, SNAP_REC_GAP = 6e5;
+var SCHEMA_KEYS = ['tours', 'plan', 'days', 'stw', 'anki', 'todos', 'notes', 'dl', 'jm', 'ign', 'pin', 'cur'];
+var SCHEMA_LAB = { tours:'tours', plan:'planning', days:'jours marqués', stw:'semaines de stage', anki:'cartes cochées', todos:'tâches', notes:'notes', dl:'échéances', jm:'réglages des J', ign:'items masqués', pin:'collèges épinglés', cur:'collège en cours' };
+/* [clé, libellé, plancher] : on ne compare qu'à partir de ce nombre d'éléments sur l'appareil */
+var LOSS_KEYS = [['tours', 'tours', 5], ['plan', 'créneaux de planning', 5], ['days', 'jours marqués (garde, repos, stage…)', 3], ['stw', 'semaines de stage', 2], ['anki', 'cartes cochées', 5], ['notes', 'notes', 3], ['dl', 'échéances', 2]];
+var holdWrites = false, needPush = false, lossAsking = false, snapMem = null;
+
+function dsize(k, v){
+  var n = 0;
+  if(!v || typeof v !== 'object') return 0;
+  if(k === 'tours' || k === 'plan'){ Object.keys(v).forEach(function(i){ if(Array.isArray(v[i])) n += v[i].length; }); return n; }
+  return Array.isArray(v) ? v.length : Object.keys(v).length;
+}
+function hasData(k, v){
+  if(k === 'jm') return !!v && JSON.stringify(sanitizeJm(v)) !== JSON.stringify(sanitizeJm({}));
+  if(k === 'cur') return typeof v === 'string' && !!v;
+  return dsize(k, v) > 0;
+}
+/* Données en ligne passées par tous les nettoyeurs, avec les noms courts de dataObj */
+function cleanData(d){
+  d = d && typeof d === 'object' ? d : {};
+  return { tours:sanitize(d.tours), plan:sanitizePlan(d.plan), days:sanitizeDays(d.days), stw:sanitizeStw(d.stw), anki:sanitizeAnki(d.anki), todos:sanitizeTodos(d.todos), notes:sanitizeNotes(d.notes), dl:sanitizeDeadlines(d.dl), jm:sanitizeJm(d.jm), ign:sanitizeIgn(d.ign), pin:sanitizePins(d.pin), cur:sanitizeCur(d.cur) };
+}
+/* Ce qu'on perdrait en remplaçant `mine` par `theirs` (tous deux passés par cleanData) */
+function lossOf(mine, theirs){
+  var out = [];
+  LOSS_KEYS.forEach(function(x){
+    var a = dsize(x[0], mine[x[0]]), b = dsize(x[0], theirs[x[0]]);
+    if(a >= x[2] && b <= Math.floor(a * 0.4)) out.push({ k:x[0], lab:x[1], from:a, to:b });
+  });
+  return out;
+}
+function localCopy(){ return JSON.parse(JSON.stringify(dataObj())); }
+
+/* ----- copies de secours locales ----- */
+function snapKeyName(){ return uid ? LS_SNAP + '-' + uid : null; }
+function snapList(){
+  var k = snapKeyName(); if(!k) return [];
+  try{
+    var a = JSON.parse(lsGet(k) || '[]');
+    return Array.isArray(a) ? a.filter(function(x){ return x && x.d && typeof x.d === 'object' && typeof x.t === 'number'; }) : [];
+  }catch(e){ return []; }
+}
+function snapSave(a){
+  var k = snapKeyName(); if(!k) return;
+  var str = JSON.stringify(a);
+  /* place limitée dans le navigateur : on jette d'abord les plus anciennes copies quotidiennes, puis de précaution */
+  ['auto', 'evt'].forEach(function(kind){
+    while(str.length > 2.4e6){
+      var idx = -1, i;
+      for(i = 0; i < a.length; i++){ if(a[i].kind === kind && (idx < 0 || a[i].t < a[idx].t)) idx = i; }
+      if(idx < 0) break;
+      a.splice(idx, 1); str = JSON.stringify(a);
+    }
+  });
+  lsSet(k, str); snapMem = a;
+}
+function snapRich(d){
+  var n = 0; ['tours', 'plan', 'days', 'stw', 'anki', 'todos', 'notes', 'dl'].forEach(function(k){ n += dsize(k, d[k]); }); return n;
+}
+function snapTake(why, data, kind){
+  kind = kind || 'evt';
+  var d = data || localCopy(), rich = snapRich(d); if(!uid || !rich) return;
+  var a = snapList(), now = Date.now(), js = JSON.stringify(d), i;
+  for(i = 0; i < a.length; i++){ if(a[i].kind === kind && JSON.stringify(a[i].d) === js) return; }
+  if(kind === 'rec'){
+    a = a.filter(function(x){ return x.kind !== 'rec'; });
+  }
+  a.push({ t:now, kind:kind, why:why, rich:rich, d:d });
+  [['auto', SNAP_AUTO_MAX], ['evt', SNAP_EVT_MAX]].forEach(function(m){
+    var same = a.filter(function(x){ return x.kind === m[0]; }).sort(function(x, y){ return y.t - x.t; });
+    same.slice(m[1]).forEach(function(x){ a.splice(a.indexOf(x), 1); });
+  });
+  snapSave(a);
+}
+/* Appelée à chaque persist : copie quotidienne et « meilleure copie » (jamais remplacée par un état appauvri) */
+function snapAuto(){
+  if(!uid || !ready) return;
+  var now = Date.now();
+  if(!snapMem) snapMem = snapList();
+  var lastAuto = 0, rec = null;
+  snapMem.forEach(function(x){ if(x.kind === 'auto' && x.t > lastAuto) lastAuto = x.t; if(x.kind === 'rec') rec = x; });
+  if(now - lastAuto > SNAP_AUTO_GAP) snapTake('copie quotidienne', null, 'auto');
+  var rich = snapRich(dataObj());   /* pas de copie profonde tant que ce n'est pas nécessaire : persist est appelé à chaque action */
+  if(!rec){ snapTake('meilleure copie', null, 'rec'); return; }
+  if(now - rec.t < SNAP_REC_GAP || rich <= rec.rich) return;
+  var cur = localCopy();
+  if(!lossOf(cleanData(rec.d), cleanData(cur)).length || now - rec.t > 30 * 864e5) snapTake('meilleure copie', cur, 'rec');
+}
+var SNAP_KIND = { auto:'Copie quotidienne', evt:'Copie de précaution', rec:'Meilleure copie' };
+var fmtSnap = new Intl.DateTimeFormat('fr-FR', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' });
+function snapRestore(sn){
+  var before = localCopy();
+  snapTake('avant restauration', before, 'evt');
+  applyRemote(sn.d); holdWrites = false; persist(); renderAll();
+  toast('Copie restaurée.', function(){ applyRemote(before); persist(); renderAll(); });
+}
+function snapOpen(i){
+  var a = snapList().sort(function(x, y){ return y.t - x.t; });
+  if(!a.length){ toast('Aucune copie de secours sur cet appareil pour l’instant.'); return; }
+  i = ((i % a.length) + a.length) % a.length;
+  var sn = a[i], c = cleanData(sn.d);
+  var rows = [['tours', 'tours'], ['plan', 'créneaux de planning'], ['stw', 'semaines de stage'], ['days', 'jours marqués'], ['todos', 'tâches'], ['notes', 'notes']].map(function(m){
+    var n = dsize(m[0], c[m[0]]); return '<li><b>' + n + '</b><span>' + m[1] + '</span></li>';
+  });
+  if(hasData('jm', c.jm)) rows.push('<li><b>✓</b><span>réglages des J</span></li>');
+  cxAsk({
+    title:'Copie de secours ' + (i + 1) + ' sur ' + a.length,
+    text:(SNAP_KIND[sn.kind] || 'Copie') + ' du ' + fmtSnap.format(new Date(sn.t)) + (sn.why && sn.why !== 'copie quotidienne' ? ' (' + sn.why + ')' : '') + '. Restaurer remplace tes données actuelles (tu pourras annuler).',
+    items:rows, ok:'Restaurer cette copie', danger:true, alt:a.length > 1 ? 'Copie suivante' : '', no:'Fermer',
+    onOk:function(){ snapRestore(sn); },
+    onAlt:function(){ setTimeout(function(){ snapOpen(i + 1); }, 380); }
+  });
+}
+
+/* ----- lecture en ligne protégée ----- */
+/* row = ligne `progress` (ou null). mode = 'load' | 'refresh'. done() est appelé quand l'état est fixé
+   (immédiatement, ou après le choix de l'utilisateur). Ne rien faire si une autre fenêtre est ouverte (refresh). */
+function adopt(row, mode, done){
+  var found = !!(row && row.data && typeof row.data === 'object');
+  var d = found ? Object.assign({}, row.data) : {}, loc = localCopy(), restored = [], stamp = found ? stampOf(row) : null;
+  if(mode === 'refresh' && (cxCb || lossAsking)) return;
+  if(found && Object.keys(d).length){
+    SCHEMA_KEYS.forEach(function(k){
+      if(d[k] !== undefined && d[k] !== null) return;
+      if(hasData(k, loc[k])){ d[k] = loc[k]; restored.push(k); }
+    });
+  }
+  var loss = lossOf(loc, cleanData(d));
+  function fin(){ if(restored.length) needPush = true; done(); }
+  if(!loss.length){
+    if(holdWrites){ mergeRemote(d); saveLocal(); holdWrites = false; needPush = true; }
+    else applyRemote(d);
+    remoteStamp = stamp;
+    if(restored.length) toast('Des données manquaient en ligne (' + restored.map(function(k){ return SCHEMA_LAB[k]; }).join(', ') + ') : restaurées depuis cet appareil.');
+    fin(); return;
+  }
+  snapTake('avant rechargement', loc, 'evt');
+  lossAsking = true;
+  cxAsk({
+    title:'Données en ligne incomplètes',
+    text:'Les données en ligne contiennent nettement moins que cet appareil (ça ressemble à un écrasement par une ancienne page). « Garder cet appareil » répare la version en ligne. Une copie de secours vient d’être gardée.',
+    focus:'ok',
+    items:loss.map(function(x){ return '<li><b>' + x.from + ' → ' + x.to + '</b><span>' + x.lab + '</span></li>'; }),
+    ok:'Garder cet appareil', alt:'Prendre les données en ligne', no:'Décider plus tard',
+    onOk:function(){
+      lossAsking = false; snapTake('en ligne avant réparation', cleanData(d), 'evt');
+      mergeRemote(d); saveLocal(); remoteStamp = stamp; holdWrites = false; needPush = true; done();
+    },
+    onAlt:function(){
+      lossAsking = false; applyRemote(d); remoteStamp = stamp; holdWrites = false; done();
+    },
+    onNo:function(){ lossAsking = false; holdWrites = true; done(); }
+  });
+}
+function afterAdopt(){
+  if(holdWrites){ setSync('hold'); return; }
+  if(needPush){ needPush = false; persist(); }
+}
+$('sync').addEventListener('click', function(){ if(this.dataset.k === 'hold') refreshRemote(); });
+
 function makeRef(){
   return { set: function(build){
     function write(){
@@ -6250,6 +6449,13 @@ function makeRef(){
       var row = r && !r.error ? r.data : null;
       if(row && row.data && remoteStamp && stampOf(row) && !sameStamp(stampOf(row), remoteStamp)){
         mergeRemote(row.data); saveLocal(); mergeNotice = true;
+      }
+      /* dernier filet : si on s'apprête à écrire nettement moins que ce qui est en ligne, on garde d'abord la version en ligne */
+      if(row && row.data){
+        try{
+          var rc = cleanData(row.data);
+          if(lossOf(rc, cleanData(JSON.parse(JSON.stringify(build())))).length) snapTake('en ligne avant écrasement', rc, 'evt');
+        }catch(e){}
       }
       return write();
     }, function(){ return write(); }).then(function(){
@@ -6265,9 +6471,10 @@ function loadRemote(){
       /* on n'active pas l'enregistrement tant que la lecture a échoué : sinon on écraserait la sauvegarde */
       ref = null; ready = false; setSync('loaderr'); loadTimer = setTimeout(loadRemote, 5000); return;
     }
-    var found = !!(r.data && r.data.data);
-    applyRemote(found ? r.data.data : {}); remoteStamp = found ? stampOf(r.data) : null;
-    ref = makeRef(); ready = true; setSync('ok'); renderAll(); afterEnter();
+    adopt(r.data, 'load', function(){
+      if(uid !== mine) return;
+      ref = makeRef(); ready = true; setSync(holdWrites ? 'hold' : 'ok'); renderAll(); afterEnter(); afterAdopt();
+    });
   }, function(){
     if(uid !== mine) return;
     ref = null; ready = false; setSync('loaderr'); loadTimer = setTimeout(loadRemote, 5000);
@@ -6278,19 +6485,23 @@ function refreshRemote(){
   var mine = uid;
   sb.from('progress').select('data,updated_at').eq('user_id', mine).maybeSingle().then(function(r){
     if(uid !== mine || r.error || writing || again) return;
-    var d = (r.data && r.data.data) || {};
     var before = snapKey();
-    applyRemote(d); remoteStamp = stampOf(r.data);
-    if(snapKey() !== before) renderAll();
+    adopt(r.data, 'refresh', function(){
+      if(uid !== mine) return;
+      if(snapKey() !== before) renderAll();
+      afterAdopt();
+    });
   });
 }
 function enter(user){
   uid = user.id; uemail = user.email || ''; ref = null; ready = false; writing = false; again = false; tourSeen = false; remoteStamp = null; admCheck(user);
+  holdWrites = false; needPush = false; lossAsking = false; snapMem = null;
   $('btn-logout').title = 'Se déconnecter' + (user.email ? ' (' + user.email + ')' : '');
   setSync('load'); showAuth(false); loadRemote();
 }
 function leave(){
   uid = null; ref = null; ready = false; remoteStamp = null; clearTimeout(loadTimer);
+  holdWrites = false; needPush = false; lossAsking = false; snapMem = null;   /* LS_SNAP-<uid> reste volontairement */
   tourSeen = false; isAdmin = false; admBtn.hidden = true; admClose(true); tourEnd('quiet'); annEl.hidden = true;
   [LS, LS_PLAN, LS_DAYS, LS_STW, LS_ANKI, LS_TODO, LS_NOTES, LS_DL, LS_JM, LS_IGN, LS_PIN, LS_CUR, LS_SKIP, LS_PV, LS_CU].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
 }
@@ -6949,6 +7160,57 @@ drop policy if exists "suggestions supprimees par admin" on public.suggestions;
 create policy "suggestions supprimees par admin" on public.suggestions
   for delete to authenticated using (public.is_medisam_admin());`;
 
+var ADM_SQL2 = `-- Médisam : protection des données. À exécuter UNE fois : Supabase > SQL Editor > New query > Run.
+-- Ce que ça fait : (1) si une ancienne page enregistre sans certains champs (stage, J…), le serveur garde les
+-- anciens champs au lieu de les effacer ; (2) le serveur archive l'ancienne version dans progress_history
+-- (au plus une par heure et par compte, et toujours quand les données rétrécissent nettement ; 60 gardées).
+
+-- La colonne doit être de type jsonb (sans effet si elle l'est déjà)
+alter table public.progress alter column data type jsonb using data::jsonb;
+
+create table if not exists public.progress_history (
+  id bigint generated always as identity primary key,
+  user_id uuid not null,
+  data jsonb not null,
+  saved_at timestamptz not null default now()
+);
+create index if not exists progress_history_user_idx on public.progress_history (user_id, saved_at desc);
+alter table public.progress_history enable row level security;
+revoke all on public.progress_history from anon, authenticated;
+-- Pas de policy : l'application ne lit ni n'écrit cette table. Seul le serveur (trigger) et toi (Table Editor) y accèdent.
+
+create or replace function public.progress_guard()
+returns trigger language plpgsql security definer set search_path = public as $$
+declare o jsonb; n jsonb;
+begin
+  o := old.data; n := new.data;
+  if o is null or jsonb_typeof(o) <> 'object' then
+    return new;
+  end if;
+  if n is null or jsonb_typeof(n) <> 'object' then
+    n := '{}'::jsonb;
+  end if;
+  if length(n::text) < length(o::text) * 0.85
+     or not exists (select 1 from public.progress_history h
+                    where h.user_id = old.user_id and h.saved_at > now() - interval '1 hour') then
+    insert into public.progress_history (user_id, data) values (old.user_id, o);
+    delete from public.progress_history
+     where user_id = old.user_id
+       and id not in (select id from public.progress_history where user_id = old.user_id order by saved_at desc, id desc limit 60);
+  end if;
+  new.data := o || n;
+  return new;
+end $$;
+
+drop trigger if exists progress_guard on public.progress;
+create trigger progress_guard before update on public.progress
+  for each row execute function public.progress_guard();
+
+-- Pour récupérer une ancienne version : Table Editor > progress_history, repère la ligne (saved_at), puis
+--   update public.progress set data = (select data from public.progress_history where id = NUMERO_DE_LA_LIGNE)
+--   where user_id = 'IDENTIFIANT_DE_TON_COMPTE';
+-- (les champs que la copie ne contient pas restent ceux d'aujourd'hui : c'est voulu)`;
+
 var ICON_BACK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>';
 /* Icône d'alerte propre à l'espace modérateur (distincte de ICON_WARN de §J9). */
 var ICON_WARN_ADM = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3l7.5 13h-15z"/><path d="M10 8.5v3.2M10 14.2v.1"/></svg>';
@@ -7157,7 +7419,8 @@ function admToolsHTML(){
     ['Exporter les comptes', 'Fichier CSV : email, dates, items commencés, tours.', '<button type="button" class="adm-b" data-adm="csv"' + (admData ? '' : ' disabled') + '>Exporter</button>'],
     ['Tester la connexion', 'Mesure la réponse du serveur Supabase.', '<button type="button" class="adm-b" data-adm="ping">Tester</button>'],
     ['Vider le cache de cet appareil', 'Supprime la copie locale puis recharge. Ta progression reste sur le serveur.', '<button type="button" class="adm-b warn" data-adm="cache">Vider</button>'],
-    ['Script SQL du serveur', 'À relancer seulement si une fonction a été supprimée.', '<button type="button" class="adm-b" data-adm="copysql">Copier</button>']
+    ['Script SQL du serveur', 'À relancer seulement si une fonction a été supprimée.', '<button type="button" class="adm-b" data-adm="copysql">Copier</button>'],
+    ['Protection des données (SQL)', 'À lancer une fois : le serveur garde les champs qu’une ancienne page oublierait et archive les anciennes versions.', '<button type="button" class="adm-b pri" data-adm="copysql2">Copier</button>']
   ];
   return '<section class="adm-card"><h3>Outils</h3>' + rows.map(function(r){ return '<div class="adm-tl"><div><b>' + r[0] + '</b><small>' + r[1] + '</small></div>' + r[2] + '</div>'; }).join('') + '</section>' +
     '<section class="adm-card"><h3>Sécurité</h3><p class="adm-sub">Ce panneau n’apparaît que pour ' + esc(ADMIN_EMAIL) + ', mais la vraie protection est côté serveur : les fonctions SQL refusent toute requête venant d’un autre email. Garde la confirmation d’email activée dans Supabase (Authentication).</p></section>';
@@ -7317,6 +7580,7 @@ admEl.addEventListener('click', function(e){
   if(a === 'back'){ admBack(); return; }
   if(a === 'refresh'){ admErr = ''; admData = null; admAnn = null; admAnnErr = ''; admSug = null; admSugErr = ''; admBody(false); admLoad(); return; }
   if(a === 'copysql'){ admCopy(ADM_SQL, 'Script copié. Colle-le dans Supabase > SQL Editor.'); return; }
+  if(a === 'copysql2'){ admCopy(ADM_SQL2, 'Script de protection copié. Colle-le dans Supabase > SQL Editor puis Run.'); return; }
   if(a === 'copymail' && admSel){ admCopy(admSel.email, 'Email copié'); return; }
   if(a === 'tour'){ admClose(); setTimeout(function(){ tourStart(true); }, 700); return; }
   if(a === 'csv' && admData){
@@ -7788,7 +8052,7 @@ function cxAsk(o){
   no.textContent = o.no || 'Annuler'; ok.textContent = o.ok || 'OK'; ok.classList.toggle('dng', !!o.danger);
   alt.hidden = !o.alt; if(o.alt) alt.textContent = o.alt;
   dlgOpen($('cx'));
-  (o.alt ? alt : ok).focus();
+  (o.alt && o.focus !== 'ok' ? alt : ok).focus();   /* focus:'ok' = le choix le plus sûr prend le focus (Entrée) */
 }
 function cxClose(k){
   var o = cxCb; if(!o) return; cxCb = null;
@@ -7887,6 +8151,7 @@ function bkImport(file){
       onAlt:function(){ mergeRemote(d); saveLocal(); persist(); renderAll(); toast('Sauvegarde fusionnée.'); },
       onOk:function(){
         var snap = dataObj(); snap = JSON.parse(JSON.stringify(snap));
+        snapTake('avant restauration d’un fichier', snap, 'evt');
         applyRemote(d); persist(); renderAll();
         toast('Sauvegarde restaurée.', function(){ applyRemote(snap); persist(); renderAll(); });
       }
