@@ -59,11 +59,15 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index35 : vue Aujourd'hui : l'estimation de durée (« ≈ 50 min ») est retirée, TDY_MIN supprimé.
+              Ne pas la remettre : le temps passé sur un item est trop variable.
     index32 : téléphone (≤ 700 px) : la barre du bas passe à 4 onglets (Aujourd'hui, Collèges, Items,
               Planning), icône au-dessus du libellé. « Aujourd'hui » = tab 'plan' + pv 'today' ; tabId()
               (§J18) donne l'onglet visuellement actif. Sur ordinateur rien ne change (3 onglets, bouton
               Aujourd'hui dans le Planning). Pouce animé recalé sur 4 colonnes (CSS « index32 »).
               Réglage « Onglet au démarrage » : nouvelle option Aujourd'hui.
+    index34 : barre du bas sur téléphone : bandeau pleine largeur retiré, pastille en verre posée plus bas
+              (6 px + 35 % de la zone de sécurité), padding du corps et position du toast recalés.
     index33 : réglage « Onglet au démarrage » supprimé (cfg.startTab retiré). Ouverture normale = premier
               onglet (Aujourd'hui sur téléphone, Collèges sur ordinateur) ; rechargement de la page =
               retour à l'onglet précédent (sessionStorage « medisam-sess », écrit à pagehide).
@@ -1483,8 +1487,13 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
 #tab-today{display:none}
 @media (max-width:700px){
   #tab-today{display:inline-flex}
-  body{padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(118px + env(safe-area-inset-bottom,0px))!important}
-  .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
+  /* Barre flottante : plus de bandeau pleine largeur ni de grand vide sous la pastille (index34).
+     La pastille porte elle-même le verre ; sa distance au bord bas = 6 px + 35 % de la zone de sécurité (≈ 18 px sur iPhone). */
+  body{padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(104px + env(safe-area-inset-bottom,0px) * .35)!important}
+  .toast{bottom:calc(98px + env(safe-area-inset-bottom,0px) * .35)!important}
+  .bar{padding:0 14px calc(6px + env(safe-area-inset-bottom,0px) * .35)!important;background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none}
+  .bar .tabs{pointer-events:auto}
+  :root[data-skin="ios"] .tabs{background:var(--glass-sheen),var(--glass-bar)!important;box-shadow:var(--glass-edge),var(--glass-drop)!important;-webkit-backdrop-filter:blur(26px) saturate(190%)!important;backdrop-filter:blur(26px) saturate(190%)!important}
   :root .tabs{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important}
   :root .tab{flex-direction:column!important;gap:3px!important;height:56px!important;padding:0 2px;font-size:12px!important;line-height:1.1;white-space:nowrap}
   :root .tab svg{display:block!important;width:20px!important;height:20px!important}
@@ -4691,7 +4700,6 @@ function weekHTML(t0){
    « pas fini », glisser-déposer, menu stage/garde/repos et Ajouter fonctionnent pareil).
    Colonne de droite : items à revoir en priorité, tâches et échéances proches, bande de la semaine.
    ⚠ La date affichée est toujours today() : pas de navigation par jour ici (c'est le rôle de Semaine). */
-var TDY_MIN = 10; /* minutes estimées par item, pour la ligne « ≈ … » */
 function tdyDueItems(){
   var t0 = today(), skip = {}, out = [];
   Object.keys(state.plan).forEach(function(d){ if(d >= t0) state.plan[d].forEach(function(x){ if(x.k && !x.x) skip[x.k] = 1; }); });
@@ -4709,9 +4717,8 @@ function todayHTML(t0){
   var dd = parse(t0), sl = slotsOf(t0), jmx = jmDay(t0), i;
   var left = jmx.length; sl.forEach(function(s){ if(!s.x && !s.c) left++; });
   var tot = jmx.length; sl.forEach(function(s){ if(!s.c) tot++; });
-  var min = left * TDY_MIN, tm = min >= 60 ? Math.floor(min/60)+' h'+(min%60 ? ' '+(min%60 < 10 ? '0' : '')+(min%60) : '') : min+' min';
   var sum = !tot ? '<p class="tdy-sum"><em>Rien de planifié aujourd’hui.</em> Ajoute un cours ou pioche dans « À revoir ».</p>'
-    : left ? '<p class="tdy-sum"><b>'+left+'</b><span>à faire aujourd’hui · <em>≈ '+tm+'</em></span></p>'
+    : left ? '<p class="tdy-sum"><b>'+left+'</b><span>à faire aujourd’hui</span></p>'
     : '<p class="tdy-sum"><em>Tout est validé pour aujourd’hui.</em></p>';
   var head = '<div class="wk tdy-head"><h2 class="wkt">Aujourd’hui<small>'+esc(cap(fmtLong.format(dd)))+' · Semaine '+isoWeek(mondayOf(t0))+'</small></h2><div class="wknav">'+toggleHTML()+'</div></div>';
 
