@@ -1,4 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* ==== §C1 — Style « Téléphone v3 » (dans le head, donc chargé AVANT le grand style §C2) ====
+   ⚠ Comme §C2 vient après, ses règles gagnent à précision égale : c'est pourquoi celles-ci
+   utilisent !important. Retirer un !important ici peut annuler la règle sans bruit. */
 /* ===== Téléphone v3 : en-tête et bandeau compacts, onglets en barre du bas, liste des items resserrée.
    Tout est limité aux écrans étroits (≤ 700 px) : l'affichage ordinateur ne change pas. ===== */
 @media (max-width:700px){
@@ -41,6 +44,48 @@
   .set-seg button{flex:1 1 auto;padding:8px 10px}
 }
 </style></head><body>
+<!-- ======================================================================
+  MÉDISAM : PLAN DU FICHIER (commentaires de repérage, sans effet sur la page)
+  Un seul fichier, dans cet ordre :
+    §C1  en-tête du document : style « Téléphone v3 » (écrans de 700 px et moins)
+    §H0  ce plan et le journal des versions
+    §C2  grand bloc de style : tout le reste du CSS, en couches successives
+    §H1  écran de connexion          (main#auth)
+    §H2  application                 (div#app : en-tête, bandeau, onglets, 3 vues)
+    §H3  fenêtres et panneaux        (heure, réglages, méthode des J, confirmations, to-do…)
+    §H4  scripts : configuration Supabase, bibliothèque supabase-js, puis
+         §J0 (thème) et le script principal §J1 à §J36
+  Le détail du JavaScript est dans « SOMMAIRE DU JAVASCRIPT », en tête du script principal.
+  Pour aller à une section : chercher son repère, par exemple « §J17 ».
+
+  JOURNAL DES VERSIONS (le plus récent en haut)
+    index32 : téléphone (≤ 700 px) : la barre du bas passe à 4 onglets (Aujourd'hui, Collèges, Items,
+              Planning), icône au-dessus du libellé. « Aujourd'hui » = tab 'plan' + pv 'today' ; tabId()
+              (§J18) donne l'onglet visuellement actif. Sur ordinateur rien ne change (3 onglets, bouton
+              Aujourd'hui dans le Planning). Pouce animé recalé sur 4 colonnes (CSS « index32 »).
+              Réglage « Onglet au démarrage » : nouvelle option Aujourd'hui.
+    index33 : réglage « Onglet au démarrage » supprimé (cfg.startTab retiré). Ouverture normale = premier
+              onglet (Aujourd'hui sur téléphone, Collèges sur ordinateur) ; rechargement de la page =
+              retour à l'onglet précédent (sessionStorage « medisam-sess », écrit à pagehide).
+    index31 : (1) rattrapage : à l'ouverture du planning, fenêtre « décaler à aujourd'hui » pour les
+              items non validés des 7 derniers jours, une fois par jour (réglable, §J37).
+              (2) statistiques : carte « Rythme vers l'échéance » (stPaceHTML, §J30).
+              (3) sauvegarde complète .json : export et restauration (fusion ou remplacement), dans les
+              réglages (§J37). (4) protection multi-appareils : remoteStamp + mergeRemote, l'écriture
+              relit updated_at et fusionne ce qu'un autre appareil a ajouté (§J27). persist passe par
+              saveLocal() et dataObj() (§J7). Nouvelle fenêtre #cx (cxAsk). cfg.catchup ajouté.
+    index30 : la vue « 3 jours » du Planning est remplacée par « Aujourd’hui » (pas de 4e onglet).
+              pv vaut maintenant 'today' | 'week' | 'month' ; un 'd3' enregistré est converti en 'today'.
+              Nouveau todayHTML (§J17) : bloc du jour (planning + tours J + Valider), « À revoir en
+              priorité », tâches et échéances proches, bande de la semaine. Variable d3 et clics p3-*
+              supprimés (§J11, §J22b). CSS .tdy* (couche « vue Aujourd’hui »).
+    index29 : icône d'alerte de l'espace modo renommée ICON_WARN_ADM ; la liste des items
+              retrouve sa propre icône ICON_WARN (touche §J9 et §J31).
+    index28 : ajout des commentaires de repérage (plan, sommaire, en-têtes de section,
+              points fragiles, journal). Aucun changement de comportement.
+    index27 et avant : historique non tenu dans le fichier (les couches CSS v11, v14,
+              v17 et v19 en gardent une trace).
+====================================================================== -->
 <title>Médisam</title>
 <script>document.documentElement.setAttribute('data-skin','ios');document.documentElement.setAttribute('data-theme','light');document.body.setAttribute('data-auth','load');</script>
 <link rel="icon" href="data:,">
@@ -49,6 +94,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif&family=Abril+Fatface&family=Montserrat:wght@700&display=swap">
 <style>
+/* ==== §C2 — Grand style : couches successives, chaque couche corrige les précédentes ====
+   Ordre : base « carnet » → Téléphone → Finitions v2 → Style iOS → Liquid Glass (v1 puis v2)
+   → Heure, pomodoro, animations, Collèges, statistiques, notification, vue Aujourd’hui
+   → Mode sombre → Mode nuit (surfaces mates) → stage, connexion, admin, tutoriel, aperçu
+   → v11 (tour de collège, échéance, suggestions) → Méthode des J → v14 → v17 → v19.
+   ⚠ Une règle plus bas écrase une règle plus haut de même précision. Avant de modifier un
+   style, chercher le sélecteur dans tout le fichier : il est souvent redéfini dans une couche suivante.
+   La page est toujours en style iOS (data-skin="ios" posé au chargement). */
 /* Concept : un carnet de bureau, sobre et net. Papier gris froid, encre presque noire, une seule couleur
    active (celle de la matière choisie) utilisée en petites touches : pastille, anneau, frise, bouton.
    Titres en serif fin, interface en Geist, chiffres et repères en Geist Mono. */
@@ -1371,10 +1424,77 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 .5px rgba(255,255,255,.1),0 10px 30px -10px rgba(0,0,0,.6)}
 @media (prefers-reduced-motion:reduce){:root[data-skin="ios"] .toast{animation:none}}
 @media (prefers-reduced-transparency:reduce){:root[data-skin="ios"] .toast{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}}
-/* ===== Planning : vue 3 jours ===== */
-@media (min-width:701px){ .days.d3{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px} .days.d3 .dnum{font-size:38px} }
-@media (max-width:700px){ .days.d3{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:minmax(0,1fr);margin-inline:0;padding:6px 0 14px;overflow:visible;scroll-snap-type:none;gap:12px} }
-@media (min-width:701px){ .days.d3 .day{min-height:220px} }
+/* ===== Planning : vue « Aujourd’hui » (remplace l’ancienne vue 3 jours depuis index30) =====
+   Le bloc du jour est le même que dans la vue Semaine (daysLoop), seul son conteneur change. */
+.tdy-sum{margin:14px 0 0;font:500 14px var(--f-body);color:var(--ink2);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.tdy-sum b{font:700 26px/1 var(--f-body);letter-spacing:-.03em;color:var(--ink);font-variant-numeric:tabular-nums}
+.tdy-sum em{font-style:normal;color:var(--c-ink,var(--ink2))}
+.tdy{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:16px;margin-top:12px;align-items:start}
+.tdy-side{display:grid;gap:14px;min-width:0}
+.days.tdy-days{display:block;margin:0;padding:0;overflow:visible;scroll-snap-type:none}
+.tdy .day{min-height:0}
+.tdy .day .dnum{font-size:44px}
+.tdy-card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:14px 14px 12px;min-width:0}
+.tdy-card h3{margin:0 0 4px;font:600 15px var(--f-body);letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.tdy-card h3 em{font-style:normal;min-width:22px;height:22px;padding:0 7px;border-radius:99px;display:grid;place-items:center;background:var(--fill);color:var(--ink2);font:600 12px var(--f-body);font-variant-numeric:tabular-nums}
+.tdy-empty{margin:8px 2px 2px;font-size:13.5px;line-height:1.4;color:var(--ink2)}
+.tdy-it{appearance:none;border:0;width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 10px;margin-top:6px;border-radius:12px;background:var(--bg);color:var(--ink);text-align:left;cursor:pointer;font:inherit;transition:background .15s,transform .15s}
+.tdy-it:hover{background:var(--fill)} .tdy-it:active{transform:scale(.985)}
+.tdy-it b{min-width:34px;height:26px;padding:0 6px;border-radius:8px;display:grid;place-items:center;background:var(--c-soft,var(--fill));color:var(--c,var(--ink2));font:700 13px var(--f-body)}
+.tdy-it span{font-size:14px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tdy-it i{font-style:normal;font-size:12px;color:var(--ink2);white-space:nowrap}
+.tdy-it i.late{color:var(--low);font-weight:600}
+.tdy-more{appearance:none;border:0;background:none;margin:8px 0 0;padding:4px 2px;font:600 13px var(--f-body);color:var(--c-ink,var(--blue));cursor:pointer;text-align:left}
+.tdy-more:hover{text-decoration:underline}
+.tdy-wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:8px}
+.tdy-d{appearance:none;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);padding:7px 0 6px;display:grid;justify-items:center;gap:2px;cursor:pointer;font:inherit;transition:background .15s,transform .15s}
+.tdy-d:hover{background:var(--fill)} .tdy-d:active{transform:scale(.96)}
+.tdy-d small{font:500 10.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.tdy-d b{font:600 16px var(--f-body);font-variant-numeric:tabular-nums}
+.tdy-d u{text-decoration:none;font:500 11px var(--f-mono);color:var(--ink2);min-height:13px}
+.tdy-d.ok u{color:var(--ok)}
+.tdy-d.now{border-color:var(--c);background:var(--c-soft);box-shadow:0 0 0 2px var(--c-soft)}
+.tdy-d.we b{color:var(--ink2)}
+@media (max-width:700px){ .tdy{grid-template-columns:minmax(0,1fr);gap:12px} .tdy .day .dnum{font-size:40px} }
+
+/* ===== index31 : fenêtre de confirmation #cx (rattrapage, restauration), rythme vers l'échéance ===== */
+.cx-l{list-style:none;margin:-6px 0 16px;padding:0;display:grid;gap:6px;text-align:left;max-height:34vh;overflow:auto}
+.cx-l li{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;padding:7px 10px;border-radius:12px;background:var(--bg);font-size:13.5px;line-height:1.3}
+.cx-l li b{min-width:30px;height:24px;padding:0 6px;border-radius:8px;display:grid;place-items:center;background:var(--c-soft,var(--fill));color:var(--c,var(--ink2));font:700 12px var(--f-body)}
+.cx-l li span{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cx-l li.cx-more{display:block;background:none;color:var(--ink2);padding:2px 10px}
+#cx{z-index:120} /* au-dessus des réglages (z-index 91) pour la restauration d'une sauvegarde */
+#cx .cx-alt{grid-column:1/-1}
+#cx .cx-ok.dng{background:var(--low-soft,var(--line2));color:var(--low,var(--ink))}
+.pace{padding:10px 0 12px;border-top:1px solid var(--line2)}
+.pace:first-of-type{border-top:0;padding-top:4px}
+.pace-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 10px}
+.pace-h b{font:600 14px/1.3 var(--f-body);min-width:0}
+.pace-h span{font:500 12px var(--f-mono);color:var(--ink2);white-space:nowrap}
+.pace .st-big{margin-top:4px}
+.pace-v{display:inline-block;margin-top:8px;padding:3px 10px;border-radius:99px;font:600 12px var(--f-body);background:var(--ok-soft,var(--fill));color:var(--ok)}
+.pace-v.late{background:var(--low-soft,var(--fill));color:var(--low)}
+.pace-v.mid{background:var(--mid-soft,var(--fill));color:var(--mid)}
+
+/* ===== index32 : barre du bas à 4 onglets sur téléphone (Aujourd’hui, Collèges, Items, Planning) =====
+   Sur ordinateur #tab-today reste caché : la vue Aujourd’hui est alors dans le Planning (bouton Aujourd’hui).
+   Le « pouce » qui glisse (.tabs::before) est recalé sur 4 colonnes ; !important car plusieurs couches
+   précédentes (ios, verre) fixent sa largeur et sa position pour 3 colonnes. */
+#tab-today{display:none}
+@media (max-width:700px){
+  #tab-today{display:inline-flex}
+  body{padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(118px + env(safe-area-inset-bottom,0px))!important}
+  .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
+  :root .tabs{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:2px!important}
+  :root .tab{flex-direction:column!important;gap:3px!important;height:56px!important;padding:0 2px;font-size:12px!important;line-height:1.1;white-space:nowrap}
+  :root .tab svg{display:block!important;width:20px!important;height:20px!important}
+  :root .tabs::before{width:calc((100% - 10px - 6px)/4)!important;transform:translateX(0)!important}
+  :root .tabs:has(#tab-colleges[aria-selected="true"])::before{transform:translateX(calc(100% + 2px))!important}
+  :root .tabs:has(#tab-items[aria-selected="true"])::before{transform:translateX(calc(200% + 4px))!important}
+  :root .tabs:has(#tab-plan[aria-selected="true"])::before{transform:translateX(calc(300% + 6px))!important}
+  .vseg [data-v="today"]{display:none}
+  .tdy-head .wknav{display:none}
+}
 
 /* ===== Mode sombre retravaillé : graphite iOS, fond presque noir, verre sombre net, une seule lueur douce ===== */
 @media (prefers-color-scheme: dark){
@@ -2011,6 +2131,7 @@ body[data-auth="in"] #auth{display:none}
 @media (prefers-reduced-motion:reduce){.adm-badge,.ig.a-ig,.cgp.a-pin svg,.cgc.a-cur svg{animation:none!important}}
 </style>
 
+<!-- §H1 — Écran de connexion. Les id (au-*, auth-*) sont lus par §J27 : ne pas les renommer. -->
 <main id="auth" aria-label="Connexion à Médisam">
   <div class="au-glow" aria-hidden="true"><i></i><i></i><i></i></div>
   <button type="button" class="au-planet" id="au-demo" aria-label="Aperçu sans compte" title="Aperçu sans compte" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5.2"/><path d="M3.2 15.4C1.6 13.8 5.8 9.6 12 7.2s10.4-1.2 8.8 1.6M20.8 8.8c1.6 1.6-2.6 5.8-8.8 8.2-3.6 1.4-6.6 1.8-8.4.6"/></svg></button>
@@ -2035,6 +2156,8 @@ body[data-auth="in"] #auth{display:none}
     <p class="au-note"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8l5 1.9v3.8c0 3.2-2.1 5.6-5 6.7-2.9-1.1-5-3.5-5-6.7V3.7z"/><path d="M5.8 8l1.5 1.5 2.9-3"/></svg><span>Ta progression est enregistrée sur ton compte.</span></p>
   </div>
 </main>
+<!-- §H2 — Application : en-tête, message admin (#ann), bandeau (#hero), onglets, vues #v-colleges, #v-items, #v-plan.
+     ⚠ Presque chaque id est lu par le JavaScript (fonction $ de §J5) : avant d'en renommer un, le chercher dans tout le fichier. -->
 <div id="app">
   <header class="top">
     <div>
@@ -2054,6 +2177,7 @@ body[data-auth="in"] #auth{display:none}
 
   <nav class="bar" aria-label="Vues">
     <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-today" aria-controls="v-plan" aria-selected="false" data-act="tab" data-tab="today"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="3.2"/><path d="M9 1.8v1.7M9 14.5v1.7M1.8 9h1.7M14.5 9h1.7M3.9 3.9l1.2 1.2M12.9 12.9l1.2 1.2M3.9 14.1l1.2-1.2M12.9 5.1l1.2-1.2"/></svg>Aujourd’hui</button>
       <button class="tab" role="tab" id="tab-colleges" aria-controls="v-colleges" aria-selected="true" data-act="tab" data-tab="colleges"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="5.5" height="5.5" rx="1.6"/><rect x="10" y="2.5" width="5.5" height="5.5" rx="1.6"/><rect x="2.5" y="10" width="5.5" height="5.5" rx="1.6"/><rect x="10" y="10" width="5.5" height="5.5" rx="1.6"/></svg>Collèges</button>
       <button class="tab" role="tab" id="tab-items" aria-controls="v-items" aria-selected="false" data-act="tab" data-tab="items"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M7 4.5h8M7 9h8M7 13.5h8"/><circle cx="3.3" cy="4.5" r=".9" fill="currentColor"/><circle cx="3.3" cy="9" r=".9" fill="currentColor"/><circle cx="3.3" cy="13.5" r=".9" fill="currentColor"/></svg>Items</button>
       <button class="tab" role="tab" id="tab-plan" aria-controls="v-plan" aria-selected="false" data-act="tab" data-tab="plan"><svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="13" height="12" rx="3"/><path d="M2.5 7.5h13M6 2v3M12 2v3"/></svg>Planning</button>
@@ -2100,6 +2224,9 @@ body[data-auth="in"] #auth{display:none}
   </main>
 </div>
 
+<!-- §H3 — Fenêtres et panneaux, cachés par défaut (hidden) : #clock (§J24), #set-pop (§J25), #jm (§J12),
+     #pc (§J14), #pf (§J15), #tc (§J13), #cf (§J16), #st-pop (§J30), #adm (§J31), #tour (§J33), to-do (§J23).
+     Le contenu de plusieurs d'entre eux est fabriqué en JS. -->
 <div id="clock" class="clock" role="dialog" aria-modal="true" aria-label="Heure" tabindex="-1" hidden><time id="clock-t" class="clock-t"></time><p class="clock-hint" id="clock-hint">Appuyez sur n’importe quelle touche pour quitter</p><div class="pomo" id="pomo-wrap" aria-live="off"><div class="pomo-line" id="pomo-line" hidden><span id="pomo-phase"></span><span id="pomo-left"></span><span class="pomo-count" id="pomo-count"></span></div><div class="pomo-bar" id="pomo-bar" hidden><i id="pomo-fill"></i></div></div><div class="clock-menu" id="clock-menu"><button type="button" class="cm-btn" id="cm-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="cm-panel" aria-label="Minuteur de révision"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="11.5" r="5.8"/><path d="M10 8.7v2.9l1.9 1.2M8 2.6h4"/></svg></button><div class="cm-panel" id="cm-panel" role="group" aria-label="Minuteur de révision" hidden><div class="cm-title">Pomodoro</div><div class="cm-presets" id="cm-presets"><button type="button" class="cm-row" data-w="25" data-b="5"><span>25 min</span><small>pause 5</small></button><button type="button" class="cm-row" data-w="50" data-b="10"><span>50 min</span><small>pause 10</small></button><button type="button" class="cm-row" data-w="90" data-b="15"><span>90 min</span><small>pause 15</small></button><button type="button" class="cm-row" id="cm-other" aria-expanded="false" aria-controls="cm-custom"><span>Autre…</span><small>à toi de choisir</small></button><form class="cm-custom" id="cm-custom" hidden><label><span>Travail</span><input type="number" id="cm-w" min="1" max="240" step="1" value="30" inputmode="numeric" aria-label="Durée de travail en minutes"><em>min</em></label><label><span>Pause</span><input type="number" id="cm-b" min="1" max="60" step="1" value="5" inputmode="numeric" aria-label="Durée de pause en minutes"><em>min</em></label><button type="submit" class="cm-row cm-go"><span>Lancer</span></button></form></div><div class="cm-actions" id="cm-actions" hidden><button type="button" class="cm-row" id="cm-pause"><span>Pause</span></button><button type="button" class="cm-row" id="cm-skip"><span>Passer à la phase suivante</span></button><button type="button" class="cm-row danger" id="cm-stop"><span>Arrêter</span></button></div></div></div></div>
 <div id="set-scrim" class="set-scrim" hidden></div>
 <section id="set-pop" class="set-pop" role="dialog" aria-modal="true" aria-labelledby="set-title" hidden></section>
@@ -2124,6 +2251,7 @@ body[data-auth="in"] #auth{display:none}
 <div id="pf" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="pf-t"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></div><h2 id="pf-t">Comment s’est passé ce tour ?</h2><p class="tc-n" id="pf-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-pfs="ok" class="tc-ok-b"><i></i>Bien compris</button><button type="button" data-pfs="mid" class="tc-mid-b"><i></i>À consolider</button><button type="button" data-pfs="low" class="tc-low-b"><i></i>Difficile</button></div><div class="cf-act"><button type="button" class="cf-no" data-pfs="no">Annuler</button></div></div></div>
 <div id="tc" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="tc-t" aria-describedby="tc-d"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg></div><h2 id="tc-t">Un tour pour tout le collège ?</h2><p class="tc-n" id="tc-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-tcs="ok" class="tc-ok-b" aria-pressed="true"><i></i>Bien compris</button><button type="button" data-tcs="mid" class="tc-mid-b" aria-pressed="false"><i></i>À consolider</button><button type="button" data-tcs="low" class="tc-low-b" aria-pressed="false"><i></i>Difficile</button></div><label class="tc-date"><span>Date du tour</span><input type="date" id="tc-date"></label><p id="tc-d" class="tc-d"></p><div class="cf-act"><button type="button" class="cf-no" data-tc="no">Annuler</button><button type="button" class="cf-ok" data-tc="ok">Ajouter</button></div></div></div>
 <div id="cf" class="cf" hidden><div class="cf-box" role="alertdialog" aria-modal="true" aria-labelledby="cf-t" aria-describedby="cf-d"><div class="cf-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="13" height="12" rx="3"/><path d="M2.5 7.5h13M6 2v3M12 2v3"/></svg></div><h2 id="cf-t">Passer en semaine de stage ?</h2><p id="cf-d"></p><div class="cf-act"><button type="button" class="cf-no" data-cf="no">Annuler</button><button type="button" class="cf-ok" data-cf="ok">Passer en stage</button></div></div></div>
+<div id="cx" class="cf" hidden><div class="cf-box" role="alertdialog" aria-modal="true" aria-labelledby="cx-t" aria-describedby="cx-d"><div class="cf-ic" id="cx-ic" aria-hidden="true"></div><h2 id="cx-t"></h2><p id="cx-d"></p><ul class="cx-l" id="cx-l" hidden></ul><div class="cf-act"><button type="button" class="cf-ok cx-alt" data-cx="alt" hidden></button><button type="button" class="cf-no cx-no" data-cx="no"></button><button type="button" class="cf-ok cx-ok" data-cx="ok"></button></div></div></div>
 <section id="st-pop" class="st-pop" role="dialog" aria-modal="false" aria-labelledby="st-title" hidden></section>
 <section id="adm" class="adm" role="dialog" aria-modal="true" aria-labelledby="adm-title" hidden></section>
 <div id="tour" class="tour" hidden></div>
@@ -2148,6 +2276,8 @@ body[data-auth="in"] #auth{display:none}
   <div class="td-foot"><span id="td-sum"></span><button type="button" class="btn" id="td-clear" data-td="clear">Supprimer les faites</button></div>
 </aside>
 
+<!-- §H4 — Scripts. 1) configuration Supabase : seule la clé anon (publique) va ici, JAMAIS la clé service_role ;
+     la sécurité des données repose sur les règles RLS de Supabase. 2) bibliothèque supabase-js. 3) §J0 puis script principal. -->
 <script>
 /* ===== Les deux valeurs de ton projet Supabase (Project Settings > API) ===== */
 window.MEDISAM_CONFIG = {
@@ -2157,6 +2287,86 @@ window.MEDISAM_CONFIG = {
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* ======================================================================
+   SOMMAIRE DU JAVASCRIPT (repères à chercher : « §J » suivi du numéro)
+   Le script principal est une seule fonction (function(){ … })() en mode strict :
+   ses variables ne sont pas globales. Les sections s'exécutent dans l'ordre ci-dessous.
+     §J0   Thème clair / sombre (script à part, avant le script principal)
+     §J1   Réglages fixes et clés de stockage
+     §J2   Données : collèges et items
+     §J3   Items présents dans plusieurs collèges
+     §J4   Collège de référence LiSA (étoiles)
+     §J5   Utilitaires
+     §J6   État (state) et nettoyage des données
+     §J7   Sauvegarde
+     §J8   Bandeau de progression et menu Matière
+     §J9   Liste des items : rendu d'une ligne
+     §J10  Notes par item et renderList
+     §J11  Planning : vue, dates et jours de stage
+     §J12  Fenêtre de la méthode des J (#jm)
+     §J13  Tour entier d'un collège (#tc) et ouverture des fenêtres
+     §J14  Cours sur plusieurs jours (#pc)
+     §J15  Ressenti à la validation finale (#pf)
+     §J16  Échéance d'un collège et confirmation de stage (#cf)
+     §J17  Méthode des J (calcul) et RENDU COMPLET DU PLANNING
+     §J18  Vue Collèges, onglets et renderAll
+     §J19  Notification (toast)
+     §J20  Actions (en-tête vide)
+     §J21  Fenêtre du « + » (#tpop, créée en JS)
+     §J22  Déplacer un cours du planning, puis AIGUILLAGE CENTRAL DES CLICS
+     §J23  To-do list (panneau latéral)
+     §J24  Heure plein écran (#clock)
+     §J25  Réglages de l'appareil, suggestions et import
+     §J26  Minuteur pomodoro (dans l'écran Heure)
+     §J27  Comptes et sauvegarde en ligne (Supabase)
+     §J28  Animations liées aux actions
+     §J29  Couche d'animation générale
+     §J30  Statistiques de la matière (#st-pop)
+     §J31  Espace modérateur (admin uniquement)
+     §J32  Message de l'administrateur (côté utilisateurs)
+     §J33  Tutoriel guidé
+     §J34  Aperçu sans compte (démo)
+     §J35  Décompte jusqu'au 21 octobre 2028
+     §J36  Démarrage
+     §J37  Rattrapage d'hier, fenêtre #cx, sauvegarde .json (placée juste avant §J36 dans le fichier)
+
+   FORME DE state (§J6)
+     tours     { clé d'item : [ { d:'AAAA-MM-JJ', s:'ok'|'mid'|'low' }, … ] }
+     plan      { 'AAAA-MM-JJ' : [ cours du jour ] }
+     days      { 'AAAA-MM-JJ' : 'g' | 'r' | 'n' | 'p' } (type de jour réglé à la main)      stw { lundi : 1 } (semaines de stage)
+     anki      { clé : … }      todos [ … ]      notes { clé : texte }      deadlines { collège : date }
+     ign       { clé : 1 } (items non prévus)      pins [ collèges épinglés ]      cur : collège en cours
+     jm        réglages de la méthode des J { all, cols, max, x, adapt, dl, stg }
+
+   ⚠ AJOUTER UN CHAMP À state : 6 ENDROITS, sinon il se perd en silence
+     1. l'objet state et sa fonction sanitize…           (§J6)
+     2. la lecture du localStorage au chargement           (§J6)
+     3. persist : localStorage ET ref.set (nom court en ligne, ex. dl, pin)   (§J7)
+     4. applyRemote : lecture depuis Supabase et localStorage   (§J27)
+     5. snapKey (détection de changement)                   (§J27)
+     6. leave : effacement des clés à la déconnexion        (§J27)
+     et, si besoin, le faux Supabase de l'aperçu            (§J34)
+
+   ⚠ POINTS FRAGILES GÉNÉRAUX
+     - Ordre d'exécution : §J3 et §J4 modifient COLLEGES avant que §J5 construise ITEM_BY_KEY.
+     - §J29 remplace renderAll, renderPlan, renderTodo, renderList et renderHero par leur
+       version animée : un écouteur qui a reçu la fonction AVANT (ex. $('q') en §J22b) garde la version sans animation.
+     - Les clics passent presque tous par l'aiguillage data-act (§J22b) : un nouveau bouton
+       avec data-act="x" doit y avoir sa branche.
+     - Nom d'une variable du script principal : ne jamais utiliser un nom de propriété de window
+       (top, name, parent, status, length, event, history, location, screen, self, origin, close,
+       open, stop, print, focus, find…).
+     - Les dépendances « Utilise / Utilisé par » des en-têtes sont calculées depuis le code :
+       à refaire si on déplace des fonctions d'une section à l'autre.
+   ====================================================================== */
+
+/* ======================================================================
+   §J0 — Thème clair / sombre (script à part, avant le script principal)
+   Gère : Calcule le lever et le coucher du soleil sur l'appareil (Paris par défaut) et pose data-theme
+   sur la page. Expose window.medisamThemeRefresh (appelé par §J25 quand on change le réglage
+   autoTheme).
+   ⚠ Script séparé : il ne voit aucune variable du script principal, et inversement.
+   ====================================================================== */
 /* ---------- Mode clair / sombre : le mode nuit s'active à la tombée du soleil, le mode jour au lever ---------- */
 (function(){
   var root = document.documentElement;
@@ -2280,6 +2490,15 @@ document.documentElement.setAttribute('data-skin','ios');
 (function(){
 'use strict';
 
+/* ======================================================================
+   §J1 — Réglages fixes et clés de stockage
+   Gère : Constantes (STALE_DAYS, REVIEW_DAYS, MAX = 8 tours par item), clés localStorage LS_*,
+   libellés des ressentis (STAT) et des tris.
+   Utilise : rien d’autre
+   Utilisé par : §J6 §J7 §J8 §J9 §J11 §J12 §J13 §J15 §J17 §J18 §J21 §J22 §J25 §J27 §J30 §J31
+   ⚠ Ne jamais renommer une clé LS_* (carnet-edn-*, medisam-*) : les données déjà enregistrées seraient
+   perdues.
+   ====================================================================== */
 /* ---------- Réglages ---------- */
 var STALE_DAYS = 7;       // au-delà d’une semaine sans tour, l’item est signalé
 var REVIEW_DAYS = 14;      // au-delà, un item est proposé « à revoir »
@@ -2293,6 +2512,14 @@ var SORT_HINT = {
   old:'Des items revus il y a le plus longtemps aux plus récents. Les items jamais révisés restent en bas.'
 };
 
+/* ======================================================================
+   §J2 — Données : collèges et items
+   Gère : COLLEGES = liste des collèges ; un item = [numéro, intitulé, repères, note, clé]. Environ 800
+   lignes de données pures.
+   Utilise : rien d’autre
+   Utilisé par : §J3 §J4 §J6 §J8 §J12 §J13 §J16 §J17 §J18 §J31
+   ⚠ La clé d'un item sert d'identifiant partout (tours, planning, notes) : ne pas la modifier.
+   ====================================================================== */
 /* ---------- Données ----------
    Couleurs disponibles pour une matière (champ hue) : red, blue, pink, violet, amber, teal, green, orange.
    Un item = [numéro, intitulé, repères, note, clé]. La clé vaut le numéro, sauf quand deux lignes
@@ -3098,6 +3325,15 @@ var COLLEGES = [
   ]}
 ];
 
+/* ======================================================================
+   §J3 — Items présents dans plusieurs collèges
+   Gère : Au chargement, modifie COLLEGES : suffixe « (cardio) »… et clé « numéro@collège » pour les
+   doublons (HOME_OVERRIDE choisit le collège d'origine).
+   Utilise : §J2
+   Utilisé par : rien d’autre
+   ⚠ Doit rester juste après §J2 et avant §J5 (PLAN_ITEMS et ITEM_BY_KEY sont construits à partir de
+   COLLEGES déjà modifié).
+   ====================================================================== */
 /* ---------- Items présents dans plusieurs collèges ----------
    Chaque collège a sa propre ligne, ses propres tours, et un intitulé suffixé « (pneumo) », « (cardio)… ».
    Le collège « d’origine » garde la clé historique (le numéro), donc les tours déjà saisis restent chez lui ;
@@ -3127,6 +3363,14 @@ var HOME_OVERRIDE = { '110':'orl', '203':'orl' };
   }); });
 })();
 
+/* ======================================================================
+   §J4 — Collège de référence LiSA (étoiles)
+   Gère : REF, REF_NAME, REF_COL ; au chargement, ajoute à chaque item it.col, it.star ('ref' / 'rel')
+   et it.refName.
+   Utilise : §J2
+   Utilisé par : rien d’autre
+   ⚠ Doit rester avant §J5, pour la même raison que §J3.
+   ====================================================================== */
 /* ---------- Collège de référence (écriture) et de relecture, d’après LiSA « Item de connaissance 2C » ----------
    REF[numéro] = [collèges en écriture, collèges en relecture] (sigles). Étoile jaune = l’item est écrit par ce collège ;
    étoile grise = ce collège le relit ; aucune étoile = cet item figure ici dans ton tableur mais LiSA ne l’attribue pas à ce collège. */
@@ -3146,6 +3390,16 @@ var REF_COL = {"cardio":["CFCTCV","CEMV","CNECardio","CFCVE"],"pneumo":["CEP"],"
   }); });
 })();
 
+/* ======================================================================
+   §J5 — Utilitaires
+   Gère : $ (= getElementById), esc, dates (iso, today, parse, daysBetween), formats de date, lsGet /
+   lsSet, keyOf, PLAN_ITEMS et ITEM_BY_KEY (index clé vers item, construit ici au chargement), icônes
+   ICON_CHECK / ICON_CHEV.
+   Utilise : §J6 §J17
+   Utilisé par : §J6 §J7 §J8 §J9 §J10 §J11 §J12 §J13 §J14 §J15 §J16 §J17 §J18 §J19 §J21 §J22 §J23 §J24
+   §J25 §J26 §J27 §J29 §J30 §J31 §J32 §J33 §J34 §J36
+   ⚠ Utilisé par presque toutes les sections : ne pas changer la signature de ces fonctions.
+   ====================================================================== */
 /* ---------- Utilitaires ---------- */
 function $(id){ return document.getElementById(id); }
 function tH(it,qn){
@@ -3174,6 +3428,16 @@ PLAN_ITEMS.forEach(function(it){ ITEM_BY_KEY[keyOf(it)] = it; });
 var ICON_CHECK = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>';
 var ICON_CHEV = '<svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
 
+/* ======================================================================
+   §J6 — État (state) et nettoyage des données
+   Gère : L'objet state (voir sa forme dans le sommaire), les variables d'interface (tab, filter,
+   selCol, sortBy, todo…), les fonctions sanitize* (une par champ), toursOf, puis la lecture du
+   localStorage au chargement.
+   Utilise : §J1 §J2 §J5
+   Utilisé par : §J5 §J7 §J8 §J9 §J10 §J11 §J12 §J13 §J14 §J15 §J16 §J17 §J18 §J21 §J22 §J23 §J24 §J25
+   §J27 §J28 §J29 §J30 §J31 §J33
+   ⚠ Ajouter un champ à state : voir la règle des 6 endroits dans le sommaire.
+   ====================================================================== */
 /* ---------- État ---------- */
 var LS_DL = 'carnet-edn-dl', LS_JM = 'carnet-edn-jm', LS_IGN = 'medisam-ign', LS_PIN = 'medisam-pins', LS_CUR = 'medisam-cur';
 var state = { tours:{}, plan:{}, anki:{}, todos:[], days:{}, stw:{}, notes:{}, deadlines:{}, ign:{}, pins:[], cur:'', jm:{ all:null, cols:{}, max:8, x:{}, adapt:true, dl:true, stg:true } };
@@ -3268,6 +3532,7 @@ function sanitizeJm(o){
   if(o.x && typeof o.x === 'object') Object.keys(o.x).slice(0, 800).forEach(function(k){ if(ITEM_BY_KEY[k] && typeof o.x[k] === 'number') r.x[k] = o.x[k]; });
   return r;
 }
+/* ⚠ Lecture des données enregistrées sur cet appareil. Nouveau champ de state : voir la règle des 6 endroits (sommaire). */
 try{ var rawjm = lsGet(LS_JM); if(rawjm) state.jm = sanitizeJm(JSON.parse(rawjm)); }catch(e){}
 try{ var rawign = lsGet(LS_IGN); if(rawign) state.ign = sanitizeIgn(JSON.parse(rawign)); }catch(e){}
 try{ var rawcur = lsGet(LS_CUR); if(rawcur) state.cur = sanitizeCur(rawcur); }catch(e){}
@@ -3326,12 +3591,21 @@ function cmpItems(a,b){
   return sortBy === 'recent' ? (da < db ? 1 : -1) : (da < db ? -1 : 1);
 }
 
+/* ======================================================================
+   §J7 — Sauvegarde
+   Gère : setSync (pastille d'état), persist (localStorage puis Supabase via ref.set, une écriture à la
+   fois), mutate (applique une modif, sauvegarde, redessine, et propose Annuler dans la notification).
+   Utilise : §J1 §J5 §J6 §J18 §J19 §J33
+   Utilisé par : §J9 §J10 §J11 §J12 §J13 §J14 §J15 §J16 §J17 §J18 §J21 §J22 §J23 §J25 §J27 §J33 §J34
+   ⚠ persist écrit TOUT state : un champ oublié ici n'est jamais sauvegardé en ligne.
+   ====================================================================== */
 /* ---------- Sauvegarde ---------- */
 function setSync(k){
   var m = { load:'Chargement…', loaderr:'Connexion impossible, nouvelle tentative…', ok:'Synchronisé', save:'Enregistrement…', err:'Échec de l’enregistrement, copie gardée sur cet appareil', local:'Mode local : données gardées dans ce navigateur seulement' };
   $('sync').dataset.k = k; $('sync-t').textContent = m[k]; $('sync').title = m[k];
 }
-function persist(){
+/* Copie locale de tout state (appelée aussi après une fusion, §J27) */
+function saveLocal(){
   lsSet(LS, JSON.stringify(state.tours));
   lsSet(LS_PLAN, JSON.stringify(state.plan));
   lsSet(LS_DAYS, JSON.stringify(state.days));
@@ -3344,10 +3618,18 @@ function persist(){
   lsSet(LS_IGN, JSON.stringify(state.ign));
   lsSet(LS_PIN, JSON.stringify(state.pins));
   lsSet(LS_CUR, state.cur || '');
+}
+/* Ce qui part en ligne (et dans la sauvegarde .json) : noms courts, voir la règle des 6 endroits */
+function dataObj(){
+  return { v:1, tours:state.tours, plan:state.plan, days:state.days, stw:state.stw, anki:state.anki, todos:state.todos, notes:state.notes, dl:state.deadlines, jm:state.jm, ign:state.ign, pin:state.pins, cur:state.cur, skip:seedSkip, tour:(tourSeen ? 1 : 0) };
+}
+function persist(){
+  saveLocal();
   if(!ref) return;
   if(writing){ again = true; return; }
   writing = true; setSync('save');
-  ref.set({ v:1, tours:state.tours, plan:state.plan, days:state.days, stw:state.stw, anki:state.anki, todos:state.todos, notes:state.notes, dl:state.deadlines, jm:state.jm, ign:state.ign, pin:state.pins, cur:state.cur, skip:seedSkip, tour:(tourSeen ? 1 : 0) }).then(function(){ setSync('ok'); }, function(){ setSync('err'); }).then(function(){
+  /* ref.set reçoit dataObj (fonction) : il est appelé APRÈS la vérification multi-appareils (§J27) */
+  ref.set(dataObj).then(function(){ setSync('ok'); }, function(){ setSync('err'); }).then(function(){
     writing = false;
     if(again){ again = false; persist(); }
   });
@@ -3359,6 +3641,13 @@ function mutate(fn,msg){
   toast(msg, function(){ var b = JSON.parse(before); state.tours = b.t; state.plan = b.p; persist(); renderAll(); });
 }
 
+/* ======================================================================
+   §J8 — Bandeau de progression et menu Matière
+   Gère : renderHero (anneau, stats, courbe), renderBanner, menu déroulant des matières (renderSelect,
+   chooseCol, setCombo), applyHue (couleur de la matière active).
+   Utilise : §J1 §J2 §J5 §J6 §J9 §J10 §J11 §J16 §J17 §J29 §J30 §J35
+   Utilisé par : §J10 §J17 §J18 §J22 §J24 §J29
+   ====================================================================== */
 /* ---------- Rendu : carte de progression ---------- */
 function meterHTML(p1,p2){ return '<span class="meter" aria-hidden="true"><i style="width:'+p1+'%"></i><b style="width:'+p2+'%"></b></span>'; }
 function ringHTML(p,lbl,aria){
@@ -3397,7 +3686,7 @@ function sparkPlan(days){
   }).join('');
   var lab = rows.map(function(r,k){ var dt = parse(r.d), txt = month ? ((k % 7 === 0 || r.d === t0) ? dt.getDate() : '') : WDI[dt.getDay()]; return '<span'+(r.d===t0?' class="t"':'')+'>'+txt+'</span>'; }).join('');
   var pl = 0, vx = 0; rows.forEach(function(r){ pl += r.n; vx += r.x; });
-  return sparkWrap(month || pv === 'd3' ? 'Jour par jour' : 'Semaine jour par jour', vx+'/'+pl, '<div class="bars" role="img" aria-label="'+vx+' validés sur '+pl+' planifiés, jour par jour">'+bars+'</div><div class="sbx" aria-hidden="true">'+lab+'</div>', rows.length);
+  return sparkWrap(month ? 'Jour par jour' : 'Semaine jour par jour', vx+'/'+pl, '<div class="bars" role="img" aria-label="'+vx+' validés sur '+pl+' planifiés, jour par jour">'+bars+'</div><div class="sbx" aria-hidden="true">'+lab+'</div>', rows.length);
 }
 function renderHero(){
   if(tab === 'plan'){ if(stOpen) stShow(false); renderHeroPlan(); return; }
@@ -3457,6 +3746,13 @@ function chooseCol(id){
 }
 function applyHue(){ document.body.setAttribute('data-h', tab === 'items' ? scopeHue() : 'hema'); document.body.setAttribute('data-m', tab === 'plan' ? 'plan' : tab === 'colleges' ? 'all' : selCol); }
 
+/* ======================================================================
+   §J9 — Liste des items : rendu d'une ligne
+   Gère : Tri, puces de filtre, rowHTML (tours, QCM, bouton Anki ou Fiche, étoile LiSA, bouton « non
+   prévu »), lien EDN.
+   Utilise : §J1 §J5 §J6 §J7 §J10 §J17 §J25 §J29
+   Utilisé par : §J8 §J10 §J18 §J22 §J25
+   ====================================================================== */
 /* ---------- Rendu : outils et liste ---------- */
 function renderSort(){
   var bar = $('sortbar'), keys = Object.keys(SORTS);
@@ -3490,6 +3786,7 @@ function staleDays(t){
   var dd = daysBetween(t[t.length-1].d, today());
   return dd > STALE_DAYS ? dd : 0;
 }
+/* Icône « pas revu depuis X j » de la liste. L'espace modérateur a la sienne : ICON_WARN_ADM (§J31). */
 var ICON_WARN = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.2L14.6 13.5H1.4z"/><path d="M8 6.6v3M8 11.6v.1"/></svg>';
 function metaHTML(t, ig){
   if(!t.length) return '<span class="meta">Pas encore commencé</span>';
@@ -3567,6 +3864,14 @@ function rowHTML(it){
     '</div>';
 }
 
+/* ======================================================================
+   §J10 — Notes par item et renderList
+   Gère : Petite icône de note, édition et sauvegarde des notes ; renderList (dessine la liste des
+   items).
+   Utilise : §J5 §J6 §J7 §J8 §J9 §J22
+   Utilisé par : §J8 §J9 §J18 §J22 §J25 §J29
+   ⚠ renderList est remplacé par sa version animée en §J29.
+   ====================================================================== */
 /* ---------- Notes par item : discrètes, une petite icône qui se révèle au survol ---------- */
 var noteOpen = null, noteT = null;
 var ICON_NOTE_S = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11.2 2.3l2.5 2.5-7.6 7.6-3.2.7.7-3.2z"/></svg>';
@@ -3621,10 +3926,19 @@ function renderList(){
   $('list').innerHTML = out;
 }
 
+/* ======================================================================
+   §J11 — Planning : vue, dates et jours de stage
+   Gère : Variables de vue du planning (wk, pv, mo, addDay…), fonctions de date (addDays, mondayOf,
+   isoWeek, addMonths), jours de stage / garde / repos (stageOf, setDayKind, toggleStage).
+   Utilise : §J1 §J5 §J6 §J7 §J17 §J18
+   Utilisé par : §J8 §J12 §J14 §J16 §J17 §J22 §J23 §J30 §J31 §J36
+   ⚠ Le rendu du planning n'est pas ici mais en §J17.
+   ====================================================================== */
 /* ---------- Rendu : planning de la semaine ---------- */
 var wk = mondayOf(today()), addDay = null, sug = [], sugI = 0, planKey = '';
 var heroWk = false;
-var pv = (function(v){ return v === 'month' || v === 'd3' ? v : 'week'; })(lsGet(LS_PV)), mo = monthStart(today()), d3 = today();
+/* pv : vue du planning. 'd3' (ancienne vue 3 jours, index29) est converti en 'today'. */
+var pv = (function(v){ return v === 'd3' ? 'today' : v === 'month' || v === 'today' ? v : 'week'; })(lsGet(LS_PV)), mo = monthStart(today());
 var fmtMonth = new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'});
 function monthStart(s){ var d = parse(s); return iso(new Date(d.getFullYear(), d.getMonth(), 1)); }
 function addMonths(s,n){ var d = parse(s); return iso(new Date(d.getFullYear(), d.getMonth()+n, 1)); }
@@ -3669,6 +3983,13 @@ function toggleStage(w){
 }
 /* Retirer le stage se fait directement ; passer une semaine en stage demande une confirmation */
 var cfWeek = null, cfBack = null;
+/* ======================================================================
+   §J12 — Fenêtre de la méthode des J (#jm)
+   Gère : Ouverture et rendu de la fenêtre : rythmes, réglages avancés, boutons « Appliquer pour ce
+   collège » et « pour tous les collèges ».
+   Utilise : §J1 §J2 §J5 §J6 §J7 §J11 §J13 §J17 §J18 §J19 §J27 §J29
+   Utilisé par : §J18 §J22 §J25
+   ====================================================================== */
 /* ---------- Fenêtre de la méthode des J ---------- */
 var jmD = null, jmBack = null, jmOpened = false;
 function jmColName(id){ var c = COLLEGES.filter(function(x){ return x.id === id; })[0]; return c ? c.name : ''; }
@@ -3808,6 +4129,13 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+/* ======================================================================
+   §J13 — Tour entier d'un collège (#tc) et ouverture des fenêtres
+   Gère : Ajout d'un tour à tous les items d'un collège, avec confirmation. dlgOpen / dlgClose :
+   ouverture et fermeture animées des fenêtres .cf, réutilisées par §J12 (#jm), §J14 (#pc) et §J15 (#pf). La fenêtre #cf de §J16 a sa propre ouverture.
+   Utilise : §J1 §J2 §J5 §J6 §J7 §J27 §J29
+   Utilisé par : §J12 §J14 §J15 §J22
+   ====================================================================== */
 /* ---------- Tour entier d'un collège ---------- */
 var tcCol = null, tcSt = 'ok', tcBack = null;
 function tcEligible(col, date){
@@ -3891,6 +4219,12 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+/* ======================================================================
+   §J14 — Cours sur plusieurs jours (#pc)
+   Gère : Choix du jour où reprendre un cours commencé (lendemain ou plus tard), plContinueTo.
+   Utilise : §J5 §J6 §J7 §J11 §J13 §J16 §J17 §J22
+   Utilisé par : §J22
+   ====================================================================== */
 /* ---------- Planning : jour de la suite d'un cours commencé (lendemain, ou plus tard avec des pauses) ---------- */
 var pcCtx = null, pcBack = null, pcPick = null, fmtWdS = new Intl.DateTimeFormat('fr-FR', { weekday:'short' });
 function plContinueTo(cday, i, nd){
@@ -3942,6 +4276,13 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+/* ======================================================================
+   §J15 — Ressenti à la validation finale (#pf)
+   Gère : Demande le ressenti quand on valide la dernière partie d'un item du planning
+   (plValidateFinal).
+   Utilise : §J1 §J5 §J6 §J7 §J13 §J16 §J17 §J19 §J22
+   Utilisé par : §J22
+   ====================================================================== */
 /* ---------- Planning : ressenti demandé quand on valide la dernière partie d'un item ---------- */
 var pfCtx = null, pfBack = null;
 function plValidateFinal(dday, di, feel){
@@ -3988,6 +4329,13 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+/* ======================================================================
+   §J16 — Échéance d'un collège et confirmation de stage (#cf)
+   Gère : Échéance par collège (dlRender, dlCommit…), fenêtre de confirmation avant de passer une
+   semaine en stage (askStage, closeCf), slotsOf.
+   Utilise : §J2 §J5 §J6 §J7 §J11 §J18 §J19 §J27 §J29
+   Utilisé par : §J8 §J14 §J15 §J17 §J18 §J22
+   ====================================================================== */
 /* ---------- Échéance d'un collège ---------- */
 var dlEdit = null;
 var fmtDl = new Intl.DateTimeFormat('fr-FR', { day:'numeric', month:'short' });
@@ -4081,6 +4429,15 @@ document.addEventListener('keydown', function(e){
 });
 function slotsOf(day){ return state.plan[day] || []; }
 
+/* ======================================================================
+   §J17 — Méthode des J (calcul) et RENDU COMPLET DU PLANNING
+   Gère : jmPlan / jmDay (tours proposés automatiquement), suggest (saisie « ajouter un cours »),
+   renderPlan (aujourd’hui, semaine, mois), slotHTML, weekHTML, todayHTML, monthHTML, renderHeroPlan.
+   Utilise : §J1 §J2 §J5 §J6 §J7 §J8 §J11 §J16 §J19 §J22 §J29
+   Utilisé par : §J5 §J8 §J9 §J11 §J12 §J14 §J15 §J18 §J22 §J23 §J27 §J29 §J31
+   ⚠ Titre trompeur : tout le rendu du planning est ici. renderPlan est remplacé par sa version animée
+   en §J29.
+   ====================================================================== */
 /* ---------- Méthode des J : tours proposés automatiquement ---------- */
 var JM_PRESETS = [['Classique', [3,7,15,30]], ['Intensive', [1,3,7,14]], ['Légère', [7,21,45]]];
 function jmFor(cid){ var j = state.jm; return j.cols[cid] || j.all || null; }
@@ -4237,16 +4594,13 @@ function renderHeroPlan(){
   var view = [], scope = [], i;
   /* Barres du bandeau : les jours affichés (ou la semaine affichée pour le bilan de la semaine) */
   if(pv === 'month'){ var m = parse(mo), len = new Date(m.getFullYear(), m.getMonth()+1, 0).getDate(); for(i=0;i<len;i++) view.push(addDays(mo,i)); scope = view; }
-  else if(wkMode){ var w0 = pv === 'd3' ? mondayOf(d3) : wk; for(i=0;i<7;i++) view.push(addDays(w0,i)); scope = view; }
-  else {
-    if(pv === 'd3'){ for(i=0;i<3;i++) view.push(addDays(d3,i)); } else { for(i=0;i<7;i++) view.push(addDays(wk,i)); }
-    scope = [t0];
-  }
+  else if(wkMode){ for(i=0;i<7;i++) view.push(addDays(wk,i)); scope = view; }
+  else { for(i=0;i<7;i++) view.push(addDays(wk,i)); scope = [t0]; }
   var n = 0, dn = 0;
   scope.forEach(function(d){ slotsOf(d).forEach(function(s){ if(s.c || !s.k) return; n++; if(s.x) dn++; }); });
   var per = pv === 'month' ? 'ce mois-ci' : wkMode ? 'cette semaine' : 'aujourd’hui', left = n - dn;
   var cap2 = !n ? 'Rien de planifié '+per+'.' : left ? left+' item'+(left>1?'s restent':' reste')+' à valider '+per+'.' : 'Tout est validé '+per+'.';
-  var kick = pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : wkMode ? 'bilan de la semaine '+isoWeek(pv === 'd3' ? mondayOf(d3) : wk) : 'aujourd’hui · '+esc(fmtMv.format(parse(t0)));
+  var kick = pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : wkMode ? 'bilan de la semaine '+isoWeek(wk) : 'aujourd’hui · '+esc(fmtMv.format(parse(t0)));
   var btn = pv !== 'month' ? '<button type="button" class="hw-btn" data-act="hw-toggle" aria-pressed="'+wkMode+'">'+(wkMode ? 'Voir les statistiques du jour' : 'Voir les statistiques de la semaine')+'</button>' : '';
   $('hero').innerHTML = ringHTML({ n:n, started:dn, second:dn, tours:0 }, 'validés', dn+' items validés sur '+n+' planifiés '+per)+
     '<div><p class="kick"><i class="kd"></i>Planning · '+kick+'</p><dl class="stats">'+
@@ -4316,23 +4670,14 @@ function slotHTML(day,s,i){
     '<button class="rmb" data-act="pl-rm" data-day="'+day+'" data-i="'+i+'" aria-label="Retirer '+esc(title)+' du planning">'+ICON_X+'</button></div>';
 }
 function toggleHTML(){
-  return '<div class="vseg" role="group" aria-label="Affichage du planning">'+[['d3','3 jours'],['week','Semaine'],['month','Mois']].map(function(p){
+  return '<div class="vseg" role="group" aria-label="Affichage du planning">'+[['today','Aujourd’hui'],['week','Semaine'],['month','Mois']].map(function(p){
     return '<button data-act="pv" data-v="'+p[0]+'" aria-pressed="'+(pv === p[0])+'">'+p[1]+'</button>';
   }).join('')+'</div>';
 }
 function weekHTML(t0){
-  var three = pv === 'd3', S = three ? d3 : wk, N = three ? 3 : 7;
+  var S = wk, N = 7;
   var end = addDays(S,N-1), a = parse(S), b = parse(end);
   var rng = a.getMonth() === b.getMonth() ? a.getDate()+' – '+fmtDay.format(b) : fmtDay.format(a)+' – '+fmtDay.format(b);
-  if(three){
-    var w1 = isoWeek(mondayOf(S)), w2 = isoWeek(mondayOf(end));
-    var out3 = '<div class="wk"><h2 class="wkt">'+rng+'<small>'+(w1 === w2 ? 'Semaine '+w1 : 'Semaines '+w1+'–'+w2)+' · '+b.getFullYear()+'</small></h2><div class="wknav">'+toggleHTML()+
-      (S !== t0 ? '<button class="nbtn txt" data-act="p3-now">Aujourd’hui</button>' : '')+
-      '<button class="nbtn" data-act="p3-prev" aria-label="Jour précédent">'+ICON_L+'</button>'+
-      '<button class="nbtn" data-act="p3-next" aria-label="Jour suivant">'+ICON_R+'</button></div></div>'+
-      stageLegend()+'<div class="days d3">';
-    return daysLoop(out3, S, N, t0);
-  }
   var out = '<div class="wk"><h2 class="wkt">'+rng+'<small>Semaine '+isoWeek(wk)+' · '+b.getFullYear()+'</small></h2><div class="wknav">'+toggleHTML()+
     '<button class="nbtn txt stwb" data-act="stw" data-wk="'+wk+'" aria-pressed="'+(!!state.stw[wk])+'">Semaine de stage</button>'+
     (wk !== mondayOf(t0) ? '<button class="nbtn txt" data-act="pl-now">Cette semaine</button>' : '')+
@@ -4340,6 +4685,63 @@ function weekHTML(t0){
     '<button class="nbtn" data-act="pl-next" aria-label="Semaine suivante">'+ICON_R+'</button></div></div>'+
     ''+stageLegend()+'<div class="days">';
   return daysLoop(out, wk, 7, t0);
+}
+/* ---------- Vue « Aujourd’hui » (remplace la vue 3 jours depuis index30) ----------
+   Colonne principale : le bloc du jour, identique à celui de la vue Semaine (daysLoop, donc Valider,
+   « pas fini », glisser-déposer, menu stage/garde/repos et Ajouter fonctionnent pareil).
+   Colonne de droite : items à revoir en priorité, tâches et échéances proches, bande de la semaine.
+   ⚠ La date affichée est toujours today() : pas de navigation par jour ici (c'est le rôle de Semaine). */
+var TDY_MIN = 10; /* minutes estimées par item, pour la ligne « ≈ … » */
+function tdyDueItems(){
+  var t0 = today(), skip = {}, out = [];
+  Object.keys(state.plan).forEach(function(d){ if(d >= t0) state.plan[d].forEach(function(x){ if(x.k && !x.x) skip[x.k] = 1; }); });
+  jmDay(t0).forEach(function(x){ skip[x.k] = 1; });
+  allItems().forEach(function(it){
+    var k = keyOf(it), t = toursOf(k);
+    if(skip[k] || state.ign[k] || !isDue(t)) return;
+    out.push({ k:k, it:it, last:lastDate(k), s:t[t.length-1].s, ago:daysBetween(lastDate(k), t0) });
+  });
+  var rk = { low:0, mid:1, ok:2 };
+  out.sort(function(a, b){ return (rk[a.s] - rk[b.s]) || (b.ago - a.ago) || (a.it[0] - b.it[0]); });
+  return out;
+}
+function todayHTML(t0){
+  var dd = parse(t0), sl = slotsOf(t0), jmx = jmDay(t0), i;
+  var left = jmx.length; sl.forEach(function(s){ if(!s.x && !s.c) left++; });
+  var tot = jmx.length; sl.forEach(function(s){ if(!s.c) tot++; });
+  var min = left * TDY_MIN, tm = min >= 60 ? Math.floor(min/60)+' h'+(min%60 ? ' '+(min%60 < 10 ? '0' : '')+(min%60) : '') : min+' min';
+  var sum = !tot ? '<p class="tdy-sum"><em>Rien de planifié aujourd’hui.</em> Ajoute un cours ou pioche dans « À revoir ».</p>'
+    : left ? '<p class="tdy-sum"><b>'+left+'</b><span>à faire aujourd’hui · <em>≈ '+tm+'</em></span></p>'
+    : '<p class="tdy-sum"><em>Tout est validé pour aujourd’hui.</em></p>';
+  var head = '<div class="wk tdy-head"><h2 class="wkt">Aujourd’hui<small>'+esc(cap(fmtLong.format(dd)))+' · Semaine '+isoWeek(mondayOf(t0))+'</small></h2><div class="wknav">'+toggleHTML()+'</div></div>';
+
+  /* À revoir en priorité */
+  var due = tdyDueItems(), shown = due.slice(0, 4), lab = { low:'difficile', mid:'moyen', ok:'' };
+  var rv = '<section class="tdy-card" aria-label="À revoir en priorité"><h3>À revoir en priorité'+(due.length ? '<em>'+due.length+'</em>' : '')+'</h3>'+
+    (shown.length ? shown.map(function(x){
+      return '<button type="button" class="tdy-it" data-h="'+collegeOfKey(x.k).hue+'" data-act="tj-go" data-k="'+esc(x.k)+'" aria-label="Aller à '+esc(x.it[1])+'"><b>'+x.it[0]+'</b><span>'+esc(x.it[1])+'</span><i'+(x.s === 'low' ? ' class="late"' : '')+'>'+(x.s === 'low' ? 'difficile · ' : '')+esc(agoLabel(x.last))+'</i></button>';
+    }).join('') + (due.length > shown.length ? '<button type="button" class="tdy-more" data-act="tj-due">Tout voir ('+due.length+') →</button>' : '')
+    : '<p class="tdy-empty">'+(jmx.length ? 'Tes tours proposés par la méthode des J sont déjà dans le bloc du jour.' : 'Rien à rattraper : tous tes items commencés sont à jour.')+'</p>')+'</section>';
+
+  /* Tâches et échéances proches */
+  var rows = [];
+  state.todos.forEach(function(x){ if(!x.x && x.d && dlDays(x.d) <= 3) rows.push({ n:dlDays(x.d), h:'<button type="button" class="tdy-it" data-act="tj-todo" aria-label="Ouvrir la to-do list"><b>'+ICON_NOTE+'</b><span>'+esc(tdLabel(x))+'</span><i'+(dlDays(x.d) < 0 ? ' class="late"' : '')+'>'+dlLabel(dlDays(x.d))+'</i></button>' }); });
+  COLLEGES.forEach(function(c){ var d = state.deadlines[c.id]; if(d){ var n = dlDays(d); if(n <= 14 && n >= -7) rows.push({ n:n, h:'<button type="button" class="tdy-it" data-h="'+c.hue+'" data-act="opencol" data-id="'+c.id+'" aria-label="Ouvrir '+esc(c.name)+'"><b>'+ICON_CHECK_S+'</b><span>Échéance · '+esc(c.name)+'</span><i'+(n < 0 ? ' class="late"' : '')+'>'+dlLabel(n)+'</i></button>' }); } });
+  rows.sort(function(a, b){ return a.n - b.n; });
+  var openN = tdOpenCount();
+  var tk = '<section class="tdy-card" aria-label="Tâches et échéances"><h3>Tâches et échéances'+(rows.length ? '<em>'+rows.length+'</em>' : '')+'</h3>'+
+    (rows.length ? rows.slice(0, 5).map(function(r){ return r.h; }).join('') : '<p class="tdy-empty">Rien d’urgent'+(openN ? ' · '+openN+' tâche'+(openN > 1 ? 's' : '')+' sans échéance proche.' : '.')+'</p>')+
+    (openN ? '<button type="button" class="tdy-more" data-act="tj-todo">Ouvrir la to-do list ('+openN+') →</button>' : '')+'</section>';
+
+  /* Bande de la semaine */
+  var wkc = '<section class="tdy-card" aria-label="Cette semaine"><h3>Cette semaine</h3><div class="tdy-wk">';
+  for(i = 0; i < 7; i++){
+    var d = addDays(wk, i), pd = parse(d), s2 = slotsOf(d).filter(function(s){ return !s.c; }), dn = s2.filter(function(s){ return s.x; }).length, wd = pd.getDay();
+    wkc += '<button type="button" class="tdy-d'+(d === t0 ? ' now' : '')+(wd === 0 || wd === 6 ? ' we' : '')+(s2.length && dn === s2.length ? ' ok' : '')+'" data-act="pm-day" data-day="'+d+'" aria-label="'+esc(cap(fmtLong.format(pd)))+(s2.length ? ', '+dn+' validé'+(dn>1?'s':'')+' sur '+s2.length : ', rien de planifié')+'"><small>'+cap(fmtWd.format(pd)).slice(0,3)+'</small><b>'+pd.getDate()+'</b><u>'+(s2.length ? dn+'/'+s2.length : '')+'</u></button>';
+  }
+  wkc += '</div></section>';
+
+  return head + sum + '<div class="tdy"><div class="tdy-main">' + daysLoop('<div class="days tdy-days">', t0, 1, t0) + '</div><aside class="tdy-side">' + rv + tk + wkc + '</aside></div>';
 }
 function daysLoop(out, S, N, t0){
   for(var i=0;i<N;i++){
@@ -4389,7 +4791,7 @@ function renderPlan(){
   var prev = $('pl-input'), keep = prev ? prev.value : '', had = !!(prev && document.activeElement === prev);
   var oldSc = $('plan').querySelector ? $('plan').querySelector('.days') : null, sl0 = oldSc ? oldSc.scrollLeft : null;
   var t0 = today();
-  $('plan').innerHTML = pv === 'month' ? monthHTML(t0) : weekHTML(t0);
+  $('plan').innerHTML = pv === 'month' ? monthHTML(t0) : pv === 'today' ? todayHTML(t0) : weekHTML(t0);
   var inp = $('pl-input');
   if(inp){
     if(keep){ inp.value = keep; sug = suggest(keep); } else { sug = []; sugI = 0; }
@@ -4404,6 +4806,14 @@ function renderPlan(){
   } else { planKey = pv; }
 }
 var downloadsNS = null;
+/* ======================================================================
+   §J18 — Vue Collèges, onglets et renderAll
+   Gère : renderColleges (cartes, épingler, collège en cours), openCollege, renderTabs, syncExportBtn,
+   renderAll (redessine toute l'appli).
+   Utilise : §J1 §J2 §J5 §J6 §J7 §J8 §J9 §J10 §J12 §J16 §J17 §J19 §J23 §J25 §J27 §J29
+   Utilisé par : §J7 §J11 §J12 §J16 §J22 §J27 §J29 §J30 §J36
+   ⚠ renderAll est remplacé par sa version animée en §J29.
+   ====================================================================== */
 /* ---------- Rendu : vue d'ensemble des collèges ---------- */
 function agoLabel(d){
   if(!d) return 'jamais révisé';
@@ -4510,15 +4920,29 @@ function openCollege(id, from){
 
 function syncExportBtn(){ var b = $('btn-export'); if(b) b.hidden = !downloadsNS; }
 
+/* ---------- Onglets : 4 sur téléphone (index32) ----------
+   « Aujourd’hui » n'est pas une vraie valeur de tab : c'est tab = 'plan' avec pv = 'today' (§J11).
+   tabId() donne l'onglet visuellement actif : 'today' | 'colleges' | 'items' | 'plan'.
+   Sur ordinateur il n'y a que 3 onglets et tabId() ne renvoie jamais 'today'. */
+var mqMob = window.matchMedia ? window.matchMedia('(max-width:700px)') : { matches:false };
+function isMob(){ return !!mqMob.matches; }
+function tabId(){ return tab === 'plan' && pv === 'today' && isMob() ? 'today' : tab; }
 function renderTabs(){
   document.body.setAttribute('data-tab', tab);
-  ['colleges','items','plan'].forEach(function(k){
-    $('tab-'+k).setAttribute('aria-selected', String(tab===k));
-    $('v-'+k).hidden = tab !== k;
-  });
+  var cur = tabId();
+  ['today','colleges','items','plan'].forEach(function(k){ $('tab-'+k).setAttribute('aria-selected', String(cur === k)); });
+  ['colleges','items','plan'].forEach(function(k){ $('v-'+k).hidden = tab !== k; });
 }
+if(mqMob.addEventListener) mqMob.addEventListener('change', function(){ renderTabs(); });
 function renderAll(){ applyHue(); renderHero(); renderBanner(); renderSelect(); renderSort(); renderChips(); renderList(); renderColleges(); renderPlan(); renderTabs(); renderTodo(); }
 
+/* ======================================================================
+   §J19 — Notification (toast)
+   Gère : toast(msg, undoFn) : capsule en bas d'écran, avec un bouton Annuler si undoFn
+   est donnée.
+   Utilise : §J5 §J29
+   Utilisé par : §J7 §J12 §J15 §J16 §J17 §J18 §J21 §J22 §J23 §J25
+   ====================================================================== */
 /* ---------- Notification ---------- */
 var toastTimer;
 function hideToast(){ popHide($('toast'), { t:'0 26px', s:'.96', d:240 }); }
@@ -4533,7 +4957,18 @@ function toast(msg,undoFn){
   popShow(t, { t:'0 28px', s:'.96', d:380 }); clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, 7000);
 }
 
+/* ======================================================================
+   §J20 — Actions (en-tête vide)
+   Gère : Rien ici : la fenêtre du « + » est en §J21, l'aiguillage des clics en §J22b.
+   ====================================================================== */
 /* ---------- Actions ---------- */
+/* ======================================================================
+   §J21 — Fenêtre du « + » (#tpop, créée en JS)
+   Gère : Ajouter ou modifier un tour en un clic ; la fenêtre est créée ici et ajoutée à la fin de
+   body.
+   Utilise : §J1 §J5 §J6 §J7 §J19 §J29
+   Utilisé par : §J22
+   ====================================================================== */
 /* ---------- Fenêtre du « + » ---------- */
 var canHover = window.matchMedia ? window.matchMedia('(hover: hover) and (pointer: fine)').matches : false;
 var tpop = document.createElement('div');
@@ -4612,6 +5047,17 @@ document.addEventListener('keydown', function(e){
 window.addEventListener('scroll', function(){ if(!tpop.hidden) closeTp(); }, { passive:true, capture:true });
 window.addEventListener('resize', function(){ if(!tpop.hidden) closeTp(); });
 
+/* ======================================================================
+   §J22 — Déplacer un cours du planning, puis AIGUILLAGE CENTRAL DES CLICS
+   Gère : Glisser-déposer (souris et appui long), Alt + flèches ; puis §J22b : le gros écouteur de
+   clics data-act (presque tous les boutons passent par là), saisie du planning, recherche, menu
+   Matière, exportCsv.
+   Utilise : §J1 §J5 §J6 §J7 §J8 §J9 §J10 §J11 §J12 §J13 §J14 §J15 §J16 §J17 §J18 §J19 §J21 §J24 §J25
+   §J27 §J28 §J29
+   Utilisé par : §J10 §J14 §J15 §J17
+   ⚠ Un écouteur de clic en phase de capture (pdSkipClick) bloque le clic qui suit un glisser : ne pas
+   le déplacer après §J22b.
+   ====================================================================== */
 /* ---------- Déplacer un cours du planning : fenêtre au toucher, glisser-déposer à la souris ---------- */
 var fmtMv = new Intl.DateTimeFormat('fr-FR',{weekday:'short',day:'numeric',month:'short'});
 /* Réordonner dans la même journée : pos = place voulue dans la liste finale */
@@ -4766,6 +5212,11 @@ document.addEventListener('keydown', function(e){
   else if(e.key === 'ArrowLeft' || e.key === 'ArrowRight'){ e.preventDefault(); moveSlot(day, i, addDays(day, e.key === 'ArrowLeft' ? -1 : 1)); }
 });
 
+/* ======================================================================
+   §J22b — AIGUILLAGE CENTRAL DES CLICS (data-act), puis saisie du planning, recherche et menu Matière
+   Chaque bouton porte data-act="…" ; une branche « else if(a === '…') » par action.
+   ⚠ Ordre des écouteurs de clic : celui de §J22 en phase de capture (pdSkipClick) doit rester avant.
+   ====================================================================== */
 function focusLater(sel){ setTimeout(function(){ var e = document.querySelector(sel); if(e) e.focus(); }, 0); }
 document.addEventListener('click', function(e){
   if(comboOpen && !e.target.closest('#combo')) setCombo(false);
@@ -4778,7 +5229,13 @@ document.addEventListener('click', function(e){
   } else if(a === 'pick'){
     chooseCol(el.dataset.id);
   } else if(a === 'tab'){
-    fxTab(el.dataset.tab, function(){ tab = el.dataset.tab; lsSet(LS_TAB, tab); applyHue(); renderHero(); renderBanner(); renderTabs(); if(tab === 'plan') renderPlan(); if(tab === 'colleges') renderColleges(); });
+    var want = el.dataset.tab;
+    fxTab(want, function(){
+      tab = want === 'today' ? 'plan' : want; lsSet(LS_TAB, tab);
+      if(want === 'today'){ pv = 'today'; wk = mondayOf(today()); lsSet(LS_PV, pv); addDay = null; sug = []; }
+      else if(want === 'plan' && pv === 'today' && isMob()){ pv = 'week'; lsSet(LS_PV, pv); addDay = null; sug = []; }
+      applyHue(); renderHero(); renderBanner(); renderTabs(); if(tab === 'plan') renderPlan(); if(tab === 'colleges') renderColleges(); if(tab === 'plan') setTimeout(catchupMaybe, 450);
+    });
   } else if(a === 'hw-toggle'){
     heroWk = !heroWk; renderHero();
     var hb = document.querySelector('#hero .hw-btn'); if(hb){ try{ hb.focus({ preventScroll:true }); }catch(e){} }
@@ -4881,22 +5338,24 @@ document.addEventListener('click', function(e){
   } else if(a === 'pl-prev' || a === 'pl-next' || a === 'pl-now'){
     wk = a === 'pl-now' ? mondayOf(today()) : addDays(wk, a === 'pl-prev' ? -7 : 7);
     addDay = null; sug = []; fxPlanTurn(a === 'pl-now' ? 0 : a === 'pl-prev' ? -1 : 1, function(){ renderHero(); renderPlan(); });
-  } else if(a === 'p3-prev' || a === 'p3-next' || a === 'p3-now'){
-    d3 = a === 'p3-now' ? today() : addDays(d3, a === 'p3-prev' ? -1 : 1);
-    wk = mondayOf(d3); addDay = null; sug = []; fxPlanTurn(a === 'p3-now' ? 0 : a === 'p3-prev' ? -1 : 1, function(){ renderHero(); renderPlan(); });
   } else if(a === 'pv'){
     var from = pv;
     pv = el.dataset.v; lsSet(LS_PV, pv); addDay = null; sug = [];
-    if(pv === 'month') mo = monthStart(from === 'd3' ? d3 : addDays(wk,3));
-    if(pv === 'week' && from === 'd3') wk = mondayOf(d3);
-    if(pv === 'd3'){ var t3 = today(); d3 = from === 'month' ? (monthStart(t3) === mo ? t3 : mo) : (mondayOf(t3) === wk ? t3 : wk); }
-    fxPlanTurn(0, function(){ renderHero(); renderPlan(); }); focusLater('[data-act="pv"][data-v="'+pv+'"]');
+    if(pv === 'month') mo = monthStart(from === 'today' ? today() : addDays(wk,3));
+    if(pv === 'today') wk = mondayOf(today());
+    fxPlanTurn(0, function(){ renderHero(); renderPlan(); renderTabs(); }); focusLater('[data-act="pv"][data-v="'+pv+'"]');
+  } else if(a === 'tj-go'){
+    stGo(el.dataset.k);
+  } else if(a === 'tj-due'){
+    fxTab('items', function(){ tab = 'items'; lsSet(LS_TAB, tab); selCol = 'all'; lsSet(LS_COL, selCol); filter = 'due'; $('q').value = ''; applyHue(); renderAll(); window.scrollTo(0, 0); });
+  } else if(a === 'tj-todo'){
+    setTodoPanel(true);
   } else if(a === 'pm-prev' || a === 'pm-next' || a === 'pm-now'){
     mo = a === 'pm-now' ? monthStart(today()) : addMonths(mo, a === 'pm-prev' ? -1 : 1);
     fxPlanTurn(a === 'pm-now' ? 0 : a === 'pm-prev' ? -1 : 1, function(){ renderHero(); renderPlan(); });
   } else if(a === 'pm-day'){
     wk = mondayOf(el.dataset.day); pv = 'week'; lsSet(LS_PV, pv); addDay = null; sug = [];
-    fxPlanTurn(0, function(){ renderHero(); renderPlan(); });
+    fxPlanTurn(0, function(){ renderHero(); renderPlan(); renderTabs(); });
   } else if(a === 'stw'){
     askStage(el.dataset.wk);
   } else if(a === 'dk-menu'){
@@ -4984,6 +5443,7 @@ document.addEventListener('keydown', function(e){
     return;
   }
 });
+/* ⚠ renderList est ici la version SANS animation (le remplacement de §J29 vient après) : la recherche ne s'anime pas. */
 $('q').addEventListener('input', renderList);
 
 $('colsel').addEventListener('keydown', function(e){
@@ -5021,6 +5481,13 @@ function exportCsv(){
 }
 
 
+/* ======================================================================
+   §J23 — To-do list (panneau latéral)
+   Gère : renderTodo, cours liés à une tâche, filtres, ouverture et fermeture du panneau.
+   Utilise : §J5 §J6 §J7 §J11 §J17 §J19 §J29
+   Utilisé par : §J18 §J24 §J29
+   ⚠ renderTodo est remplacé par sa version animée en §J29.
+   ====================================================================== */
 /* ---------- To-do list (panneau latéral) ---------- */
 function tdOpenCount(){ return state.todos.filter(function(x){ return !x.x; }).length; }
 function tdLabel(x){ return x.t || (x.k||[]).map(function(k){ return ITEM_BY_KEY[k][1]; }).join(', '); }
@@ -5157,6 +5624,12 @@ document.addEventListener('keydown', function(e){
   }
 });
 
+/* ======================================================================
+   §J24 — Heure plein écran (#clock)
+   Gère : Ouverture, horloge, fermeture au toucher ou avec Échap.
+   Utilise : §J5 §J6 §J8 §J23 §J25 §J26 §J30 §J31 §J33
+   Utilisé par : §J22 §J26
+   ====================================================================== */
 /* ---------- Heure plein écran ---------- */
 var clockEl = $('clock'), clockT = $('clock-t'), clockOpen = false, clockTimer = null, clockAt = 0;
 function clockTick(){
@@ -5232,8 +5705,17 @@ document.addEventListener('keydown', function(e){
 
 
 
+/* ======================================================================
+   §J25 — Réglages de l'appareil, suggestions et import
+   Gère : cfg (réglages propres à l'appareil, clé LS_CFG), panneau #set-pop en accordéon, envoi de
+   suggestions (sugSend vers Supabase), import CSV / XLSX (importFile).
+   Utilise : §J1 §J5 §J6 §J7 §J9 §J10 §J12 §J19 §J27 §J28 §J29 §J31 §J33 §J35
+   Utilisé par : §J9 §J18 §J22 §J24 §J27 §J28 §J35
+   ⚠ cfgApply est appelé une première fois ici, avant que FX existe (d'où le typeof FX), puis une
+   seconde fois en §J28.
+   ====================================================================== */
 /* ---------- Réglages (propres à cet appareil, gardés dans le navigateur) ---------- */
-var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, startTab:'colleges', wake:false, cdUnit:'d', ankiMode:'anki', ankiLabel:'' };
+var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, wake:false, cdUnit:'d', ankiMode:'anki', ankiLabel:'', catchup:true };
 try{ var rc = JSON.parse(lsGet(LS_CFG) || '{}'); if(rc && typeof rc === 'object') Object.keys(cfg).forEach(function(k){ if(rc[k] !== undefined && typeof rc[k] === typeof cfg[k]) cfg[k] = rc[k]; }); }catch(e){}
 if(cfg.cdUnit === 'mo') cfg.cdUnit = 'w';
 var wakeLock = null;
@@ -5243,13 +5725,36 @@ function wakeSet(on){
     else if(wakeLock){ wakeLock.release(); wakeLock = null; }
   }catch(e){}
 }
+/* ⚠ cfgApply est appelé une première fois avant que FX existe (§J28) : le test typeof FX est volontaire. */
 function cfgApply(){
   document.documentElement.setAttribute('data-reduce', cfg.reduce ? '1' : '0');
   if(typeof FX !== 'undefined' && FX) FX.reduce = cfg.reduce || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   var ap = $('app'); if(ap) ap.style.zoom = cfg.size === 100 ? '' : String(cfg.size / 100);
 }
 function cfgSave(){ lsSet(LS_CFG, JSON.stringify(cfg)); cfgApply(); }
-(function(){ var st = cfg.startTab === 'last' ? lsGet(LS_TAB) : cfg.startTab; if(st === 'colleges' || st === 'items' || st === 'plan') tab = st; })();
+/* Onglet au démarrage (index33, plus de réglage) :
+   - ouverture normale : premier onglet disponible = Aujourd'hui sur téléphone, Collèges sur ordinateur ;
+   - rechargement de la page : on revient là où on était. Le repère est écrit dans sessionStorage à la
+     fermeture de la page (pagehide, voir plus bas) ; à défaut, si le navigateur dit « reload », on relit LS_TAB. */
+var LS_SESS = 'medisam-sess';
+(function(){
+  var back = null, nav = '', ok = function(t){ return t === 'colleges' || t === 'items' || t === 'plan'; };
+  try{ back = JSON.parse(sessionStorage.getItem(LS_SESS) || 'null'); }catch(e){}
+  try{ var ne = performance.getEntriesByType('navigation')[0]; nav = ne ? ne.type : ''; }catch(e){}
+  if(back && ok(back.tab)){
+    tab = back.tab;
+    if(back.pv === 'today' || back.pv === 'week' || back.pv === 'month') pv = back.pv;
+  } else if(nav === 'reload' && ok(lsGet(LS_TAB))){
+    tab = lsGet(LS_TAB);
+  } else if(isMob()){
+    tab = 'plan'; pv = 'today'; wk = mondayOf(today());
+  } else {
+    tab = 'colleges';
+  }
+})();
+function saveSess(){ try{ sessionStorage.setItem(LS_SESS, JSON.stringify({ tab:tab, pv:pv })); }catch(e){} }
+window.addEventListener('pagehide', saveSess);
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden') saveSess(); });
 var setAnimT = null, setHideT = null, setPop = $('set-pop'), setScrim = $('set-scrim');
 function segHTML(name, opts, cur){
   return '<div class="set-seg" role="group">' + opts.map(function(o){ return '<button type="button" data-set="'+name+'" data-v="'+o[0]+'" aria-pressed="'+(String(cur)===String(o[0]))+'">'+o[1]+'</button>'; }).join('') + '</div>';
@@ -5279,21 +5784,23 @@ function renderSettings(){
     '<div class="set-r" style="--i:4"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.text+'</span><div><b>Taille d’écriture</b><small>Agrandit ou réduit toute l’interface.</small></div>'+segHTML('size', [[90,'A−'],[100,'A'],[112,'A+'],[125,'A++']], cfg.size)+'</div>'+
     '</div></section>'+
     '<section class="set-grp" style="--g:var(--violet);--i:2"><button type="button" class="set-g" data-set-grp aria-expanded="true"><span class="set-gi" aria-hidden="true">'+SIC.loop+'</span><span class="set-gt">Révisions</span><span class="set-gn">4</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card">'+
-    '<div class="set-r" style="--i:5"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.home+'</span><div><b>Onglet au démarrage</b><small>Celui affiché à l’ouverture de Médisam.</small></div>'+segHTML('startTab', [['last','Dernier'],['colleges','Collèges'],['items','Items'],['plan','Planning']], cfg.startTab)+'</div>'+
     '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>Bouton sur chaque item</b><small>Pour marquer tes cartes ou ta fiche comme prêtes.</small></div>'+segHTML('ankiMode', [['anki','Anki'],['fiche','Fiche'],['perso','Personnalisé'],['off','Aucun']], ankiMode())+'</div>'+
     '<div class="set-r set-perso" id="set-perso-r" style="--i:7"'+(ankiMode() === 'perso' ? '' : ' hidden')+'><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>Nom du bouton</b><small>Par exemple Résumé, Schéma, Flashcards.</small></div><input type="text" id="set-perso" maxlength="14" value="'+esc(cfg.ankiLabel)+'" placeholder="Perso" aria-label="Nom du bouton personnalisé" autocomplete="off"></div>'+
     '<div class="set-r" style="--i:8"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.j+'</span><div><b>Méthode des J</b><small>Quand revoir chaque item : le planning se remplit tout seul.</small></div><button type="button" class="set-b" data-set-jm>Configurer</button></div>'+
+    '<div class="set-r" style="--i:8"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.loop+'</span><div><b>Rattrapage des items d’hier</b><small>À l’ouverture du planning, propose de décaler à aujourd’hui ce qui n’a pas été validé.</small></div>'+swHTML('catchup', cfg.catchup, 'Rattrapage des items d’hier')+'</div>'+
     '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.hourglass+'</span><div><b>Décompte jusqu’au 21 octobre 2028</b></div>'+segHTML('cdUnit', [['s','Secondes'],['m','Minutes'],['d','Jours'],['w','Semaines']], cfg.cdUnit)+'</div>'+
     '</div></section>'+
-    '<section class="set-grp" style="--g:var(--teal);--i:4"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.help+'</span><span class="set-gt">Aide et données</span><span class="set-gn">4</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
+    '<section class="set-grp" style="--g:var(--teal);--i:4"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.help+'</span><span class="set-gt">Aide et données</span><span class="set-gn">6</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
     '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.chat+'</span><div><b>Une suggestion ?</b><small>Une idée, un oubli, un bug : écris-le ici.</small></div><button type="button" class="set-b" data-set-sug aria-expanded="false" aria-controls="set-sug">Écrire…</button></div>'+
     '<div class="set-sug" id="set-sug" hidden><textarea id="set-sug-t" maxlength="600" rows="4" placeholder="Ce que tu aimerais voir dans Médisam…" aria-label="Ta suggestion"></textarea>'+
     '<div class="set-sug-f"><span id="set-sug-n">0 / 600</span><button type="button" class="set-b set-b-pri" data-set-sug-send disabled>Envoyer</button></div></div>'+
     '<div class="set-r" style="--i:10"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.help+'</span><div><b>Revoir le tutoriel</b><small>La visite guidée des fonctionnalités de Médisam.</small></div><button type="button" class="set-b" data-set-tour>Lancer</button></div>'+
     '<div class="set-r" style="--i:11"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.down+'</span><div><b>Importer mes tours</b><small>Fichier Excel (.xlsx) ou CSV : colonnes numéro de l’item, date, ressenti (ok / moyen / difficile ou note 1 à 5). Les tours déjà présents ne sont pas dupliqués.</small></div><button type="button" class="set-b" data-set-import>Choisir…</button></div>'+
     '<div class="set-r" style="--i:12"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.up+'</span><div><b>Exporter mes tours</b><small>Téléchargement en CSV.</small></div><button type="button" class="set-b" data-set-export>Exporter</button></div>'+
+    '<div class="set-r" style="--i:13"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.up+'</span><div><b>Sauvegarde complète</b><small>Un fichier .json avec tout : tours, planning, tâches, notes, échéances et réglages de la méthode des J.</small></div><button type="button" class="set-b" data-set-bk-export>Exporter</button></div>'+
+    '<div class="set-r" style="--i:14"><span class="set-ic" style="--g:var(--teal)" aria-hidden="true">'+SIC.down+'</span><div><b>Restaurer une sauvegarde</b><small>Choisis un fichier .json exporté depuis Médisam : tu pourras fusionner ou remplacer.</small></div><button type="button" class="set-b" data-set-bk-import>Choisir…</button></div>'+
     '</div></section>'+
-    '<input type="file" id="set-file" accept=".xlsx,.xls,.csv,.txt" hidden>';
+    '<input type="file" id="set-file" accept=".xlsx,.xls,.csv,.txt" hidden><input type="file" id="set-bk-file" accept=".json,application/json" hidden>';
 }
 
 function syncSettings(){
@@ -5349,6 +5856,8 @@ setPop.addEventListener('click', function(e){
   if(e.target.closest('[data-set-close]')){ setSettings(false); return; }
   if(e.target.closest('[data-set-tour]')){ setSettings(false); setTimeout(function(){ tourStart(true); }, 450); return; }
   if(e.target.closest('[data-set-import]')){ $('set-file').click(); return; }
+  if(e.target.closest('[data-set-bk-export]')){ bkExport(); return; }
+  if(e.target.closest('[data-set-bk-import]')){ $('set-bk-file').click(); return; }
   var gb = e.target.closest('[data-set-grp]');
   if(gb){
     var card = gb.nextElementSibling, openNow = gb.getAttribute('aria-expanded') === 'true';
@@ -5374,7 +5883,6 @@ setPop.addEventListener('click', function(e){
   var n = b.dataset.set;
   if(n === 'clockFs') cfg.clockFs = b.dataset.v === '1';
   else if(n === 'size') cfg.size = parseInt(b.dataset.v, 10);
-  else if(n === 'startTab') cfg.startTab = b.dataset.v;
   else if(n === 'cdUnit'){ cfg.cdUnit = b.dataset.v; }
   else if(n === 'ankiMode'){ cfg.ankiMode = b.dataset.v; cfgSave(); syncSettings(); renderList(); return; }
   else cfg[n] = !cfg[n];
@@ -5419,6 +5927,7 @@ function sugSend(){
   }, function(){ fail('net'); });
 }
 setPop.addEventListener('change', function(e){
+  if(e.target.id === 'set-bk-file' && e.target.files[0]){ bkImport(e.target.files[0]); e.target.value = ''; return; }
   if(e.target.id !== 'set-file' || !e.target.files[0]) return;
   importFile(e.target.files[0]); e.target.value = '';
 });
@@ -5488,6 +5997,12 @@ function importFile(f){
 }
 cfgApply();
 
+/* ======================================================================
+   §J26 — Minuteur pomodoro (dans l'écran Heure)
+   Gère : Menu discret, durées, bip de fin.
+   Utilise : §J5 §J24 §J29
+   Utilisé par : §J24
+   ====================================================================== */
 /* ---------- Minuteur de révision (pomodoro) : menu discret dans l'écran Heure ---------- */
 var pomo = {on:false, paused:false, phase:'work', w:25, b:5, endAt:0, left:0, done:0, timer:null}, cmOpen = false, pAudio = null;
 var cmBtn = $('cm-toggle'), cmPanel = $('cm-panel');
@@ -5573,6 +6088,14 @@ $('cm-custom').addEventListener('submit', function(e){
   pStart(w, b); setCm(false); clockEl.focus();
 });
 
+/* ======================================================================
+   §J27 — Comptes et sauvegarde en ligne (Supabase)
+   Gère : Connexion, inscription, mot de passe oublié, loadRemote / applyRemote (lecture de la ligne
+   progress), enter / leave (entrée et sortie de compte), initCapabilities (appelé au démarrage).
+   Utilise : §J1 §J5 §J6 §J7 §J17 §J18 §J25 §J31 §J32 §J33
+   Utilisé par : §J12 §J13 §J16 §J18 §J22 §J25 §J29 §J30 §J31 §J32 §J33 §J34 §J36
+   ⚠ applyRemote et leave listent les champs de state un par un : voir la règle des 6 endroits.
+   ====================================================================== */
 /* ---------- Comptes et sauvegarde (Supabase) ---------- */
 var uemail = '';
 var sb = null, uid = null, authMode = 'in', recovery = false, loadTimer = null;
@@ -5675,23 +6198,68 @@ function applyRemote(d){
   lsSet(LS_CUR, state.cur || '');
 }
 function snapKey(){ return JSON.stringify([state.tours, state.plan, state.days, state.stw, state.anki, state.todos, state.notes, state.deadlines, state.jm, state.ign, state.pins, state.cur]); }
+/* ---------- Protection contre l'écrasement entre appareils (index31) ----------
+   remoteStamp = updated_at de la ligne telle qu'on l'a lue ou écrite en dernier. Avant chaque écriture on
+   relit updated_at : s'il a changé, un autre appareil a écrit entre-temps. On fusionne alors ce qu'il a
+   ajouté (mergeRemote) AVANT d'écrire, au lieu de tout écraser.
+   ⚠ Reste une très courte fenêtre entre la lecture et l'écriture (pas de verrou côté serveur).
+   ⚠ La fusion ne fait qu'ajouter : une suppression faite sur un appareil peut réapparaître dans ce cas précis. */
+var remoteStamp = null, mergeNotice = false;
+function stampOf(row){ return row && row.updated_at ? row.updated_at : null; }
+function sameStamp(a, b){ var x = Date.parse(a), y = Date.parse(b); return isNaN(x) || isNaN(y) || x === y; }
+function mergeRemote(d){
+  var R = { tours:sanitize(d.tours), plan:sanitizePlan(d.plan), days:sanitizeDays(d.days), stw:sanitizeStw(d.stw), anki:sanitizeAnki(d.anki), todos:sanitizeTodos(d.todos), notes:sanitizeNotes(d.notes), dl:sanitizeDeadlines(d.dl), ign:sanitizeIgn(d.ign) };
+  function fill(mine, theirs){ Object.keys(theirs).forEach(function(k){ if(mine[k] === undefined) mine[k] = theirs[k]; }); }
+  Object.keys(R.tours).forEach(function(k){
+    var mine = state.tours[k] = state.tours[k] || [];
+    R.tours[k].forEach(function(x){ if(!mine.some(function(y){ return y.d === x.d && y.s === x.s; })) mine.push(x); });
+    mine.sort(function(a, b){ return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    if(mine.length > MAX) mine.splice(0, mine.length - MAX);
+  });
+  Object.keys(R.plan).forEach(function(day){
+    var mine = state.plan[day] = state.plan[day] || [];
+    R.plan[day].forEach(function(x){
+      var m = null; mine.forEach(function(y){ if(!m && sameSlot(x, y)) m = y; });
+      if(!m){ if(mine.length < 40) mine.push(x); }
+      else if(x.x && !m.x){ m.x = 1; if(x.d) m.d = x.d; }
+    });
+  });
+  fill(state.days, R.days); fill(state.stw, R.stw); fill(state.anki, R.anki); fill(state.notes, R.notes); fill(state.deadlines, R.dl); fill(state.ign, R.ign);
+  R.todos.forEach(function(x){
+    var m = null; state.todos.forEach(function(y){ if(y.id === x.id) m = y; });
+    if(!m) state.todos.push(x); else if(x.x && !m.x) m.x = 1;
+  });
+}
 function makeRef(){
-  return { set: function(obj){
-    return sb.from('progress').upsert({ user_id: uid, data: obj, updated_at: new Date().toISOString() }).then(function(r){
-      if(r.error) throw r.error;
+  return { set: function(build){
+    function write(){
+      var stamp = new Date().toISOString();
+      return sb.from('progress').upsert({ user_id: uid, data: build(), updated_at: stamp }).then(function(r){
+        if(r.error) throw r.error;
+        remoteStamp = stamp;
+      });
+    }
+    return sb.from('progress').select('data,updated_at').eq('user_id', uid).maybeSingle().then(function(r){
+      var row = r && !r.error ? r.data : null;
+      if(row && row.data && remoteStamp && stampOf(row) && !sameStamp(stampOf(row), remoteStamp)){
+        mergeRemote(row.data); saveLocal(); mergeNotice = true;
+      }
+      return write();
+    }, function(){ return write(); }).then(function(){
+      if(mergeNotice){ mergeNotice = false; renderAll(); toast('Modifications faites sur un autre appareil fusionnées.'); }
     });
   } };
 }
 function loadRemote(){
   var mine = uid; clearTimeout(loadTimer);
-  sb.from('progress').select('data').eq('user_id', mine).maybeSingle().then(function(r){
+  sb.from('progress').select('data,updated_at').eq('user_id', mine).maybeSingle().then(function(r){
     if(uid !== mine) return;
     if(r.error){
       /* on n'active pas l'enregistrement tant que la lecture a échoué : sinon on écraserait la sauvegarde */
       ref = null; ready = false; setSync('loaderr'); loadTimer = setTimeout(loadRemote, 5000); return;
     }
     var found = !!(r.data && r.data.data);
-    applyRemote(found ? r.data.data : {});
+    applyRemote(found ? r.data.data : {}); remoteStamp = found ? stampOf(r.data) : null;
     ref = makeRef(); ready = true; setSync('ok'); renderAll(); afterEnter();
   }, function(){
     if(uid !== mine) return;
@@ -5701,29 +6269,29 @@ function loadRemote(){
 function refreshRemote(){
   if(!ref || writing || again || !uid) return;
   var mine = uid;
-  sb.from('progress').select('data').eq('user_id', mine).maybeSingle().then(function(r){
+  sb.from('progress').select('data,updated_at').eq('user_id', mine).maybeSingle().then(function(r){
     if(uid !== mine || r.error || writing || again) return;
     var d = (r.data && r.data.data) || {};
     var before = snapKey();
-    applyRemote(d);
+    applyRemote(d); remoteStamp = stampOf(r.data);
     if(snapKey() !== before) renderAll();
   });
 }
 function enter(user){
-  uid = user.id; uemail = user.email || ''; ref = null; ready = false; writing = false; again = false; tourSeen = false; admCheck(user);
+  uid = user.id; uemail = user.email || ''; ref = null; ready = false; writing = false; again = false; tourSeen = false; remoteStamp = null; admCheck(user);
   $('btn-logout').title = 'Se déconnecter' + (user.email ? ' (' + user.email + ')' : '');
   setSync('load'); showAuth(false); loadRemote();
 }
 function leave(){
-  uid = null; ref = null; ready = false; clearTimeout(loadTimer);
+  uid = null; ref = null; ready = false; remoteStamp = null; clearTimeout(loadTimer);
   tourSeen = false; isAdmin = false; admBtn.hidden = true; admClose(true); tourEnd('quiet'); annEl.hidden = true;
-  [LS, LS_PLAN, LS_DAYS, LS_STW, LS_ANKI, LS_TODO, LS_NOTES, LS_DL, LS_JM, LS_IGN, LS_PIN, LS_CUR, LS_SKIP, LS_PV].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  [LS, LS_PLAN, LS_DAYS, LS_STW, LS_ANKI, LS_TODO, LS_NOTES, LS_DL, LS_JM, LS_IGN, LS_PIN, LS_CUR, LS_SKIP, LS_PV, LS_CU].forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
 }
 
 /* Export CSV : simple téléchargement navigateur */
 downloadsNS = { save: function(o){
   return new Promise(function(res){
-    var b = new Blob([o.data], { type:'text/csv;charset=utf-8' });
+    var b = new Blob([o.data], { type:(o.type || 'text/csv') + ';charset=utf-8' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(b); a.download = o.filename;
     document.body.appendChild(a); a.click();
@@ -5815,6 +6383,12 @@ function initCapabilities(){
 }
 
 
+/* ======================================================================
+   §J28 — Animations liées aux actions
+   Gère : FX (réglages d'animation), fxQueue, fxWrap (ajoute l'animation après un rendu).
+   Utilise : §J6 §J25 §J29
+   Utilisé par : §J22 §J25 §J29 §J30
+   ====================================================================== */
 /* ---------- Animations liées aux actions ---------- */
 /* Après chaque rendu, on compare l'état à celui du rendu précédent et on anime ce qui vient de changer. */
 var FX = { last:null, queued:false, reduce: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) };
@@ -5840,6 +6414,15 @@ document.addEventListener('click', function(e){
   q.classList.remove('a-launch'); void q.offsetWidth; q.classList.add('a-launch');
   setTimeout(function(){ q.classList.remove('a-launch'); }, 800);
 });
+/* ======================================================================
+   §J29 — Couche d'animation générale
+   Gère : popShow / popHide (apparition et disparition), fxTab, fxDelTour, fxSlotMoved, fxCount… En fin
+   de section : renderAll, renderPlan, renderTodo, renderList et renderHero sont remplacés par leur
+   version animée.
+   Utilise : §J5 §J6 §J8 §J10 §J17 §J18 §J23 §J27 §J28
+   Utilisé par : §J8 §J9 §J12 §J13 §J16 §J17 §J18 §J19 §J21 §J22 §J23 §J25 §J26 §J28 §J31 §J32 §J33
+   ⚠ Ce remplacement doit rester APRÈS toutes les définitions de rendu et après §J28.
+   ====================================================================== */
 /* ===== Couche d'animation générale : entrées, sorties et transitions de tout ce qui apparaît ou disparaît ===== */
 var EZ = 'cubic-bezier(.2,.85,.25,1)', EZ_SPRING = 'cubic-bezier(.3,1.3,.5,1)';
 function popShow(el, o){
@@ -5916,14 +6499,15 @@ function fxCollapseAll(els, cb, o){
 }
 var tabBusy = false;
 function fxTab(next, run){
-  var order = ['colleges','items','plan'], dir = order.indexOf(next) - order.indexOf(tab);
-  var out = $('v-' + tab), inn = $('v-' + next);
+  var order = ['today','colleges','items','plan'], dir = order.indexOf(next) - order.indexOf(tabId());
+  function paneOf(t){ return $('v-' + (t === 'today' ? 'plan' : t)); }
+  var out = paneOf(tabId());
   if(reducedFx() || !out || !out.animate || tabBusy || !dir){ run(); return; }
   tabBusy = true;
   var a = out.animate([{ opacity:1, translate:'0 0' }, { opacity:0, translate:(-dir * 36) + 'px 0' }], { duration:170, easing:'cubic-bezier(.5,0,.75,0)', fill:'forwards' });
   a.onfinish = function(){
     run(); try{ a.cancel(); }catch(e){}
-    var pane = $('v-' + next);
+    var pane = paneOf(next);
     if(pane && pane.animate){ var b = pane.animate([{ opacity:0, translate:(dir * 44) + 'px 0' }, { opacity:1, translate:'0 0' }], { duration:420, easing:EZ }); b.onfinish = function(){ tabBusy = false; }; b.oncancel = function(){ tabBusy = false; }; }
     else tabBusy = false;
   };
@@ -6041,9 +6625,16 @@ document.addEventListener('click', function(e){
   var gc = g.querySelector('.td-chk'); if(gc){ gc.setAttribute('aria-checked','true'); gc.tabIndex = -1; }
   document.body.appendChild(g); setTimeout(function(){ g.remove(); }, 900);
 }, true);
+/* ⚠ Remplacement des rendus par leur version animée. Doit rester après toutes les définitions de rendu et après §J28. */
 renderAll = fxWrap(renderAll); renderPlan = fxWrap(renderPlan); renderTodo = fxWrap(renderTodo); renderList = fxWrap(renderList); renderHero = fxWrap(renderHero);
 
 
+/* ======================================================================
+   §J30 — Statistiques de la matière (#st-pop)
+   Gère : Calcul et affichage des statistiques d'un collège.
+   Utilise : §J1 §J5 §J6 §J11 §J18 §J27 §J28
+   Utilisé par : §J8 §J24 §J33
+   ====================================================================== */
 /* ---------- Statistiques de la matière ---------- */
 var stOpen = false;
 function stItems(){ return tab === 'colleges' ? allItems() : scopeItems(); }
@@ -6075,6 +6666,42 @@ function stLink(x, extra){
   return '<button type="button" class="st-it" data-key="'+esc(x.key)+'"><b>'+x.it[0]+'</b><span>'+tH(x.it)+'</span><i>'+extra+'</i></button>';
 }
 var fmtLongDate = new Intl.DateTimeFormat('fr-FR',{ day:'numeric', month:'long', year:'numeric' });
+/* Rythme vers l'échéance : pour chaque collège qui a une échéance, combien d'items jamais vus par jour pour finir
+   le 1er tour à temps. Les jours marqués garde ou repos ne comptent pas. Rythme actuel = items commencés ces 28 derniers jours. */
+function stFmt1(x){ return x < 10 ? x.toFixed(1).replace('.', ',') : String(Math.round(x)); }
+function stPaceHTML(){
+  var t0 = today(), cols = tab === 'colleges' ? COLLEGES : selColleges(), rows = [];
+  cols.forEach(function(c){
+    var dl = state.deadlines[c.id]; if(!dl) return;
+    var its = unique(c.items), seen = 0, fresh = 0;
+    its.forEach(function(it){
+      var t = toursOf(keyOf(it)); if(!t.length) return; seen++;
+      var first = t.reduce(function(m, x){ return !m || x.d < m ? x.d : m; }, '');
+      if(daysBetween(first, t0) < 28) fresh++;
+    });
+    var left = dlDays(dl), avail = 0, i;
+    for(i = 0; i < left; i++){ if(!kindOf(addDays(t0, i))) avail++; }
+    rows.push({ c:c, dl:dl, left:left, rest:its.length - seen, avail:avail || Math.max(left, 0), fresh:fresh });
+  });
+  rows.sort(function(a, b){ return a.left - b.left; });
+  var h = '<section class="st-card"><h3>Rythme vers l’échéance <small>1er tour</small></h3>';
+  if(!rows.length) return h + '<p class="st-sub">Aucune échéance définie. Ajoute-en une depuis la carte d’un collège pour voir le rythme qu’il te faut.</p></section>';
+  rows.slice(0, 4).forEach(function(r){
+    var cur = r.fresh / 28, need = r.avail > 0 ? r.rest / r.avail : 0, ds = esc(fmtLongDate.format(parse(r.dl))).replace(/ \d{4}$/, '');
+    var head = '<div class="pace" data-h="'+r.c.hue+'"><div class="pace-h"><b>'+esc(r.c.name)+'</b><span>'+dlLabel(r.left)+' · '+ds+'</span></div>', body, v;
+    if(!r.rest){ body = '<p class="st-big st-done">1er tour terminé</p>'; v = ''; }
+    else if(r.left <= 0){ body = '<p class="st-big"><span>'+r.rest+'</span><small> item'+(r.rest > 1 ? 's' : '')+' jamais vu'+(r.rest > 1 ? 's' : '')+'</small></p><p class="st-sub">L’échéance est '+(r.left === 0 ? 'aujourd’hui' : 'passée')+'.</p>'; v = '<span class="pace-v late">Hors délai</span>'; }
+    else {
+      var off = r.left - r.avail;
+      body = '<p class="st-big"><span>'+stFmt1(need)+'</span><small> item'+(need >= 2 ? 's' : '')+' par jour</small></p>'+
+        '<p class="st-sub">pour voir les '+r.rest+' item'+(r.rest > 1 ? 's' : '')+' jamais vu'+(r.rest > 1 ? 's' : '')+' avant l’échéance ('+r.avail+' jour'+(r.avail > 1 ? 's' : '')+' disponible'+(r.avail > 1 ? 's' : '')+(off > 0 ? ', '+off+' de garde ou repos retiré'+(off > 1 ? 's' : '') : '')+'). '+(cur ? 'Ton rythme actuel : '+stFmt1(cur)+' par jour.' : 'Aucun item commencé ces 4 dernières semaines.')+'</p>';
+      v = cur >= need ? '<span class="pace-v">Dans les temps</span>' : cur >= need * .6 ? '<span class="pace-v mid">À accélérer un peu</span>' : '<span class="pace-v late">En retard sur le rythme</span>';
+    }
+    h += head + body + v + '</div>';
+  });
+  if(rows.length > 4) h += '<p class="st-sub">+ '+(rows.length - 4)+' autre'+(rows.length - 4 > 1 ? 's' : '')+' échéance'+(rows.length - 4 > 1 ? 's' : '')+'</p>';
+  return h + '</section>';
+}
 function stHTML(){
   var o = stCompute(stItems()), n = o.n || 1;
   var seg = function(k,v){ return v ? '<i class="sb-'+k+'" style="width:'+(v/n*100).toFixed(2)+'%"></i>' : ''; };
@@ -6101,6 +6728,8 @@ function stHTML(){
     proj = '<p class="st-big st-date">'+esc(fmtLongDate.format(parse(end)))+'</p><p class="st-sub">Au rythme des 4 dernières semaines ('+(wk < 10 ? wk.toFixed(1).replace('.',',') : Math.round(wk))+' nouvel'+(wk >= 2 ? 's' : '')+' item'+(wk >= 2 ? 's' : '')+' par semaine), il reste '+notSeen+' item'+(notSeen>1?'s':'')+' à voir, soit environ '+(days > 13 ? Math.round(days/7)+' semaines' : days+' jour'+(days>1?'s':''))+'.</p>';
   }
   h += '<section class="st-card"><h3>Fin du 1er tour</h3>'+proj+'</section>';
+  /* 6. Rythme vers l'échéance (index31) */
+  h += stPaceHTML();
   /* 8. Points faibles */
   h += '<section class="st-card"><h3>Points faibles <small>Difficile au dernier tour</small></h3>'+
     (o.weak.length ? o.weak.slice(0,3).map(function(x){ return stLink(x, short(x.d)); }).join('')+(o.weak.length > 3 ? '<p class="st-sub">+ '+(o.weak.length-3)+' autre'+(o.weak.length-3>1?'s':'')+'</p>' : '')
@@ -6190,6 +6819,14 @@ document.addEventListener('click', function(e){
 document.addEventListener('keydown', function(e){ if(stOpen && e.key === 'Escape'){ stShow(false); var b = $('st-btn'); if(b) b.focus(); } });
 window.addEventListener('resize', function(){ if(stOpen) stPlace(); });
 
+/* ======================================================================
+   §J31 — Espace modérateur (admin uniquement)
+   Gère : Visible seulement pour ADMIN_EMAIL : vue d'ensemble des comptes, suggestions, annonces,
+   pastille rouge de nouveautés.
+   Utilise : §J1 §J2 §J5 §J6 §J11 §J17 §J27 §J29 §J32 §J33
+   Utilisé par : §J24 §J25 §J27 §J32 §J33 §J34
+   ⚠ La vraie protection est côté serveur (fonctions SQL et RLS) : masquer le bouton ne suffit pas.
+   ====================================================================== */
 /* ================================================================
    ESPACE MODÉRATEUR : visible uniquement sur le compte administrateur.
    Le bouton est masqué pour tout autre compte, et surtout les fonctions SQL
@@ -6306,7 +6943,8 @@ create policy "suggestions supprimees par admin" on public.suggestions
   for delete to authenticated using (public.is_medisam_admin());`;
 
 var ICON_BACK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>';
-var ICON_WARN = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3l7.5 13h-15z"/><path d="M10 8.5v3.2M10 14.2v.1"/></svg>';
+/* Icône d'alerte propre à l'espace modérateur (distincte de ICON_WARN de §J9). */
+var ICON_WARN_ADM = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3l7.5 13h-15z"/><path d="M10 8.5v3.2M10 14.2v.1"/></svg>';
 var ICON_MEGA = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.2v3.6a1 1 0 0 0 1 1H6l6.2 3.2V4L6 7.2H4.5a1 1 0 0 0-1 1z"/><path d="M15.2 7.6a3.6 3.6 0 0 1 0 4.8"/></svg>';
 
 /* Pastille rouge sur le logo : suggestions reçues et nouveaux comptes que tu n'as pas encore vus */
@@ -6376,7 +7014,7 @@ function admKind(e){
 function admErrHTML(kind){
   if(kind === 'forbidden') return '<div class="adm-card"><h3>Accès refusé</h3><p class="adm-sub">Le serveur n’autorise pas ce compte. Vérifie que l’adresse de la fonction SQL est bien la tienne (onglet Outils).</p></div>';
   if(kind === 'net') return '<div class="adm-card"><h3>Connexion impossible</h3><p class="adm-sub">Les données n’ont pas pu être chargées. Vérifie ton réseau puis réessaie.</p><button type="button" class="adm-b pri" data-adm="refresh">Réessayer</button></div>';
-  return '<div class="adm-card"><h3>Dernière étape : activer l’espace côté serveur</h3><p class="adm-warn">' + ICON_WARN + '<span>Pour que le serveur te réserve ces données, il faut créer quelques fonctions dans Supabase. Copie le script ci-dessous, colle-le dans Supabase > SQL Editor puis clique sur Run. À faire une seule fois.</span></p><pre class="adm-sql" tabindex="0">' + esc(ADM_SQL) + '</pre><div class="adm-acts"><button type="button" class="adm-b pri" data-adm="copysql">Copier le script</button><button type="button" class="adm-b" data-adm="refresh">C’est fait, recharger</button></div></div>';
+  return '<div class="adm-card"><h3>Dernière étape : activer l’espace côté serveur</h3><p class="adm-warn">' + ICON_WARN_ADM + '<span>Pour que le serveur te réserve ces données, il faut créer quelques fonctions dans Supabase. Copie le script ci-dessous, colle-le dans Supabase > SQL Editor puis clique sur Run. À faire une seule fois.</span></p><pre class="adm-sql" tabindex="0">' + esc(ADM_SQL) + '</pre><div class="adm-acts"><button type="button" class="adm-b pri" data-adm="copysql">Copier le script</button><button type="button" class="adm-b" data-adm="refresh">C’est fait, recharger</button></div></div>';
 }
 function admAgo(s){
   if(!s) return 'jamais';
@@ -6688,7 +7326,7 @@ admEl.addEventListener('click', function(e){
   if(a === 'cache' || a === 'reset'){
     if(admArm !== t){ admDisarm(); t.dataset.t0 = t.textContent; t.textContent = 'Confirmer ?'; t.classList.add('armed'); admArm = t; admArmT = setTimeout(admDisarm, 4000); return; }
     admDisarm();
-    if(a === 'cache'){ [LS, LS_PLAN, LS_DAYS, LS_STW, LS_ANKI, LS_TODO, LS_NOTES, LS_DL, LS_JM, LS_IGN, LS_PIN, LS_CUR, LS_SKIP, LS_PV].forEach(function(k){ try{ localStorage.removeItem(k); }catch(er){} }); location.reload(); return; }
+    if(a === 'cache'){ [LS, LS_PLAN, LS_DAYS, LS_STW, LS_ANKI, LS_TODO, LS_NOTES, LS_DL, LS_JM, LS_IGN, LS_PIN, LS_CUR, LS_SKIP, LS_PV, LS_CU].forEach(function(k){ try{ localStorage.removeItem(k); }catch(er){} }); location.reload(); return; }
     var who = admSel; if(!who) return; t.disabled = true;
     admRpc('admin_reset_progress', { target:who.id }).then(function(){ admToast('Progression réinitialisée'); admBack(); admLoad(); }, function(){ t.disabled = false; admToast('Échec, réessaie'); });
     return;
@@ -6732,6 +7370,12 @@ document.addEventListener('keydown', function(e){
   if(admDetail) admBack(); else admClose();
 }, true);
 
+/* ======================================================================
+   §J32 — Message de l'administrateur (côté utilisateurs)
+   Gère : Affiche la dernière annonce active, sauf si elle a déjà été fermée sur cet appareil (clé medisam-ann-seen) ; annLoad, annShow.
+   Utilise : §J5 §J27 §J29 §J31
+   Utilisé par : §J27 §J31 §J33
+   ====================================================================== */
 /* ================================================================
    MESSAGE DE L'ADMINISTRATEUR (côté utilisateurs)
    ================================================================ */
@@ -6757,6 +7401,12 @@ annEl.addEventListener('click', function(e){
   lsSet('medisam-ann-seen', annEl.dataset.id || ''); popHide(annEl, { t:'0 -18px', s:'.96', d:280 });
 });
 
+/* ======================================================================
+   §J33 — Tutoriel guidé
+   Gère : Bulles et zone mise en lumière au premier lancement (tourStart, tourMaybe), afterEnter.
+   Utilise : §J5 §J6 §J7 §J27 §J29 §J30 §J31 §J32
+   Utilisé par : §J7 §J24 §J25 §J27 §J31
+   ====================================================================== */
 /* ================================================================
    TUTORIEL GUIDÉ : bulles, flèches animées et zone mise en lumière
    ================================================================ */
@@ -6796,7 +7446,7 @@ function tourSteps(){
     { tab:'items', sel:'#list .colt[data-act="col-tour"]', side:'bottom', ic:'loop', t:'Un tour pour tout le collège', x:'Tu as relu un collège en entier ? Ce bouton ajoute le même tour à tous ses items d’un coup, avec une confirmation. Les items déjà notés ce jour-là sont ignorés.' },
     { tab:'items', sel:'#dl-slot|#hero', side:'bottom', ic:'flag', t:'L’échéance d’un collège', x:'Dans un collège, ajoute la date de ton échéance. Elle s’affiche avec le compte à rebours (J-25…) et passe en orange puis en rouge quand elle approche.' },
     { tab:'items', sel:'#list .colt[data-act="jm-open"]', side:'bottom', ic:'jm', t:'La méthode des J', x:'Choisis quand revoir chaque item : 2ᵉ tour après X jours, 3ᵉ tour après Y jours, et autant de « + » que tu veux. Applique ensuite la méthode à ce collège ou à tous.' },
-    { tab:'plan', sel:'#plan .day.now|#plan .day|#plan', side:'bottom', ic:'cal', t:'Le planning', x:'Répartis tes cours sur la semaine avec Ajouter, déplace-les, coche-les une fois faits. Tu peux aussi passer en vue mois ou sur 3 jours.' },
+    { tab:'plan', sel:'#plan .day.now|#plan .day|#plan', side:'bottom', ic:'cal', t:'Le planning', x:'Répartis tes cours sur la semaine avec Ajouter, déplace-les, coche-les une fois faits. Tu peux aussi passer en vue Aujourd’hui (ce qu’il reste à faire, à revoir et à échéance) ou en vue mois.' },
     { tab:'plan', sel:'#plan .jmb', side:'bottom', ic:'jm', t:'Un planning qui se remplit seul', x:'Une fois la méthode des J réglée, Médisam place tes prochains tours dans le planning : ce sont les cartes hachurées avec un J. Valide-les, fixe-les ou ignore-les. Ce que tu ajoutes toi-même reste uni. Les jours de stage sont allégés.' },
     { sel:'#todo-open', side:'bottom', ic:'check', t:'La to-do list', x:'Tes tâches, avec un cours lié et une échéance si tu le souhaites. Elles s’ouvrent dans un panneau sur le côté.' },
     { sel:'#clock-btn', side:'bottom', ic:'clock', t:'L’écran Heure', x:'Une grande horloge pour réviser sans distraction, avec un minuteur pomodoro. Raccourci : la touche H.' },
@@ -6996,7 +7646,7 @@ function tourMaybe(){
   var mine = uid;
   setTimeout(function(){ if(uid === mine && !tourOn && !admOpen) tourStart(false); }, 1500);
 }
-function afterEnter(){ annLoad(); tourMaybe(); }
+function afterEnter(){ annLoad(); tourMaybe(); setTimeout(catchupMaybe, 700); }
 tourEl.addEventListener('click', function(e){
   var b = e.target.closest ? e.target.closest('[data-tr]') : null; if(!b) return;
   var a = b.dataset.tr;
@@ -7016,6 +7666,14 @@ window.addEventListener('keydown', function(e){
 window.addEventListener('resize', function(){ if(tourOn && !tourBusy){ $('tr-spot').classList.add('nofx'); tourLayout(true); } });
 
 
+/* ======================================================================
+   §J34 — Aperçu sans compte (démo)
+   Gère : demoSb : faux Supabase en mémoire, proposé quand le serveur est injoignable (artéfact). Rien
+   n'est envoyé.
+   Utilise : §J5 §J7 §J27 §J31
+   Utilisé par : rien d’autre
+   ⚠ Si une nouvelle fonction appelle Supabase, l'ajouter aussi dans demoSb, sinon l'aperçu plante.
+   ====================================================================== */
 /* ================================================================
    APERÇU SANS COMPTE : proposé seulement quand le serveur est injoignable
    (par exemple dans l'artéfact, dont le cadre bloque les appels réseau).
@@ -7082,6 +7740,12 @@ function demoSb(){
   setSync = function(k){ ss(k); if(demo) $('sync-t').textContent = 'Aperçu, non enregistré'; };
 })();
 
+/* ======================================================================
+   §J35 — Décompte jusqu'au 21 octobre 2028
+   Gère : Texte du décompte dans le bandeau, unité réglable (cfg.cdUnit).
+   Utilise : §J25
+   Utilisé par : §J8 §J25
+   ====================================================================== */
 /* ---------- Décompte jusqu'au 21 octobre 2028 (affiché dans le bandeau, unité réglable) ---------- */
 var CD_END = new Date(2028, 9, 21, 0, 0, 0);
 var CD_LAB = { s:'S-', m:'MIN-', d:'J-', w:'SEM-' };
@@ -7092,6 +7756,145 @@ function cdText(){ var ms = Math.max(0, CD_END.getTime() - Date.now()), u = CD_L
 function cdTick(){ var t = cdText(); Array.prototype.forEach.call(document.querySelectorAll('[data-cd]'), function(e){ if(e.textContent !== t) e.textContent = t; }); }
 setInterval(cdTick, 1000);
 
+
+/* ======================================================================
+   §J37 — Rattrapage des items d'hier, fenêtre de confirmation #cx, sauvegarde complète .json
+   Gère : cxAsk / cxClose (fenêtre de confirmation générique, même animation que #cf et #tc),
+   catchupMaybe / cuPending / cuMove (à l'ouverture du planning : « décaler à aujourd'hui ? »),
+   bkExport / bkImport (fichier .json de toutes les données, fusion ou remplacement).
+   Utilise : §J5 §J7 §J16 §J17 §J22 §J27 §J28
+   Utilisé par : §J7 (afterEnter) et §J22b (ouverture de l'onglet Planning, boutons des réglages)
+   ⚠ Le rattrapage ne se propose qu'une fois par jour et par appareil (clé LS_CU), et seulement si
+     cfg.catchup est actif, que l'appli est prête et qu'aucun tutoriel ni autre fenêtre n'est ouvert.
+   ⚠ Les cours « commencés » (champ c) ne sont jamais décalés : leur suite est déjà planifiée.
+   ⚠ La restauration passe par applyRemote / mergeRemote (§J27) : elles nettoient les données.
+   ====================================================================== */
+var LS_CU = 'medisam-catchup';
+var cxCb = null, cxBack = null;
+function cxAsk(o){
+  cxCb = o; cxBack = document.activeElement;
+  var box = document.querySelector('#cx .cf-box');
+  $('cx-ic').innerHTML = o.icon || '<svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h8M7.5 4.5L11 8l-3.5 3.5"/><path d="M13.6 3.5v9"/></svg>';
+  $('cx-t').textContent = o.title; $('cx-d').textContent = o.text || '';
+  var l = $('cx-l'); l.hidden = !(o.items && o.items.length); l.innerHTML = (o.items || []).join('');
+  var no = box.querySelector('.cx-no'), ok = box.querySelector('.cx-ok'), alt = box.querySelector('.cx-alt');
+  no.textContent = o.no || 'Annuler'; ok.textContent = o.ok || 'OK'; ok.classList.toggle('dng', !!o.danger);
+  alt.hidden = !o.alt; if(o.alt) alt.textContent = o.alt;
+  dlgOpen($('cx'));
+  (o.alt ? alt : ok).focus();
+}
+function cxClose(k){
+  var o = cxCb; if(!o) return; cxCb = null;
+  dlgClose($('cx'));
+  if(cxBack && cxBack.focus && document.contains(cxBack)){ try{ cxBack.focus({ preventScroll:true }); }catch(e){} }
+  var f = k === 'ok' ? o.onOk : k === 'alt' ? o.onAlt : o.onNo;
+  if(f) f();
+}
+document.addEventListener('click', function(e){
+  if(!cxCb) return;
+  var b = e.target.closest && e.target.closest('[data-cx]');
+  if(b){ cxClose(b.dataset.cx); return; }
+  if(e.target === $('cx')) cxClose('no');
+});
+document.addEventListener('keydown', function(e){
+  if(!cxCb) return;
+  if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); cxClose('no'); }
+  else if(e.key === 'Tab'){
+    var bs = Array.prototype.filter.call(document.querySelectorAll('#cx button'), function(x){ return !x.hidden; }), first = bs[0], last = bs[bs.length-1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+}, true);
+
+/* ---------- Rattrapage : items non validés des jours passés (7 jours au maximum) ---------- */
+function cuPending(){
+  var t0 = today(), out = [], i, d;
+  for(i = 1; i <= 7; i++){
+    d = addDays(t0, -i);
+    (state.plan[d] || []).forEach(function(s){ if(!s.x && !s.c && (s.k ? ITEM_BY_KEY[s.k] : s.t)) out.push({ day:d, s:s }); });
+  }
+  return out;
+}
+function cuMove(){
+  var t0 = today(), p = cuPending(), n = p.length;
+  mutate(function(){
+    var arr = state.plan[t0] = state.plan[t0] || [];
+    p.forEach(function(x){
+      var src = state.plan[x.day], i = src ? src.indexOf(x.s) : -1; if(i < 0) return;
+      var dup = arr.some(function(q){ return sameSlot(q, x.s); });
+      if(!dup && arr.length >= 40) return;
+      src.splice(i, 1); if(!src.length) delete state.plan[x.day];
+      if(dup) return;
+      var ns = x.s.k ? { k:x.s.k } : { t:x.s.t };
+      if(x.s.s){
+        ns.s = x.s.s;
+        (state.plan[x.s.s] || []).forEach(function(q){ if(q.c === x.day && sameSlot(q, x.s)) q.c = t0; });
+      }
+      arr.push(ns);
+    });
+    if(!arr.length) delete state.plan[t0];
+  }, n + ' item' + (n > 1 ? 's' : '') + ' décalé' + (n > 1 ? 's' : '') + ' à aujourd’hui.');
+}
+function catchupMaybe(){
+  if(!cfg.catchup || !ready || tab !== 'plan' || tourOn || admOpen || cxCb || !$('cx').hidden || tdOpen || !setPop.hidden) return;
+  var t0 = today(); if(lsGet(LS_CU) === t0) return;
+  var p = cuPending(); if(!p.length) return;
+  lsSet(LS_CU, t0);
+  var yest = addDays(t0, -1), onlyY = p.every(function(x){ return x.day === yest; }), n = p.length;
+  var items = p.slice(0, 6).map(function(x){
+    var it = x.s.k ? ITEM_BY_KEY[x.s.k] : null;
+    return '<li'+(it ? ' data-h="'+collegeOfKey(x.s.k).hue+'"' : '')+'><b>'+(it ? it[0] : '•')+'</b><span>'+esc(slotTitle(x.s))+(onlyY ? '' : ' · '+esc(short(x.day)))+'</span></li>';
+  });
+  if(n > 6) items.push('<li class="cx-more">+ '+(n - 6)+' autre'+(n - 6 > 1 ? 's' : '')+'</li>');
+  cxAsk({
+    title: onlyY ? 'Items d’hier non validés' : 'Items non validés',
+    text: n + ' item' + (n > 1 ? 's' : '') + (onlyY ? ' prévu' + (n > 1 ? 's' : '') + ' hier n’' + (n > 1 ? 'ont' : 'a') + ' pas été validé' + (n > 1 ? 's' : '') : ' prévu' + (n > 1 ? 's' : '') + ' ces derniers jours n’' + (n > 1 ? 'ont' : 'a') + ' pas été validé' + (n > 1 ? 's' : '')) + '. Les décaler à aujourd’hui ?',
+    items: items, no:'Pas maintenant', ok:'Décaler à aujourd’hui',
+    onOk: cuMove
+  });
+}
+
+/* ---------- Sauvegarde complète (.json) ---------- */
+function bkExport(){
+  if(!downloadsNS) return;
+  var o = { app:'medisam', v:1, exported:new Date().toISOString(), data:dataObj() };
+  downloadsNS.save({ filename:'medisam-sauvegarde-' + today() + '.json', data:JSON.stringify(o), type:'application/json' }).then(function(){ toast('Sauvegarde exportée.'); }, function(err){
+    if(!err || err.code !== 'declined') toast('Export impossible ici.');
+  });
+}
+function bkImport(file){
+  if(file.size > 5e6){ toast('Fichier trop volumineux pour une sauvegarde Médisam.'); return; }
+  var rd = new FileReader();
+  rd.onerror = function(){ toast('Fichier illisible.'); };
+  rd.onload = function(){
+    var o; try{ o = JSON.parse(String(rd.result)); }catch(e){ o = null; }
+    var d = o && o.app === 'medisam' && o.data && typeof o.data === 'object' ? o.data : null;
+    if(!d){ toast('Ce fichier n’est pas une sauvegarde Médisam.'); return; }
+    var tr = sanitize(d.tours), nt = 0, np = Object.keys(sanitizePlan(d.plan)).length, nd = sanitizeTodos(d.todos).length;
+    Object.keys(tr).forEach(function(k){ nt += tr[k].length; });
+    var when = o.exported && !isNaN(Date.parse(o.exported)) ? ' du ' + fmtLongDate.format(new Date(o.exported)) : '';
+    cxAsk({
+      title:'Restaurer cette sauvegarde ?',
+      text:'Sauvegarde' + when + ' : ' + nt + ' tour' + (nt > 1 ? 's' : '') + ', ' + np + ' jour' + (np > 1 ? 's' : '') + ' planifié' + (np > 1 ? 's' : '') + ', ' + nd + ' tâche' + (nd > 1 ? 's' : '') + '. Fusionner ajoute ce qui manque, remplacer efface tes données actuelles.',
+      alt:'Fusionner avec mes données', ok:'Remplacer', danger:true, no:'Annuler',
+      onAlt:function(){ mergeRemote(d); saveLocal(); persist(); renderAll(); toast('Sauvegarde fusionnée.'); },
+      onOk:function(){
+        var snap = dataObj(); snap = JSON.parse(JSON.stringify(snap));
+        applyRemote(d); persist(); renderAll();
+        toast('Sauvegarde restaurée.', function(){ applyRemote(snap); persist(); renderAll(); });
+      }
+    });
+  };
+  rd.readAsText(file);
+}
+
+/* ======================================================================
+   §J36 — Démarrage
+   Gère : Date du jour, premier renderAll, puis initCapabilities (connexion).
+   Utilise : §J5 §J11 §J18 §J27
+   Utilisé par : rien d’autre
+   ⚠ Doit rester la toute dernière section du script principal.
+   ====================================================================== */
 /* ---------- Démarrage ---------- */
 $('today-label').innerHTML = '<span>'+esc(cap(fmtFull.format(new Date())))+'</span><span class="wkpill">Semaine '+isoWeek(mondayOf(today()))+'</span>';
 renderAll();
