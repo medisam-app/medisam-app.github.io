@@ -4871,7 +4871,7 @@ function stAnimate(pop, btn){
   });
   Array.prototype.forEach.call(pop.querySelectorAll('.st-big'), function(n, i){
     var tn = n.firstChild; if(!tn || tn.nodeType !== 3) return;
-    var target = parseInt(tn.nodeValue, 10); if(isNaN(target) || target < 1) return;
+    var mm = /^(\d+)([\s\S]*)$/.exec(tn.nodeValue), target = mm ? parseInt(mm[1], 10) : NaN, tail = mm ? mm[2] : ''; if(isNaN(target) || target < 1) return;
     var t0 = null, delay = 200 + i * 50;
     function step(ts){
       if(t0 === null) t0 = ts;
