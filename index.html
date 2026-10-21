@@ -4199,7 +4199,7 @@ function renderHeroPlan(){
   var per = pv === 'month' ? 'ce mois-ci' : wkMode ? 'cette semaine' : 'aujourd’hui', left = n - dn;
   var cap2 = !n ? 'Rien de planifié '+per+'.' : left ? left+' item'+(left>1?'s restent':' reste')+' à valider '+per+'.' : 'Tout est validé '+per+'.';
   var kick = pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : wkMode ? 'bilan de la semaine '+isoWeek(mondayOf(t0)) : 'aujourd’hui · '+esc(fmtMv.format(parse(t0)));
-  var btn = sun && pv !== 'month' ? '<button type="button" class="hw-btn" data-act="hw-toggle" aria-pressed="'+wkMode+'">'+(wkMode ? 'Voir le jour' : 'Voir la semaine')+'</button>' : '';
+  var btn = sun && pv !== 'month' ? '<button type="button" class="hw-btn" data-act="hw-toggle" aria-pressed="'+wkMode+'">'+(wkMode ? 'Voir le jour' : 'Voir les statistiques de la semaine')+'</button>' : '';
   $('hero').innerHTML = ringHTML({ n:n, started:dn, second:dn, tours:0 }, 'validés', dn+' items validés sur '+n+' planifiés '+per)+
     '<div><p class="kick"><i class="kd"></i>Planning · '+kick+'</p><dl class="stats">'+
     '<div class="stat"><dt>Planifiés</dt><dd>'+n+'</dd></div>'+
