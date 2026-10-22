@@ -37,6 +37,20 @@
               du panneau du carnet). SIC.warn (triangle) n'est plus utilisé pour les erreurs.
     index52 : Réglages > Révisions : retrait des lignes « Méthode des J » et « Carnet d'erreurs » (accessibles ailleurs : bouton
               Méthode des J dans Items/Planning, bouton rouge sous Statistiques). Les handlers data-set-jm/data-set-er restent, inoffensifs.
+    index61 : (version suivant index60) chronomètre dans l'écran Heure (menu pomodoro, #sw-*) ; les ajouts libres du planning
+              comptent dans les stats du jour ; espace admin > Outils : sauvegarde complète de tous les comptes et import
+              (RPC admin_restore_progress, ADM_SQL4) ; tours en anneau « n/objectif » à droite et pastilles T1.. à gauche
+              (cfg.tg = tours souhaités, 3 par défaut, l'objectif monte pour un item qui en a plus) ; mode examen proche
+              SUPPRIMÉ (pastille, carte, fenêtre, réglages examDays/examAuto).
+    index60 : « Planifier jusqu'à l'échéance » devient le gros bouton de l'en-tête de collège (Items) ; « Tour pour tout le
+              collège » passe en pictogramme discret à côté du filtre Référence (#chips .chiptour, confirmation #tc).
+              Nouvelle fenêtre #pe (§J41) : explication animée la 1re fois (state.jm.pe.seen, « ? » pour la revoir) puis réglages
+              (échéance, marge J-n, items/jour auto ou plafond, jours travaillés, début, stage, après garde, méthode des J :
+              celle du collège ou une propre à l'option) avec aperçu en direct ; si irréaliste, proposition de passer les
+              derniers items en « non prévus » (state.ign). Cartes grisées DISTINCTES de la méthode des J : entrée de
+              planning {k, p:1} (jmSlotHTML x.pe, classe .slot.jm.pe, pointillés couleur du collège) ; « Tout fixer » (peFixAll)
+              dans la barre J. Méthode des J propre à l'option : state.jm.pe.own[clé] = {g,b} lue par jmForKey.
+              Pas de nouveau champ de state : tout vit dans state.jm.pe (déjà synchronisé, voir sanitizePe).
     index51 : bouton « carnet d'erreurs » (erBtnHTML) sous le bouton Statistiques (Items, Collèges, Planning).
     index50 : bouton Statistiques aussi dans l'onglet Planning (stBtnHTML, §J30) ; il affiche les stats de tous les
               collèges (stItems/stName traitent 'plan' comme 'colleges').
@@ -1291,6 +1305,9 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
 .pomo-line{display:flex;align-items:baseline;gap:10px;white-space:nowrap;font:500 clamp(14px,2.2vw,20px)/1 var(--f-body);color:rgba(255,255,255,.6);font-variant-numeric:tabular-nums}
 .pomo-line #pomo-left{color:rgba(255,255,255,.92);font-weight:600}
 .pomo-count:not(:empty)::before{content:"·";margin-right:10px}
+.cm-sep{height:1px;background:rgba(255,255,255,.1);margin:12px 4px 10px}
+.sw-line #sw-t{color:rgba(255,255,255,.92);font-weight:600;font-size:1.15em}
+.sw-line.paused #sw-t{opacity:.55}
 .pomo-bar{width:min(260px,56vw);height:3px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
 .pomo-bar i{display:block;height:100%;border-radius:3px;background:rgba(255,255,255,.72);transform-origin:left center;transform:scaleX(0);transition:transform .5s linear}
 .clock[data-phase="break"] .pomo-bar i{background:#7fd6a4}
@@ -1553,25 +1570,6 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
 [data-reduce="1"] .flame,[data-reduce="1"] .ash .sm{animation:none}
 [data-reduce="1"] .ash .sm{opacity:.5}
 body.tour-on .nt,body.tour-on .ig{opacity:.7}
-.ex-phase{margin:8px 0 2px;font-size:13px;line-height:1.4;color:var(--ink2)}
-.ex-phase b{display:block;color:var(--red);font:700 11.5px var(--f-body);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
-.ex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.ex-grid>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:1px}
-.ex-grid b{font:700 22px/1 var(--f-body);font-variant-numeric:tabular-nums}
-.ex-grid span{font-size:11.5px;color:var(--ink2)}
-.ex-bar i{transform-origin:left}
-.ex-sub b{color:var(--ink)}
-.ex-pick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 2px}
-.ex-pick button{appearance:none;border:1px solid var(--line);background:none;color:var(--ink2);border-radius:99px;height:26px;padding:0 10px;font:500 12px var(--f-body);cursor:pointer}
-.ex-pick button small{opacity:.7;margin-left:3px}
-.ex-pick button[aria-pressed="true"]{color:var(--ink);border-color:color-mix(in srgb,var(--red) 50%,var(--line));background:color-mix(in srgb,var(--red) 10%,transparent)}
-.ex-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-.ex-btn{appearance:none;height:32px;padding:0 13px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 12.5px var(--f-body);cursor:pointer;transition:transform .12s,opacity .2s}
-.ex-btn:active{transform:scale(.97)}
-.ex-btn.pri{background:var(--ink);color:var(--surface);border-color:transparent}
-.ex-btn.warn{color:var(--red);border-color:color-mix(in srgb,var(--red) 40%,var(--line))}
-.ex-btn:disabled{opacity:.4;cursor:default}
-.tdy-exam .tdy-errl{margin-top:6px}
 
 .prof-av{border-radius:50%!important;font:700 14px var(--f-body);letter-spacing:.02em;color:#fff;background:linear-gradient(135deg,var(--pink),var(--violet))!important;border-color:transparent!important;cursor:pointer}
 .prof-av[hidden]{display:none}
@@ -1605,12 +1603,6 @@ body.tour-on .nt,body.tour-on .ig{opacity:.7}
 .tdy-errh em{font-style:normal;min-width:22px;height:22px;padding:0 7px;border-radius:99px;display:grid;place-items:center;background:color-mix(in srgb,var(--red) 16%,var(--surface));font:600 12px var(--f-body)}
 .tdy-errh .chev{transition:transform .25s}
 .tdy-errh:hover .chev{transform:translateX(3px)}
-.tdy-exam{border-color:color-mix(in srgb,var(--red) 35%,var(--line));background:color-mix(in srgb,var(--red) 5%,var(--surface));margin-bottom:14px}
-.tdy-exam h3 em{background:color-mix(in srgb,var(--red) 16%,var(--surface));color:var(--red)}
-.ex-bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 6px}
-.ex-bar i{display:block;height:100%;width:var(--p);background:var(--ok);border-radius:99px}
-.ex-sub{font-size:12.5px;color:var(--ink2);margin:0 0 4px}
-.tdy-exam h4{margin:12px 0 0;font:600 11.5px var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
 .tdy-er{margin:3px 4px 0 44px;font-size:12.5px;line-height:1.35;color:var(--low);font-style:italic}
 .nt.er.has{color:var(--low);opacity:1}
 .nprev.eprev{color:var(--low);font-style:normal}
@@ -2156,6 +2148,27 @@ body[data-auth="in"] #auth{display:none}
 .tours{align-self:center;margin-bottom:-18px}
 .ext{align-self:center}
 @media (max-width:560px){.tours{margin-bottom:0;margin-left:-6px;align-self:start}}
+/* index60 : tours en anneau « n/objectif » + pastilles datées */
+.tours{display:grid;grid-auto-flow:column;align-items:center;justify-items:end;gap:0 14px;max-width:100%}
+@media (min-width:561px){.tours{justify-content:end}}
+.step.cw{width:auto;display:flex;align-items:center;margin:0}
+.step.cw::before{display:none}
+.tours .dotb.ring,.tours .ringw{position:relative;width:54px;height:54px;border:0;border-radius:50%;background:transparent;color:var(--ink);display:grid;place-items:center;padding:0;flex:none;justify-self:center}
+.tours .dotb.next.ring:hover{background:transparent;color:var(--ink);transform:scale(1.06)}
+.ring svg,.ringw svg{position:absolute;inset:0}
+.rg{fill:none;stroke:var(--line);stroke-width:6;transition:stroke .2s}
+.rg.s-ok{stroke:var(--ok)}.rg.s-mid{stroke:var(--mid)}.rg.s-low{stroke:var(--low)}
+.rn,.rp{position:relative;font:600 13px var(--f-mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.rp{display:none;font-size:24px;font-weight:500;color:var(--c-ink);line-height:1}
+.dotb.ring:hover .rn,.dotb.ring:focus-visible .rn{display:none}
+.dotb.ring:hover .rp,.dotb.ring:focus-visible .rp{display:block}
+.tours .dotb.chip{width:auto;height:21px;border-radius:99px;padding:0 9px 0 7px;gap:5px;display:inline-flex;align-items:center;font:500 11px var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tours .dotb.chip,.tours .dotb.chip.s-ok,.tours .dotb.chip.s-mid,.tours .dotb.chip.s-low{background:transparent;border-color:transparent;box-shadow:none;color:var(--ink)}
+.tours .dotb.chip:hover{background:var(--line2);transform:none}
+.dotb.chip b{font-weight:700}
+.dotb.chip.s-ok b{color:var(--ok)}.dotb.chip.s-mid b{color:var(--mid)}.dotb.chip.s-low b{color:var(--low)}
+@media (max-width:700px){.tours .dotb.chip{height:24px}.tours .dotb.ring,.tours .ringw{width:54px;height:54px}}
+
 .step.unlink::before{opacity:0;transition:opacity .12s}
 .colh{position:relative}
 .colact{position:absolute;z-index:2;top:20px;bottom:38px;right:calc(24px + 92px + 12px);display:flex;align-items:center;gap:8px}
@@ -2230,6 +2243,190 @@ body[data-auth="in"] #auth{display:none}
 .jm-act .jm-one[hidden]{display:none}
 .jm-one small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 12px var(--f-body);opacity:.88}
 @media (prefers-reduced-motion:reduce){.jm-box>*,.set-grp{animation:none}}
+/* ---------- Planifier jusqu'à l'échéance (index60) ---------- */
+.colt.colplan{background:var(--c);color:#fff;padding:0 17px;font-weight:600;text-shadow:0 1px 1px rgba(0,0,0,.22);box-shadow:0 10px 20px -12px var(--c)}
+.colt.colplan:hover{background:color-mix(in srgb,var(--c) 86%,#000);border:0}
+.colt.colplan:hover svg{transform:none}
+.colt.colplan svg{flex:none}
+@media (min-width:701px){.colh.has-act .colname{padding-right:410px}}
+.chiptour{appearance:none;flex:none;display:inline-grid;place-items:center;width:38px;height:38px;padding:0;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink2);cursor:pointer;transition:color .15s,border-color .15s,transform .15s}
+.chiptour svg{transition:transform .5s cubic-bezier(.3,1.3,.5,1)}
+.chiptour:hover{color:var(--ink);border-color:var(--ink2)}
+.chiptour:hover svg{transform:rotate(200deg)}
+.chiptour:active{transform:scale(.94)}
+.chiptour:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+@media (max-width:700px){.chiptour{width:40px;height:40px}}
+[data-skin="ios"] .chiptour{border:0}
+.slot.jm.pe{background-image:none;background-color:color-mix(in srgb,var(--c) 9%,var(--surface));border:1.5px dashed var(--c)}
+.jmt.pet{background:var(--c);color:#fff}
+.legend .l-pe{border-radius:3px;border:1.5px dashed var(--ink2);background:color-mix(in srgb,var(--ink2) 14%,transparent)}
+.jmb.pefix{border-style:solid;border-color:transparent;background:var(--ink);color:var(--surface);font-weight:600}
+.jmb.pefix:hover,.jmb.pefix:focus-visible{background:var(--ink);color:var(--surface);opacity:.88}
+.jmb.pefix svg{margin-right:6px}
+/* fenêtre */
+.pe-box{max-width:480px}
+.pe-box .pe-ic{background:linear-gradient(135deg,var(--c,var(--blue)),var(--violet));box-shadow:0 8px 18px -10px var(--c,var(--blue))}
+.pe-q{margin-left:auto;flex:none;appearance:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font:600 14px var(--f-body);cursor:pointer;transition:color .15s,border-color .15s}
+.pe-q:hover{color:var(--ink);border-color:var(--ink)}
+.pe-lead{margin:0 0 12px;font:400 14px/1.5 var(--f-body);color:var(--ink)}
+.pe-steps{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:10px}
+.pe-step{display:grid;gap:10px;padding:10px;border-radius:16px;background:var(--line2)}
+.pe-tx b{display:flex;gap:8px;align-items:center;margin-bottom:3px;font:600 14px/1.3 var(--f-body)}
+.pe-n{display:grid;place-items:center;flex:none;width:20px;height:20px;border-radius:50%;background:var(--ink);color:var(--surface);font:700 11px var(--f-mono);font-style:normal}
+.pe-tx>span{display:block;font:400 13px/1.45 var(--f-body);color:var(--ink2)}
+.pe-tx u{text-decoration:none;font-weight:600;color:var(--ink)}
+.pe-mock{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;min-height:96px;border-radius:12px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.pe-c{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:6px;width:82px;padding:6px 7px;border-radius:9px;border:1.5px dashed color-mix(in srgb,var(--c,var(--blue)) 60%,var(--line));background:color-mix(in srgb,var(--c,var(--blue)) 8%,var(--surface))}
+.pe-c b{display:grid;place-items:center;min-width:18px;height:16px;padding:0 3px;border-radius:5px;background:color-mix(in srgb,var(--ink2) 70%,transparent);color:var(--surface);font:700 9.5px var(--f-mono)}
+.pe-c i{display:block;height:5px;border-radius:3px;background:color-mix(in srgb,var(--ink2) 30%,transparent)}
+.pe-day{display:grid;gap:5px;align-content:start}
+.pe-m1{gap:7px;align-items:flex-start}.pe-m1 .pe-c{width:64px;padding:5px 5px;gap:4px}.pe-m1 .pe-c b{min-width:16px}
+.pe-day em{font:600 9.5px var(--f-body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.pe-m1 .pe-c{animation:peDrop 5.4s ease-in-out infinite both}
+.pe-m1 .a1{animation-delay:.1s}.pe-m1 .a2{animation-delay:.3s}.pe-m1 .a3{animation-delay:.5s}.pe-m1 .a4{animation-delay:.7s}.pe-m1 .a5{animation-delay:.9s}.pe-m1 .a6{animation-delay:1.1s}.pe-m1 .a7{animation-delay:1.3s}
+@keyframes peDrop{0%,3%{opacity:0;transform:translateY(-16px) scale(.88)}12%,84%{opacity:1;transform:none}94%,100%{opacity:0;transform:scale(.96)}}
+.pe-m2{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;align-items:start}
+.pe-one{position:relative;height:34px;width:82px;margin:0 auto}
+.pe-one .pe-c{position:absolute;inset:0 auto auto 0}
+.pe-c.gh{animation:peGhost 5.6s ease-in-out infinite}
+.pe-c.so{border-style:solid;border-color:var(--c,var(--blue));background:color-mix(in srgb,var(--c,var(--blue)) 18%,var(--surface));animation:peSolid 5.6s ease-in-out infinite}
+@keyframes peGhost{0%,38%{opacity:1}48%,90%{opacity:0}100%{opacity:1}}
+@keyframes peSolid{0%,38%{opacity:0;transform:scale(.96)}48%,90%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.pe-btns{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.pe-b{display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font:600 10.5px var(--f-body)}
+.pe-b.pfx{animation:pePulse 5.6s ease-in-out infinite}
+@keyframes pePulse{0%,28%{box-shadow:0 0 0 0 transparent;color:var(--ink2)}38%{box-shadow:0 0 0 4px color-mix(in srgb,var(--c,var(--blue)) 40%,transparent);color:var(--ink);border-color:var(--c,var(--blue))}50%,100%{box-shadow:0 0 0 0 transparent;color:var(--ink2)}}
+.pe-b.pk{color:var(--ok)}
+.pe-b{flex:none;white-space:nowrap}.pe-b svg{flex:none}.pe-m1 .pe-day{width:64px;flex:none}
+.pe-all{grid-column:2;grid-row:1/3;display:grid;gap:7px;justify-items:center;align-content:start}
+.pe-b.ptf{background:var(--ink);border-color:var(--ink);color:var(--surface);animation:peTf 5.6s ease-in-out infinite}
+@keyframes peTf{0%,56%{transform:none}64%{transform:scale(1.1)}72%,100%{transform:none}}
+.pe-mini{display:grid;gap:4px;width:70px}
+.pe-mini i{display:block;height:14px;border-radius:6px;border:1.5px dashed color-mix(in srgb,var(--c,var(--blue)) 60%,var(--line));background:color-mix(in srgb,var(--c,var(--blue)) 8%,var(--surface));animation:peMini 5.6s ease-in-out infinite}
+.pe-mini i:nth-child(2){animation-delay:.12s}.pe-mini i:nth-child(3){animation-delay:.24s}
+@keyframes peMini{0%,62%{border-style:dashed;background:color-mix(in srgb,var(--c,var(--blue)) 8%,var(--surface))}70%,92%{border-style:solid;border-color:var(--c,var(--blue));background:color-mix(in srgb,var(--c,var(--blue)) 20%,var(--surface))}100%{border-style:dashed}}
+.pe-m2{grid-template-columns:1fr 1fr}
+.pe-m2 .pe-btns{grid-column:1}
+.pe-legend{display:grid;gap:5px}
+.pe-legend span{display:block}
+.pe-legend em{display:inline-flex;align-items:center;gap:3px;padding:1px 8px;margin-right:4px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 11.5px var(--f-body);font-style:normal}
+.pe-m3{gap:6px}
+.pe-c.dn{border-style:solid;border-color:color-mix(in srgb,var(--ok) 60%,var(--line));background:color-mix(in srgb,var(--ok) 10%,var(--surface))}
+.pe-c.dn s{position:absolute;top:-7px;right:-6px;display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--ok);color:#fff;font:700 10px/1 var(--f-body);text-decoration:none;animation:peChk 5.6s ease-in-out infinite both}
+@keyframes peChk{0%,4%{transform:scale(0)}12%,100%{transform:scale(1)}}
+.pe-arrow{position:relative;flex:1;max-width:84px;height:2px;margin:0 6px;background:repeating-linear-gradient(90deg,var(--ink2) 0 5px,transparent 5px 9px);transform-origin:left;animation:peLine 5.6s ease-in-out infinite both}
+.pe-arrow::after{content:"";position:absolute;right:-1px;top:-4px;width:8px;height:8px;border-top:2px solid var(--ink2);border-right:2px solid var(--ink2);transform:rotate(45deg)}
+.pe-arrow em{position:absolute;left:50%;top:-18px;transform:translateX(-50%);font:600 10.5px var(--f-mono);font-style:normal;color:var(--ink2);white-space:nowrap}
+@keyframes peLine{0%,14%{transform:scaleX(0)}34%,100%{transform:scaleX(1)}}
+.pe-c.pj{border-style:dashed;animation:peJ 5.6s ease-in-out infinite both}
+.pe-c.pj u{position:absolute;top:-7px;right:-6px;margin:0;width:16px;height:16px;text-decoration:none}
+@keyframes peJ{0%,32%{opacity:0;transform:scale(.8)}46%,92%{opacity:1;transform:scale(1)}100%{opacity:0}}
+.pe-ign{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:10px 12px;border-radius:14px;border:1px dashed color-mix(in srgb,var(--ink2) 45%,transparent);font:400 13px/1.4 var(--f-body);color:var(--ink2)}
+.pe-ign b{color:var(--ink)}
+.pe-ignrow{flex:none;display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:10px;background:var(--line2);color:var(--ink2);font:500 11.5px var(--f-body);opacity:.8}
+.pe-ignrow span{text-decoration:line-through}
+.pe-ignrow i{font-style:normal}
+.pe-ignrow em{font:600 9.5px var(--f-body);font-style:normal;padding:1px 6px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.pe-date{display:block;width:100%;height:44px;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 15px var(--f-body);color-scheme:light dark}
+.pe-date:focus{outline:2px solid var(--c,var(--blue));outline-offset:1px}
+.pe-box .jm-hint{margin:6px 0 0;font:400 12.5px/1.4 var(--f-body);color:var(--ink2)}
+.pe-box .jm-hint[hidden]{display:none}
+.pe-box .jm-cust{display:flex;align-items:center;gap:10px;margin-top:8px}
+.pe-box .jm-cust[hidden],#pe-jbox[hidden],#pe-own[hidden]{display:none}
+#pe-jbox{margin-top:6px}
+#pe-own{margin-top:10px;display:grid;gap:10px}
+.pe-pre{grid-template-columns:repeat(3,1fr)}
+.pe-prev{margin:2px 0 12px;padding:12px 14px;border-radius:14px;background:var(--line2)}
+.pe-line{margin:0;font:400 14px/1.45 var(--f-body)}
+.pe-line.good b{color:var(--ink)}
+.pe-line.bad b{color:var(--low)}
+.pe-line.off{color:var(--ink2)}
+.pe-sub{margin:6px 0 0;font:400 12.5px/1.4 var(--f-body);color:var(--ink2)}
+.pe-warn{margin-top:10px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--low) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--low) 35%,transparent);font:400 13px/1.45 var(--f-body)}
+.pe-warn>b{color:var(--low)}
+.pe-ex{display:block;margin:4px 0 8px;font-size:12.5px;color:var(--ink2)}
+.pe-skip{appearance:none;display:block;width:100%;min-height:38px;padding:6px 12px;border-radius:11px;border:1px solid color-mix(in srgb,var(--low) 45%,transparent);background:var(--surface);color:var(--ink);font:600 13px var(--f-body);cursor:pointer;transition:background .15s}
+.pe-skip[aria-pressed="true"]{background:var(--low);border-color:var(--low);color:#fff}
+.pe-warn small{display:block;margin-top:6px;font-size:12px;color:var(--ink2)}
+@media (min-width:520px){.pe-step{grid-template-columns:232px 1fr;align-items:center}.pe-mock{height:100%}}
+/* index60 : barre de défilement discrète qui respecte les coins arrondis (réglages, méthode des J, planifier, menu couleurs) */
+.set-pop::-webkit-scrollbar,.jm-box::-webkit-scrollbar,.cm-panel::-webkit-scrollbar{width:14px}
+.set-pop::-webkit-scrollbar-track,.jm-box::-webkit-scrollbar-track,.cm-panel::-webkit-scrollbar-track{background:transparent;margin:24px 0}
+.set-pop::-webkit-scrollbar-thumb,.jm-box::-webkit-scrollbar-thumb,.cm-panel::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--ink2) 45%,transparent);border-radius:10px;border:4px solid transparent;background-clip:padding-box}
+.set-pop::-webkit-scrollbar-thumb:hover,.jm-box::-webkit-scrollbar-thumb:hover,.cm-panel::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb,var(--ink2) 70%,transparent);background-clip:padding-box}
+@supports not selector(::-webkit-scrollbar){.set-pop,.jm-box,.cm-panel{scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink2) 45%,transparent) transparent}}
+/* index60 v2 : fenêtre plus large, étape 2 refaite avec de vraies cartes, couleurs dans les réglages */
+.pe-box{max-width:640px}
+@media (min-width:700px){.pe-step{grid-template-columns:312px 1fr}}
+.pe-m2{display:grid;grid-template-columns:1fr;gap:12px;padding:12px;align-items:start;justify-items:stretch}
+.pe-m2 .pe-btns,.pe-m2 .pe-all{grid-column:auto;grid-row:auto}
+.pe-one{position:relative;width:100%;height:auto;margin:0}
+.pe-l{pointer-events:none}
+.pe-l.so{position:absolute;left:0;right:0;top:0;animation:peSolid 5.6s ease-in-out infinite}
+.pe-l.gh{animation:peGhost 5.6s ease-in-out infinite}
+.pe-mock .slot{cursor:default;font-size:13px;padding:7px 8px;gap:5px}
+.pe-mock .slot .ttl{font-size:13px;line-height:1.25}
+.pe-mock .slot .vbtn{display:inline-flex;align-items:center;gap:5px;min-height:30px;font-size:12.5px}
+.pe-cursor{position:absolute;top:2px;right:30px;width:30px;height:30px;border-radius:50%;border:2px solid var(--c,var(--blue));opacity:0;animation:peRing 5.6s ease-in-out infinite;pointer-events:none}
+.pe-cursor svg{display:none}
+@keyframes peRing{0%,26%{opacity:0;transform:scale(.7)}34%{opacity:1;transform:scale(1.1)}46%{opacity:0;transform:scale(1.5)}100%{opacity:0}}
+.pe-all{display:flex;align-items:center;gap:12px}
+.pe-all .jmb{flex:none;cursor:default;animation:peTf 5.6s ease-in-out infinite}
+.pe-rows{display:grid;gap:5px;flex:1;min-width:0}
+.pe-r{display:flex;align-items:center;gap:8px;height:26px;padding:0 8px;border-radius:9px;border:1.5px dashed var(--c,var(--blue));background:color-mix(in srgb,var(--c,var(--blue)) 8%,var(--surface));animation:peMini 5.6s ease-in-out infinite}
+.pe-r.f2{animation-delay:.12s}.pe-r.f3{animation-delay:.24s}
+.pe-r b{display:grid;place-items:center;min-width:26px;height:16px;border-radius:5px;background:color-mix(in srgb,var(--c,var(--blue)) 22%,var(--surface));color:var(--c,var(--blue));font:700 10px var(--f-mono)}
+.pe-r i{flex:1;height:5px;border-radius:3px;background:color-mix(in srgb,var(--ink2) 30%,transparent)}
+.pe-legend{display:grid;gap:9px}
+.pe-legend>.pe-lg{display:grid}
+.pe-lg{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:center;font:400 13px/1.35 var(--f-body);color:var(--ink2)}
+.pe-lg em{justify-self:start;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:64px;height:26px;padding:0 10px;margin:0;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 12px var(--f-body);font-style:normal;white-space:nowrap}
+.pe-lg em.v{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.pe-lg em.t{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.pe-sec{margin:0 0 10px;padding:12px 13px;border-radius:16px;background:color-mix(in srgb,var(--sc) 8%,var(--surface));border:1px solid color-mix(in srgb,var(--sc) 26%,transparent)}
+.pe-sec>.jm-lb{display:flex;align-items:center;gap:7px;color:var(--sc)}
+.pe-sec>.jm-lb::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--sc)}
+.pe-sec .jm-seg{background:color-mix(in srgb,var(--sc) 15%,transparent)}
+.pe-sec .jm-seg button[aria-pressed="true"]{background:var(--sc);color:#fff;box-shadow:0 6px 14px -8px var(--sc)}
+.pe-sec .jm-seg button:disabled{opacity:.4;cursor:default}
+.jm-box .pe-sec .set-sw[aria-checked="true"]{background:var(--sc)}
+.pe-sec .jm-sw{border-top-color:color-mix(in srgb,var(--sc) 22%,transparent)}
+.pe-sec .pe-date{border-color:color-mix(in srgb,var(--sc) 45%,var(--line))}
+.pe-sec .jm-hint{color:color-mix(in srgb,var(--ink2) 85%,var(--sc))}
+.pe-sec .jm-chips button[aria-pressed="true"]{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,var(--surface))}
+.pe-prev{background:color-mix(in srgb,var(--c,var(--blue)) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--c,var(--blue)) 30%,transparent)}
+.pe-line.good b{color:var(--c,var(--blue))}
+.pe-2{font-size:12.5px;color:var(--ink2)}
+.pe-line2{margin:6px 0 0;font:400 13.5px/1.45 var(--f-body);color:var(--ink2)}
+.pe-line2 b{color:var(--ink)}
+.pe-redo{display:flex;align-items:center;gap:10px;margin:0 0 12px;font:400 13px/1.4 var(--f-body);color:var(--ink2)}
+.pe-redo .pe-q{display:grid;place-items:center;flex:none;margin:0;cursor:default;width:26px;height:26px;font-size:13px}
+/* index60 v3 : étape 2 en deux scènes lisibles (avant → après), légende aux pastilles de même largeur */
+.pe-m2{display:grid;grid-template-columns:1fr;gap:14px;padding:12px 12px 14px;min-height:0}
+.pe-fl{display:grid;gap:6px}
+.pe-cap{font:600 10.5px var(--f-body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.pe-fx2{display:grid;grid-template-columns:1fr 62px 1fr;align-items:center;gap:6px}
+.pe-st{display:grid;gap:5px}
+.pe-k{display:flex;align-items:center;gap:6px;height:30px;padding:0 7px;border-radius:9px;border:1.5px dashed var(--c,var(--blue));background:color-mix(in srgb,var(--c,var(--blue)) 8%,var(--surface))}
+.pe-k b{display:grid;place-items:center;min-width:26px;height:16px;border-radius:5px;background:color-mix(in srgb,var(--c,var(--blue)) 22%,var(--surface));color:var(--c,var(--blue));font:700 10px var(--f-mono)}
+.pe-k i{flex:1;height:5px;border-radius:3px;background:color-mix(in srgb,var(--ink2) 30%,transparent)}
+.pe-k svg{flex:none;color:var(--ink)}
+.pe-k.pv .pin,.pe-k.pv svg{animation:pePin 4.8s ease-in-out infinite}
+.pe-k.kx{border-style:solid;animation:peFx 4.8s ease-in-out infinite both}
+.pe-k.kx.f2{animation-delay:.12s}.pe-k.kx.f3{animation-delay:.24s}
+.pe-k.kx u{display:grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--ok);color:#fff;font:700 10px/1 var(--f-body);text-decoration:none}
+@keyframes pePin{0%,18%{transform:scale(1)}28%{transform:scale(1.45)}38%,100%{transform:scale(1)}}
+@keyframes peFx{0%,30%{opacity:.18;transform:scale(.94)}44%,90%{opacity:1;transform:scale(1)}100%{opacity:.18;transform:scale(.94)}}
+.pe-ar{position:relative;height:2px;margin-top:14px;background:repeating-linear-gradient(90deg,var(--ink2) 0 5px,transparent 5px 9px)}
+.pe-ar::after{content:"";position:absolute;right:-1px;top:-4px;width:8px;height:8px;border-top:2px solid var(--ink2);border-right:2px solid var(--ink2);transform:rotate(45deg)}
+.pe-ar em{position:absolute;left:50%;bottom:7px;transform:translateX(-50%);padding:1px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 10.5px var(--f-body);font-style:normal;white-space:nowrap}
+.pe-ar.t em{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.pe-legend{gap:10px}
+.pe-lg{grid-template-columns:96px 1fr;gap:14px;align-items:center}
+.pe-lg em{justify-self:stretch;min-width:0;width:96px}
+@media (prefers-reduced-motion:reduce){.pe-k.pv svg,.pe-k.kx{animation:none}}
+@media (prefers-reduced-motion:reduce){.pe-l.so,.pe-l.gh,.pe-cursor,.pe-all .jmb,.pe-r,.pe-m1 .pe-c,.pe-c.gh,.pe-c.so,.pe-b.pfx,.pe-b.ptf,.pe-mini i,.pe-c.dn s,.pe-arrow,.pe-c.pj{animation:none}.pe-c.gh,.pe-l.gh{display:none}.pe-c.so,.pe-l.so{opacity:1}}
+
 
 .set-card .set-r:has(.set-seg){flex-wrap:wrap;row-gap:10px}
 .set-card .set-r:has(.set-seg) .set-seg{flex:1 1 100%;margin-left:44px}
@@ -2429,7 +2626,7 @@ body[data-auth="in"] #auth{display:none}
 <!-- §H3 — Fenêtres et panneaux, cachés par défaut (hidden) : #clock (§J24), #set-pop (§J25), #jm (§J12),
      #pc (§J14), #pf (§J15), #tc (§J13), #cf (§J16), #st-pop (§J30), #adm (§J31), #tour (§J33), to-do (§J23).
      Le contenu de plusieurs d'entre eux est fabriqué en JS. -->
-<div id="clock" class="clock" role="dialog" aria-modal="true" aria-label="Heure" tabindex="-1" hidden><time id="clock-t" class="clock-t"></time><p class="clock-hint" id="clock-hint">Appuyez sur n’importe quelle touche pour quitter</p><div class="pomo" id="pomo-wrap" aria-live="off"><div class="pomo-line" id="pomo-line" hidden><span id="pomo-phase"></span><span id="pomo-left"></span><span class="pomo-count" id="pomo-count"></span></div><div class="pomo-bar" id="pomo-bar" hidden><i id="pomo-fill"></i></div></div><div class="clock-menu" id="clock-menu"><button type="button" class="cm-btn" id="cm-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="cm-panel" aria-label="Minuteur de révision"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="11.5" r="5.8"/><path d="M10 8.7v2.9l1.9 1.2M8 2.6h4"/></svg></button><div class="cm-panel" id="cm-panel" role="group" aria-label="Minuteur de révision" hidden><div class="cm-title">Pomodoro</div><div class="cm-presets" id="cm-presets"><button type="button" class="cm-row" data-w="25" data-b="5"><span>25 min</span><small>pause 5</small></button><button type="button" class="cm-row" data-w="50" data-b="10"><span>50 min</span><small>pause 10</small></button><button type="button" class="cm-row" data-w="90" data-b="15"><span>90 min</span><small>pause 15</small></button><button type="button" class="cm-row" id="cm-other" aria-expanded="false" aria-controls="cm-custom"><span>Autre…</span><small>à toi de choisir</small></button><form class="cm-custom" id="cm-custom" hidden><label><span>Travail</span><input type="number" id="cm-w" min="1" max="240" step="1" value="30" inputmode="numeric" aria-label="Durée de travail en minutes"><em>min</em></label><label><span>Pause</span><input type="number" id="cm-b" min="1" max="60" step="1" value="5" inputmode="numeric" aria-label="Durée de pause en minutes"><em>min</em></label><button type="submit" class="cm-row cm-go"><span>Lancer</span></button></form></div><div class="cm-actions" id="cm-actions" hidden><button type="button" class="cm-row" id="cm-pause"><span>Pause</span></button><button type="button" class="cm-row" id="cm-skip"><span>Passer à la phase suivante</span></button><button type="button" class="cm-row danger" id="cm-stop"><span>Arrêter</span></button></div></div></div></div>
+<div id="clock" class="clock" role="dialog" aria-modal="true" aria-label="Heure" tabindex="-1" hidden><time id="clock-t" class="clock-t"></time><p class="clock-hint" id="clock-hint">Appuyez sur n’importe quelle touche pour quitter</p><div class="pomo" id="pomo-wrap" aria-live="off"><div class="pomo-line sw-line" id="sw-line" hidden><span id="sw-lab">Chrono</span><span id="sw-t">00:00</span></div><div class="pomo-line" id="pomo-line" hidden><span id="pomo-phase"></span><span id="pomo-left"></span><span class="pomo-count" id="pomo-count"></span></div><div class="pomo-bar" id="pomo-bar" hidden><i id="pomo-fill"></i></div></div><div class="clock-menu" id="clock-menu"><button type="button" class="cm-btn" id="cm-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="cm-panel" aria-label="Minuteur de révision"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="11.5" r="5.8"/><path d="M10 8.7v2.9l1.9 1.2M8 2.6h4"/></svg></button><div class="cm-panel" id="cm-panel" role="group" aria-label="Minuteur de révision" hidden><div class="cm-title">Pomodoro</div><div class="cm-presets" id="cm-presets"><button type="button" class="cm-row" data-w="25" data-b="5"><span>25 min</span><small>pause 5</small></button><button type="button" class="cm-row" data-w="50" data-b="10"><span>50 min</span><small>pause 10</small></button><button type="button" class="cm-row" data-w="90" data-b="15"><span>90 min</span><small>pause 15</small></button><button type="button" class="cm-row" id="cm-other" aria-expanded="false" aria-controls="cm-custom"><span>Autre…</span><small>à toi de choisir</small></button><form class="cm-custom" id="cm-custom" hidden><label><span>Travail</span><input type="number" id="cm-w" min="1" max="240" step="1" value="30" inputmode="numeric" aria-label="Durée de travail en minutes"><em>min</em></label><label><span>Pause</span><input type="number" id="cm-b" min="1" max="60" step="1" value="5" inputmode="numeric" aria-label="Durée de pause en minutes"><em>min</em></label><button type="submit" class="cm-row cm-go"><span>Lancer</span></button></form></div><div class="cm-actions" id="cm-actions" hidden><button type="button" class="cm-row" id="cm-pause"><span>Pause</span></button><button type="button" class="cm-row" id="cm-skip"><span>Passer à la phase suivante</span></button><button type="button" class="cm-row danger" id="cm-stop"><span>Arrêter</span></button></div><div class="cm-sep" aria-hidden="true"></div><div class="cm-title">Chronomètre</div><div class="cm-actions" id="sw-actions"><button type="button" class="cm-row" id="sw-go"><span>Démarrer</span></button><button type="button" class="cm-row danger" id="sw-stop" hidden><span>Arrêter</span></button></div></div></div></div>
 <div id="set-scrim" class="set-scrim" hidden></div>
 <section id="set-pop" class="set-pop" role="dialog" aria-modal="true" aria-labelledby="set-title" hidden></section>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -2449,6 +2646,7 @@ body[data-auth="in"] #auth{display:none}
 <div class="jm-sw"><div><b>Semaines de stage plus légères</b><small>Moitié moins d’items proposés les jours de stage.</small></div><button type="button" class="set-sw" role="switch" data-jmw="stg" aria-checked="true" aria-label="Alléger les semaines de stage"></button></div></div>
 </div>
 <div class="jm-act"><button type="button" class="jm-one" id="jm-one"></button><button type="button" class="jm-all" id="jm-all">Appliquer pour tous les collèges</button><p class="jm-note" id="jm-note" hidden></p><div class="jm-foot"><button type="button" class="jm-ghost" id="jm-cancel">Annuler</button><button type="button" class="jm-ghost warn" id="jm-off" hidden>Tout désactiver</button></div></div></div></div>
+<div id="pe" class="cf" hidden><div class="cf-box jm-box pe-box" role="dialog" aria-modal="true" aria-label="Planifier jusqu’à l’échéance"><div id="pe-intro" hidden></div><div id="pe-set" hidden></div></div></div>
 <div id="pc" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="pc-t"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h8M7.5 4.5L11 8l-3.5 3.5"/><path d="M13.6 3.5v9"/></svg></div><h2 id="pc-t">Continuer quel jour ?</h2><p class="tc-n" id="pc-n"></p><div class="pc-days" id="pc-days" role="group" aria-label="Jour de la suite"></div><label class="tc-date"><span>Un autre jour</span><input type="date" id="pc-date"></label><div class="cf-act"><button type="button" class="cf-no" data-pcs="no">Annuler</button><button type="button" class="cf-ok" id="pc-ok" data-pcs="ok" disabled>Choisir</button></div></div></div>
 <div id="pf" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="pf-t"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></div><h2 id="pf-t">Comment s’est passé ce tour ?</h2><p class="tc-n" id="pf-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-pfs="ok" class="tc-ok-b"><i></i>Bien compris</button><button type="button" data-pfs="mid" class="tc-mid-b"><i></i>À consolider</button><button type="button" data-pfs="low" class="tc-low-b"><i></i>Difficile</button></div><div class="cf-act"><button type="button" class="cf-no" data-pfs="no">Annuler</button></div></div></div>
 <div id="tc" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="tc-t" aria-describedby="tc-d"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg></div><h2 id="tc-t">Un tour pour tout le collège ?</h2><p class="tc-n" id="tc-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-tcs="ok" class="tc-ok-b" aria-pressed="true"><i></i>Bien compris</button><button type="button" data-tcs="mid" class="tc-mid-b" aria-pressed="false"><i></i>À consolider</button><button type="button" data-tcs="low" class="tc-low-b" aria-pressed="false"><i></i>Difficile</button></div><label class="tc-date"><span>Date du tour</span><input type="date" id="tc-date"></label><p id="tc-d" class="tc-d"></p><div class="cf-act"><button type="button" class="cf-no" data-tc="no">Annuler</button><button type="button" class="cf-ok" data-tc="ok">Ajouter</button></div></div></div>
@@ -3644,7 +3842,7 @@ var ICON_CHEV = '<svg class="chev" width="16" height="16" viewBox="0 0 16 16" fi
    ====================================================================== */
 /* ---------- État ---------- */
 var LS_DL = 'carnet-edn-dl', LS_JM = 'carnet-edn-jm', LS_IGN = 'medisam-ign', LS_PIN = 'medisam-pins', LS_CUR = 'medisam-cur';
-var state = { tours:{}, plan:{}, anki:{}, todos:[], days:{}, stw:{}, notes:{}, deadlines:{}, ign:{}, pins:[], cur:'', jm:{ all:null, cols:{}, max:8, x:{}, adapt:true, dl:true, stg:true } };
+var state = { tours:{}, plan:{}, anki:{}, todos:[], days:{}, stw:{}, notes:{}, deadlines:{}, ign:{}, pins:[], cur:'', jm:{ all:null, cols:{}, max:8, x:{}, adapt:true, dl:true, stg:true, pe:peDef() } };
 function sanitizeNotes(o){ var r = {}; if(o && typeof o === 'object') Object.keys(o).slice(0,1500).forEach(function(k){ if(typeof o[k] === 'string' && o[k].trim()) r[k.slice(0,40)] = o[k].slice(0,4000); }); return r; }
 /* Items qu'on ne compte pas faire (clé → 1) et collèges épinglés (liste d'identifiants, dans l'ordre d'épinglage) */
 function sanitizeIgn(o){ var r = {}; if(o && typeof o === 'object') Object.keys(o).slice(0,800).forEach(function(k){ if(ITEM_BY_KEY[k] && o[k]) r[k] = 1; }); return r; }
@@ -3678,7 +3876,8 @@ function sanitizePlan(p){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(day) || !Array.isArray(p[day])) return;
     var clean = p[day].filter(function(x){ return x && ((typeof x.k === 'string' && ITEM_BY_KEY[x.k]) || (!x.k && typeof x.t === 'string' && x.t.trim())); }).slice(0,40).map(function(x){
       var o = x.k ? { k:x.k } : { t:x.t.trim().slice(0,120) };
-      if(x.e && !x.x && x.k) o.e = 1;   /* e = proposé par le mode examen, pas encore accepté (affiché grisé comme la méthode des J) */
+      if(x.p && !x.x && x.k) o.p = 1;   /* p = proposé par « Planifier jusqu'à l'échéance », pas encore fixé (index60) */
+      if(x.e && !x.x && x.k) o.e = 1;   /* e = proposition de l'ancien mode examen (retiré en index60), conservée pour les anciennes données : pas encore accepté (affiché grisé comme la méthode des J) */
       if(x.x){ o.x = 1; if(typeof x.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.d)) o.d = x.d; if(x.a) o.a = 1; }
       /* c = cours commencé, à finir le jour indiqué ; s = suite d'un cours commencé le jour indiqué */
       if(typeof x.c === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.c)) o.c = x.c;
@@ -3728,8 +3927,26 @@ function jmCfg(c){
   var g = c.g.map(function(v){ return Math.round(Number(v)); }).filter(function(v){ return v >= 1 && v <= 365; }).slice(0, MAX - 1);
   return { g:g, b:c.b === 'f' ? 'f' : 'p' };
 }
+function peDef(){ return { seen:false, set:{ margin:3, cap:'auto', wk:'all', start:'today', stg:true, light:true, jm:'auto', og:[3,7,15,30], ob:'p' }, own:{} }; }
+function sanitizePe(o){
+  var r = peDef(); if(!o || typeof o !== 'object') return r;
+  r.seen = o.seen === true;
+  var s = o.set;
+  if(s && typeof s === 'object'){
+    if(Number.isInteger(s.margin) && s.margin >= 0 && s.margin <= 60) r.set.margin = s.margin;
+    if(s.cap === 'auto' || (Number.isInteger(s.cap) && s.cap >= 1 && s.cap <= 60)) r.set.cap = s.cap;
+    if(['all', 'nosun', 'nosat', 'nowe'].indexOf(s.wk) > -1) r.set.wk = s.wk;
+    r.set.start = s.start === 'tomorrow' ? 'tomorrow' : 'today';
+    r.set.stg = s.stg !== false; r.set.light = s.light !== false;
+    if(['auto', 'off', 'col', 'own'].indexOf(s.jm) > -1) r.set.jm = s.jm;
+    var og = jmCfg({ g:s.og, b:s.ob }); if(og && og.g.length){ r.set.og = og.g; r.set.ob = og.b; }
+  }
+  if(o.own && typeof o.own === 'object') Object.keys(o.own).slice(0, 2000).forEach(function(k){ if(ITEM_BY_KEY[k]){ var c = jmCfg(o.own[k]); if(c) r.own[k] = c; } });
+  return r;
+}
 function sanitizeJm(o){
-  var r = { all:null, cols:{}, max:8, x:{}, adapt:true, dl:true, stg:true }; if(!o || typeof o !== 'object') return r;
+  var r = { all:null, cols:{}, max:8, x:{}, adapt:true, dl:true, stg:true, pe:peDef() }; if(!o || typeof o !== 'object') return r;
+  r.pe = sanitizePe(o.pe);
   r.adapt = o.adapt !== false; r.dl = o.dl !== false; r.stg = o.stg !== false;
   r.all = jmCfg(o.all);
   if(o.cols && typeof o.cols === 'object') COLLEGES.forEach(function(c){ var v = jmCfg(o.cols[c.id]); if(v) r.cols[c.id] = v; });
@@ -3923,7 +4140,7 @@ function sparkItems(items){
 }
 function sparkPlan(days){
   var t0 = today(), max = 0, month = days.length > 7;
-  var rows = days.map(function(d){ var sl = slotsOf(d).filter(function(s){ return s.k; }), dn = 0; sl.forEach(function(s){ if(s.x) dn++; }); if(sl.length > max) max = sl.length; return { d:d, n:sl.length, x:dn }; });
+  var rows = days.map(function(d){ var sl = slotsOf(d).filter(function(s){ return !s.c; }), dn = 0; sl.forEach(function(s){ if(s.x) dn++; }); if(sl.length > max) max = sl.length; return { d:d, n:sl.length, x:dn }; });
   var bars = rows.map(function(r,k){
     var h = max ? Math.round(r.n/max*100) : 0, v = r.n ? Math.round(r.x/r.n*100) : 0;
     return '<i class="pl'+(r.d === t0 ? ' t' : '')+(r.n ? '' : ' z')+'" style="--h:'+h+'%;--k:'+k+'" title="'+esc(fmtTip.format(parse(r.d)))+' · '+r.x+'/'+r.n+' validé'+(r.x>1?'s':'')+'"><b style="--v:'+v+'%"></b></i>';
@@ -4022,7 +4239,7 @@ function refItems(){
   return out;
 }
 function renderChips(){
-  var nRef = refItems().length;
+  var nRef = refItems().length, tcol = (selCol !== 'all' && selColleges().length === 1) ? selColleges()[0] : null;
   var items = refOnly ? refItems() : scopeItems();
   var cnt = {
     all: items.length,
@@ -4031,7 +4248,8 @@ function renderChips(){
   };
   $('chips').innerHTML = [['all','Tous'],['new','À démarrer'],['due','À revoir']].map(function(p){
     return '<button class="chip" data-act="filter" data-f="'+p[0]+'" aria-pressed="'+(filter===p[0])+'">'+p[1]+' <b>'+cnt[p[0]]+'</b></button>';
-  }).join('') + '<span class="chipsep" aria-hidden="true"></span><button class="chip refchip" data-act="refonly" aria-pressed="'+refOnly+'" title="N’afficher que les items écrits par ce collège (étoile jaune)">'+ICON_STAR+'Référence <b>'+nRef+'</b></button>';
+  }).join('') + '<span class="chipsep" aria-hidden="true"></span><button class="chip refchip" data-act="refonly" aria-pressed="'+refOnly+'" title="N’afficher que les items écrits par ce collège (étoile jaune)">'+ICON_STAR+'Référence <b>'+nRef+'</b></button>'+
+    (tcol ? '<button type="button" class="chiptour" data-act="col-tour" data-id="'+tcol.id+'" aria-label="Un tour pour tout le collège" title="Un tour pour tout le collège : ajoute le même tour à tous les items de ce collège"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg></button>' : '');
 }
 function staleDays(t){
   if(!t.length) return 0;
@@ -4049,18 +4267,25 @@ function metaHTML(t, ig){
   return '<span class="meta">Dernier tour '+rel+'</span>'+(isDue(t) && !ig ? '<span class="due">à revoir</span>' : '');
 }
 function stepsHTML(key,t){
-  var shown = Math.min(MAX, t.length+1), h = '';
-  for(var i=0;i<shown;i++){
-    var link = i > 0 && i < t.length ? ' link' : '';
-    if(i < t.length){
-      var x = t[i];
-      h += '<div class="step'+link+'"><button class="dotb s-'+x.s+'" data-act="pill-edit" data-num="'+key+'" data-idx="'+i+'" aria-label="Tour '+(i+1)+', '+fmtDay.format(parse(x.d))+', '+STAT[x.s]+'. Modifier">T'+(i+1)+'</button><span class="sd">'+short(x.d)+'</span></div>';
-    } else if(i === t.length){
-            h += '<div class="step'+(i>0 && i-1 < t.length ? ' link' : '')+'"><button class="dotb next'+'" data-act="pill-new" data-num="'+key+'" aria-haspopup="dialog" aria-label="Ajouter le tour '+(i+1)+'">+</button><span class="sd">T'+(i+1)+'</span></div>';
-    } else {
-      h += '<div class="step"><span class="dotb future" aria-hidden="true">T'+(i+1)+'</span><span class="sd"></span></div>';
-    }
+  /* index60 : anneau « n / objectif » + une pastille par tour fait. L'objectif vient des réglages (cfg.tg, 3 par défaut)
+     et monte tout seul pour CET item s'il a déjà plus de tours (4/4, 5/5…). Les boutons gardent data-act pill-new / pill-edit. */
+  var goal = Math.min(MAX, Math.max(1, Number(cfg.tg) || 3)), n = t.length, tot = Math.max(goal, n), full = n >= MAX;
+  var C = 2 * Math.PI * 21, gap = tot > 1 ? 5 : 0, seg = C / tot - gap, arcs = '';
+  for(var i = 0; i < tot; i++){
+    arcs += '<circle class="rg'+(i < n ? ' s-'+t[i].s : '')+'" cx="27" cy="27" r="21" stroke-dasharray="'+seg.toFixed(2)+' '+(C - seg).toFixed(2)+'" stroke-dashoffset="'+(-(i * C / tot + gap / 2)).toFixed(2)+'"/>';
   }
+  var svg = '<svg viewBox="0 0 54 54" width="54" height="54" aria-hidden="true"><g transform="rotate(-90 27 27)">'+arcs+'</g></svg>';
+  var cnt = '<span class="rn">'+n+'/'+tot+'</span>'+(full ? '' : '<span class="rp">+</span>');
+  /* Pastilles à GAUCHE de l'anneau, en colonne (3 par colonne au plus, réparties à égalité), centrées sur la hauteur de l'anneau */
+  var R = n <= 3 ? Math.max(1, n) : Math.ceil(n / Math.ceil(n / 3)), h = '';
+  for(var j = 0; j < n; j++){
+    var x = t[j];
+    var col = Math.floor(j / R), inCol = Math.min(R, n - col * R);
+    h += '<div class="step cw" style="grid-row:'+(2 * (j % R) + 1 + (R - inCol))+' / span 2"><button class="dotb chip s-'+x.s+'" data-act="pill-edit" data-num="'+key+'" data-idx="'+j+'" aria-label="Tour '+(j+1)+', '+fmtDay.format(parse(x.d))+', '+STAT[x.s]+'. Modifier"><b>T'+(j+1)+'</b>'+short(x.d)+'</button></div>';
+  }
+  h += full
+    ? '<div class="ringw" style="grid-row:1 / span '+(2 * R)+'" role="img" aria-label="'+n+' tours sur '+tot+' : maximum atteint">'+svg+cnt+'</div>'
+    : '<button type="button" class="dotb next ring" style="grid-row:1 / span '+(2 * R)+'" data-act="pill-new" data-num="'+key+'" aria-haspopup="dialog" aria-label="Ajouter le tour '+(n+1)+' ('+n+' fait'+(n > 1 ? 's' : '')+' sur '+tot+')">'+svg+cnt+'</button>';
   return h;
 }
 var ICON_CHECK_S = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>';
@@ -4196,7 +4421,7 @@ function renderList(){
       '<span class="colname">'+esc(col.name)+'</span>'+
       '<span class="colcount">'+s.started+'/'+s.n+' '+ICON_CHEV+'</span>'+
       meterHTML(p1,p2)+'</button>';
-    if(open) out += '<div class="colact"><button type="button" class="colt" data-act="col-tour" data-id="'+col.id+'" aria-label="Ajouter un tour à tout le collège" title="Tour pour tout le collège"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg><span class="colt-l">Tour pour tout le collège</span></button><button type="button" class="colt" data-act="jm-open" data-id="'+col.id+'" aria-label="Méthode des J" title="Méthode des J"><span class="jmt" aria-hidden="true">J</span><span class="colt-l">Méthode des J</span></button></div>';
+    if(open) out += '<div class="colact"><button type="button" class="colt colplan" data-act="pe-open" data-id="'+col.id+'" aria-label="Planifier jusqu’à l’échéance" title="Planifier jusqu’à l’échéance"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 6.8h11M5.5 2v3M10.5 2v3M5.8 10l1.6 1.6 3-3"/></svg><span class="colt-l">Planifier jusqu’à l’échéance</span></button><button type="button" class="colt" data-act="jm-open" data-id="'+col.id+'" aria-label="Méthode des J" title="Méthode des J"><span class="jmt" aria-hidden="true">J</span><span class="colt-l">Méthode des J</span></button></div>';
     out += '</h2>';
     if(open) out += vis.length ? vis.map(rowHTML).join('') : '<p class="empty">'+(refOnly ? 'Aucun item de référence ne correspond ici.' : 'Aucun item ne correspond à ce filtre.')+'</p>';
     out += '</section>';
@@ -4375,7 +4600,7 @@ document.addEventListener('click', function(e){
   if(b.id === 'jm-one'){ jmApply(false); return; }
   if(b.id === 'jm-all'){ jmApply(true); return; }
   if(b.id === 'jm-off'){
-    var bf = JSON.stringify(state.jm); state.jm = { all:null, cols:{}, max:state.jm.max, x:{}, adapt:state.jm.adapt, dl:state.jm.dl, stg:state.jm.stg }; persist(); jmClose(); renderAll();
+    var bf = JSON.stringify(state.jm); state.jm = { all:null, cols:{}, max:state.jm.max, x:{}, adapt:state.jm.adapt, dl:state.jm.dl, stg:state.jm.stg, pe:state.jm.pe }; persist(); jmClose(); renderAll();
     toast('Méthode des J désactivée', function(){ state.jm = sanitizeJm(JSON.parse(bf)); persist(); renderAll(); }); return;
   }
   if(b.dataset.jmp !== undefined){ jmD.g = JM_PRESETS[Number(b.dataset.jmp)][1].slice(); jmRender(); flashRows(); return; }
@@ -4732,7 +4957,9 @@ function slotsOf(day){ return state.plan[day] || []; }
 /* ---------- Méthode des J : tours proposés automatiquement ---------- */
 var JM_PRESETS = [['Classique', [3,7,15,30]], ['Intensive', [1,3,7,14]], ['Légère', [7,21,45]]];
 function jmFor(cid){ var j = state.jm; return j.cols[cid] || j.all || null; }
-function jmAny(){ var j = state.jm; return !!(j.all && j.all.g.length) || COLLEGES.some(function(c){ return j.cols[c.id] && j.cols[c.id].g.length; }); }
+/* index60 : un item placé par « Planifier jusqu'à l'échéance » peut avoir ses propres intervalles (state.jm.pe.own) */
+function jmForKey(k){ var o = state.jm.pe.own[k]; return o || jmFor(collegeOfKey(k).id); }
+function jmAny(){ var j = state.jm; return !!(j.all && j.all.g.length) || Object.keys(j.pe.own).some(function(k){ return j.pe.own[k].g.length; }) || COLLEGES.some(function(c){ return j.cols[c.id] && j.cols[c.id].g.length; }); }
 var JM_FA = { low:.5, mid:1, ok:1.3 };
 /* Prochain tour d'un item : { due, n, gap, adj } ; adj = ce qui a décalé la date par rapport au réglage */
 function jmDueInfo(key, cf){
@@ -4753,7 +4980,7 @@ function jmDueInfo(key, cf){
 }
 function jmNextHTML(key){
   if(!jmAny() || state.ign[key]) return '';
-  var cf = jmFor(collegeOfKey(key).id); if(!cf || !cf.g.length) return '';
+  var cf = jmForKey(key); if(!cf || !cf.g.length) return '';
   var info = jmDueInfo(key, cf); if(!info || state.jm.x[key] === toursOf(key).length) return '';
   var late = info.due < today();
   return '<span class="jmnext'+(late ? ' late' : '')+'" title="Proposé par la méthode des J'+(info.adj ? ' ('+info.adj+')' : '')+'"><span class="jmt" aria-hidden="true">J</span>Tour '+info.n+(late ? ' à refaire depuis le ' : ' conseillé le ')+short(info.due)+'</span>';
@@ -4766,7 +4993,7 @@ function jmPlan(){
   Object.keys(state.plan).forEach(function(d){ load[d] = state.plan[d].length; if(d >= t0) state.plan[d].forEach(function(x){ if(x.k && !x.x) planned[x.k] = 1; }); });
   Object.keys(state.tours).forEach(function(k){
     var it = ITEM_BY_KEY[k]; if(!it || planned[k] || state.ign[k]) return;
-    var cf = jmFor(collegeOfKey(k).id); if(!cf || !cf.g.length) return;
+    var cf = jmForKey(k); if(!cf || !cf.g.length) return;
     var info = jmDueInfo(k, cf); if(!info) return;
     if(state.jm.x[k] === state.tours[k].length) return;
     items.push({ k:k, due:info.due, n:info.n, gap:info.gap, b:info.b, adj:info.adj, num:it[0] });
@@ -4790,17 +5017,20 @@ function jmSlotHTML(x){
   var meta = 'Tour ' + x.n + ' · ' + when + (x.late ? ' · en retard de ' + x.late + ' j' : '') + (x.adj ? ' · ' + x.adj : '');
   var A = x.ex ? { pin:'ex-acc', x:'pl-rm', done:'pl-done' } : { pin:'jm-pin', x:'jm-x', done:'jm-done' }, exI = x.ex ? ' data-i="' + x.i + '"' : '';
   if(x.ex) meta = 'Tour ' + x.n + ' · proposé pour l’examen';
-  return '<div class="slot jm'+(x.late ? ' late' : '')+'" data-h="'+hue+'" data-jk="'+x.k+'" data-jday="'+x.day+'"><div class="num">'+it[0]+'</div>'+
+  if(x.pe) meta = 'Tour ' + x.n + ' · jusqu’à l’échéance';
+  var badge = x.pe ? '<span class="jmt pet" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.8h11M5.5 2.5v2.5M10.5 2.5v2.5"/><rect x="2.5" y="3.5" width="11" height="9.5" rx="2"/></svg></span>' : '<span class="jmt" aria-hidden="true">'+(x.ex ? 'E' : 'J')+'</span>';
+  return '<div class="slot jm'+(x.pe ? ' pe' : '')+(x.late ? ' late' : '')+'" data-h="'+hue+'" data-jk="'+x.k+'" data-jday="'+x.day+'"><div class="num">'+it[0]+'</div>'+
     '<div class="jmx"><button type="button" class="rmb" data-act="'+A.pin+'"'+exI+' data-k="'+x.k+'" data-day="'+x.day+'" aria-label="Fixer '+esc(title)+' dans mon planning" title="Fixer dans mon planning"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5l4 4-2 .6-2.4 2.4.3 3-1 1-2.6-2.6-3.5 3.5M6.2 6.6l-.4 0 3.6-3.6"/></svg></button>'+
     '<button type="button" class="rmb" data-act="'+A.x+'"'+exI+' data-k="'+x.k+'" data-day="'+x.day+'" aria-label="Ignorer ce tour proposé pour '+esc(title)+'" title="Ignorer">'+ICON_X+'</button></div>'+
-    '<div class="main"><div class="ttl">'+esc(title)+'</div><span class="meta"><span class="jmt" aria-hidden="true">'+(x.ex ? 'E' : 'J')+'</span>'+meta+'</span></div>'+
+    '<div class="main"><div class="ttl">'+esc(title)+'</div><span class="meta">'+badge+meta+'</span></div>'+
     '<div class="act"><button class="vbtn" data-act="'+A.done+'"'+exI+' data-k="'+x.k+'" data-day="'+x.day+'" aria-label="Valider le tour '+x.n+' de '+esc(title)+'">'+ICON_CHECK+'Valider</button></div></div>';
 }
 function jmBar(){
-  var on = jmAny(), n = on ? jmPlan().n : 0;
+  var on = jmAny(), n = on ? jmPlan().n : 0, peN = peCount();
   return '<div class="jmbar"><button type="button" class="jmb'+(on ? ' on' : '')+'" data-act="jm-open" aria-haspopup="dialog"><span class="jmt" aria-hidden="true">J</span>Méthode des J</button>'+
     '<span class="jmst">'+(on ? n + ' tour' + (n > 1 ? 's' : '') + ' proposé' + (n > 1 ? 's' : '') + ' par la méthode' : 'Laisse Médisam placer tes prochains tours.')+'</span>'+
-    (on ? '<span class="legend jmleg"><span><i class="l-jm"></i>Proposé par la méthode des J</span><span><i class="l-me"></i>Ajouté par toi</span></span>' : '')+'</div>';
+    (peN ? '<button type="button" class="jmb pefix" data-act="pe-fixall" title="Transformer les cartes provisoires « jusqu’à l’échéance » en vraies cartes de ton planning"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5l4 4-2 .6-2.4 2.4.3 3-1 1-2.6-2.6-3.5 3.5M6.2 6.6l-.4 0 3.6-3.6"/></svg>Tout fixer ('+peN+')</button>' : '')+
+    (on || peN ? '<span class="legend jmleg">'+(on ? '<span><i class="l-jm"></i>Proposé par la méthode des J</span>' : '')+(peN ? '<span><i class="l-pe"></i>Planifié jusqu’à l’échéance</span>' : '')+'<span><i class="l-me"></i>Ajouté par toi</span></span>' : '')+'</div>';
 }
 
 function suggest(q){
@@ -4890,7 +5120,7 @@ function renderHeroPlan(){
   else if(wkMode){ for(i=0;i<7;i++) view.push(addDays(wk,i)); scope = view; }
   else { for(i=0;i<7;i++) view.push(addDays(wk,i)); scope = [t0]; }
   var n = 0, dn = 0;
-  scope.forEach(function(d){ slotsOf(d).forEach(function(s){ if(s.c || !s.k) return; n++; if(s.x) dn++; }); });
+  scope.forEach(function(d){ slotsOf(d).forEach(function(s){ if(s.c) return; n++; if(s.x) dn++; }); });
   var per = pv === 'month' ? 'ce mois-ci' : wkMode ? 'cette semaine' : 'aujourd’hui', left = n - dn;
   var cap2 = !n ? 'Rien de planifié '+per+'.' : left ? left+' item'+(left>1?'s restent':' reste')+' à valider '+per+'.' : 'Tout est validé '+per+'.';
   var kick = pv === 'month' ? esc(cap(fmtMonth.format(parse(mo)))) : wkMode ? 'bilan de la semaine '+isoWeek(wk) : 'aujourd’hui · '+esc(fmtMv.format(parse(t0)));
@@ -4939,6 +5169,7 @@ function slotHTML(day,s,i){
   var it = s.k ? ITEM_BY_KEY[s.k] : null;
   if(s.k && !it) return '';
   if(s.e && !s.x && it) return jmSlotHTML({ k:s.k, day:day, i:i, ex:1, n:toursOf(s.k).length + 1, gap:0, b:'f', late:0 });
+  if(s.p && !s.x && it) return jmSlotHTML({ k:s.k, day:day, i:i, ex:1, pe:1, n:toursOf(s.k).length + 1, gap:0, b:'f', late:0 });
   var title = slotTitle(s), meta, n = 0, j, hue, numH;
   if(it){
     var t = toursOf(s.k); hue = collegeOfKey(s.k).hue; numH = '<div class="num">'+it[0]+'</div>';
@@ -5035,7 +5266,7 @@ function todayHTML(t0){
   }
   wkc += '</div></section>';
 
-  return head + sum + tdyChipsHTML(t0) + '<div class="tdy"><div class="tdy-main">' + (cfg.examMode ? examHTML(t0) : '') + daysLoop('<div class="days tdy-days">', t0, 1, t0) + '</div><aside class="tdy-side">' + errPanelHTML() + rv + tk + wkc + '</aside></div>';
+  return head + sum + tdyChipsHTML(t0) + '<div class="tdy"><div class="tdy-main">' + daysLoop('<div class="days tdy-days">', t0, 1, t0) + '</div><aside class="tdy-side">' + errPanelHTML() + rv + tk + wkc + '</aside></div>';
 }
 function daysLoop(out, S, N, t0){
   for(var i=0;i<N;i++){
@@ -5070,7 +5301,7 @@ function monthHTML(t0){
       if(s.x) dn++;
       if(i >= 4) return;
       var it = s.k ? ITEM_BY_KEY[s.k] : null;
-      if(it) chips += '<span class="mch'+(s.x?' ok':'')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+(s.e && !s.x ? ' jm' : '')+'" data-h="'+collegeOfKey(s.k).hue+'"><b>'+it[0]+'</b><i>'+tH(it)+'</i>'+(s.c ? '<em class="mar">→</em>' : '')+'</span>';
+      if(it) chips += '<span class="mch'+(s.x?' ok':'')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+((s.e || s.p) && !s.x ? ' jm' : '')+'" data-h="'+collegeOfKey(s.k).hue+'"><b>'+it[0]+'</b><i>'+tH(it)+'</i>'+(s.c ? '<em class="mar">→</em>' : '')+'</span>';
       else if(!s.k) chips += '<span class="mch free'+(s.x?' ok':'')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+'" data-h="hema"><b>•</b><i>'+esc(s.t)+'</i>'+(s.c ? '<em class="mar">→</em>' : '')+'</span>';
     });
     var jmd = jmDay(d), shownN = Math.min(sl.length, 4);
@@ -5228,7 +5459,16 @@ function renderTabs(){
   ['colleges','items','plan'].forEach(function(k){ $('v-'+k).hidden = tab !== k; });
 }
 if(mqMob.addEventListener) mqMob.addEventListener('change', function(){ renderTabs(); });
-function renderAll(){ profBubRefresh(); applyHue(); renderHero(); renderBanner(); renderSelect(); renderSort(); renderChips(); renderList(); renderColleges(); renderPlan(); renderTabs(); renderTodo(); }
+/* index60 : un item qui a déjà un tour n'a plus de carte « jusqu'à l'échéance » en attente (sinon deux tours rapprochés) */
+function pePrune(){
+  var ch = false;
+  Object.keys(state.plan).forEach(function(d){
+    var a = state.plan[d], b = a.filter(function(x){ return !(x.p && !x.x && x.k && toursOf(x.k).length); });
+    if(b.length !== a.length){ ch = true; if(b.length) state.plan[d] = b; else delete state.plan[d]; }
+  });
+  if(ch) persist();
+}
+function renderAll(){ pePrune(); profBubRefresh(); applyHue(); renderHero(); renderBanner(); renderSelect(); renderSort(); renderChips(); renderList(); renderColleges(); renderPlan(); renderTabs(); renderTodo(); }
 
 /* ======================================================================
    §J19 — Notification (toast)
@@ -5553,21 +5793,15 @@ document.addEventListener('click', function(e){
     if(errOpen){ var eta = $('er-ta'); if(eta){ eta.focus(); eta.setSelectionRange(eta.value.length, eta.value.length); } }
   } else if(a === 'ex-acc'){
     var exd = state.plan[el.dataset.day], exs = exd && exd[Number(el.dataset.i)];
-    if(exs){ delete exs.e; persist(); renderAll(); }
+    if(exs){ delete exs.e; delete exs.p; persist(); renderAll(); }
   } else if(a === 'er-open'){
     erShow(true, 'all');
-  } else if(a === 'exam-col'){
-    cfg.examCol = el.dataset.id; cfgSave(); renderAll(); popIn('.tdy-exam');
-  } else if(a === 'exam-plan'){
-    examPlan();
-  } else if(a === 'exam-errs'){
-    var PX = examPick(); erShow(true, PX ? PX.best.c.id : 'all');
+  } else if(a === 'pe-open'){
+    peOpen(el.dataset.id, el);
+  } else if(a === 'pe-fixall'){
+    peFixAll();
   } else if(a === 'tdy-focus'){
     cfg.focusCur = !cfg.focusCur; cfgSave(); renderAll(); popDot('tdy-focus');
-  } else if(a === 'tdy-exam'){
-    cfg.examMode = !cfg.examMode;
-    if(!cfg.examMode){ var xl = examList(Number(cfg.examDays) || 5)[0]; if(xl) cfg.examNo = xl.c.id + '@' + xl.d; }   /* désactivé à la main : on ne le reproposera pas pour cet examen */
-    cfgSave(); renderAll(); popDot('tdy-exam'); if(cfg.examMode) popIn('.tdy-exam');
   } else if(a === 'settings'){
     setSettings(true);
   } else if(a === 'clock'){
@@ -5621,11 +5855,12 @@ document.addEventListener('click', function(e){
     if(t.some(function(x){ return x.d === td; })){ toast('Il y a déjà un tour le '+short(td)+' pour cet item.'); return; }
     closeTp();
     if(t.length >= MAX) return;
-    var n = t.length + 1;
+    var n = t.length + 1, tgTip = !cfg.tgTip;
+    if(tgTip){ cfg.tgTip = true; cfgSave(); }
     mutate(function(){
       var arr = state.tours[key] = state.tours[key] || [];
       arr.push({ d:td, s:st }); arr.sort(function(p,q){ return p.d < q.d ? -1 : p.d > q.d ? 1 : 0; });
-    }, 'Tour '+n+' enregistré · '+STAT[st]+(td === today() ? '' : ' ('+short(td)+')'));
+    }, 'Tour '+n+' enregistré · '+STAT[st]+(td === today() ? '' : ' ('+short(td)+')')+(tgTip ? '. Astuce : tu peux changer le nombre de tours souhaités par item (3 par défaut) dans les paramètres.' : ''));
   } else if(a === 'jm-open'){
     jmOpen(el.dataset.id, el);
   } else if(a === 'jm-pin'){
@@ -6035,7 +6270,7 @@ document.addEventListener('keydown', function(e){
    seconde fois en §J28.
    ====================================================================== */
 /* ---------- Réglages (propres à cet appareil, gardés dans le navigateur) ---------- */
-var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, wake:false, cdUnit:'d', ankiMode:'anki', ankiLabel:'', catchup:true, fn:'', ln:'', promo:'', promoDone:'', examMode:false, focusCur:true, examNo:'', examCol:'', examDays:5, examAuto:false };
+var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, wake:false, cdUnit:'d', ankiMode:'anki', ankiLabel:'', catchup:true, fn:'', ln:'', promo:'', promoDone:'', focusCur:true, tg:3, tgTip:false, admBk:'' };
 try{ var rc = JSON.parse(lsGet(LS_CFG) || '{}'); if(rc && typeof rc === 'object') Object.keys(cfg).forEach(function(k){ if(rc[k] !== undefined && typeof rc[k] === typeof cfg[k]) cfg[k] = rc[k]; }); }catch(e){}
 if(cfg.cdUnit === 'mo') cfg.cdUnit = 'w';
 var wakeLock = null;
@@ -6132,12 +6367,11 @@ function renderSettings(){
     '<div class="set-r" style="--i:3"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.wind+'</span><div><b>Réduire les animations</b><small>Supprime les transitions et effets.</small></div>'+swHTML('reduce', cfg.reduce, 'Réduire les animations')+'</div>'+
     '<div class="set-r" style="--i:4"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.text+'</span><div><b>Taille d’écriture</b><small>Agrandit ou réduit toute l’interface.</small></div>'+segHTML('size', [[90,'A−'],[100,'A'],[112,'A+'],[125,'A++']], cfg.size)+'</div>'+
     '</div></section>'+
-    '<section class="set-grp" style="--g:var(--violet);--i:2"><button type="button" class="set-g" data-set-grp aria-expanded="true"><span class="set-gi" aria-hidden="true">'+SIC.loop+'</span><span class="set-gt">Révisions</span><span class="set-gn">5</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card">'+
+    '<section class="set-grp" style="--g:var(--violet);--i:2"><button type="button" class="set-g" data-set-grp aria-expanded="true"><span class="set-gi" aria-hidden="true">'+SIC.loop+'</span><span class="set-gt">Révisions</span><span class="set-gn">4</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card">'+
+    '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.loop+'</span><div><b>Tours souhaités par item</b><small>L’anneau de chaque item affiche « 1/3 », « 2/3 »… Si tu fais un tour de plus sur un item, son objectif monte tout seul.</small></div>'+segHTML('tg', [[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6']], cfg.tg)+'</div>'+
     '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>Bouton sur chaque item</b><small>Pour marquer tes cartes ou ta fiche comme prêtes.</small></div>'+segHTML('ankiMode', [['anki','Anki'],['fiche','Fiche'],['perso','Personnalisé'],['off','Aucun']], ankiMode())+'</div>'+
     '<div class="set-r set-perso" id="set-perso-r" style="--i:7"'+(ankiMode() === 'perso' ? '' : ' hidden')+'><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.tag+'</span><div><b>Nom du bouton</b><small>Par exemple Résumé, Schéma, Flashcards.</small></div><input type="text" id="set-perso" maxlength="14" value="'+esc(cfg.ankiLabel)+'" placeholder="Perso" aria-label="Nom du bouton personnalisé" autocomplete="off"></div>'+
     '<div class="set-r" style="--i:8"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.undo+'</span><div><b>Rattrapage des items d’hier</b><small>À l’ouverture du planning, propose de décaler à aujourd’hui ce qui n’a pas été validé.</small></div>'+swHTML('catchup', cfg.catchup, 'Rattrapage des items d’hier')+'</div>'+
-    '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.target+'</span><div><b>Mode examen proche : proposition</b><small>À combien de jours d’une échéance Médisam te propose de l’activer.</small></div>'+segHTML('examDays', [[3,'J-3'],[5,'J-5'],[7,'J-7'],[10,'J-10'],[14,'J-14']], cfg.examDays)+'</div>'+
-    '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.bolt+'</span><div><b>Activer le mode examen automatiquement</b><small>À cette date, il s’active tout seul au lieu de te le proposer (avec Annuler).</small></div>'+swHTML('examAuto', cfg.examAuto, 'Activer le mode examen automatiquement')+'</div>'+
     '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.hourglass+'</span><div><b>Décompte jusqu’au 21 octobre 2028</b></div>'+segHTML('cdUnit', [['s','Secondes'],['m','Minutes'],['d','Jours'],['w','Semaines']], cfg.cdUnit)+'</div>'+
     '</div></section>'+
     '<section class="set-grp" style="--g:var(--teal);--i:4"><button type="button" class="set-g" data-set-grp aria-expanded="false"><span class="set-gi" aria-hidden="true">'+SIC.help+'</span><span class="set-gt">Aide et données</span><span class="set-gn">7</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card" hidden>'+
@@ -6299,7 +6533,7 @@ setPop.addEventListener('click', function(e){
   if(n === 'clockFs') cfg.clockFs = b.dataset.v === '1';
   else if(n === 'size') cfg.size = parseInt(b.dataset.v, 10);
   else if(n === 'cdUnit'){ cfg.cdUnit = b.dataset.v; }
-  else if(n === 'examDays'){ cfg.examDays = parseInt(b.dataset.v, 10) || 5; }
+  else if(n === 'tg'){ cfg.tg = Math.min(MAX, Math.max(1, parseInt(b.dataset.v, 10) || 3)); cfgSave(); syncSettings(); renderList(); return; }
   else if(n === 'ankiMode'){ cfg.ankiMode = b.dataset.v; cfgSave(); syncSettings(); renderList(); return; }
   else cfg[n] = !cfg[n];
   cfgSave(); syncSettings(); cdTick();
@@ -6479,6 +6713,23 @@ function pPause(){
   else { pomo.left = pLeft(); pomo.paused = true; }
   pRender();
 }
+/* Chronomètre simple (index60) : indépendant du pomodoro, s'affiche sous l'heure quand il est actif. */
+var sw = {on:false, paused:false, start:0, acc:0, timer:null};
+function swMs(){ return sw.acc + (sw.on && !sw.paused ? Date.now() - sw.start : 0); }
+function swFmt(ms){ var t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), r = t % 60; return (h ? h + ':' + (m < 10 ? '0' : '') : '') + (m < 10 ? (h ? '' : '0') : '') + m + ':' + (r < 10 ? '0' : '') + r; }
+function swRender(){
+  var ln = $('sw-line'); ln.hidden = !sw.on; ln.classList.toggle('paused', sw.paused);
+  $('sw-stop').hidden = !sw.on;
+  $('sw-go').firstChild.textContent = !sw.on ? 'Démarrer' : (sw.paused ? 'Reprendre' : 'Pause');
+  if(sw.on){ $('sw-t').textContent = swFmt(swMs()); $('sw-lab').textContent = sw.paused ? 'Chrono · en pause' : 'Chrono'; }
+}
+function swGo(){
+  if(!sw.on){ sw.on = true; sw.paused = false; sw.acc = 0; sw.start = Date.now(); clearInterval(sw.timer); sw.timer = setInterval(swRender, 250); }
+  else if(sw.paused){ sw.paused = false; sw.start = Date.now(); }
+  else { sw.acc += Date.now() - sw.start; sw.paused = true; }
+  swRender();
+}
+function swStop(){ sw.on = false; sw.paused = false; sw.acc = 0; clearInterval(sw.timer); swRender(); }
 function setCm(v){
   cmOpen = !!v; if(cmOpen) popShow(cmPanel, { t:'0 10px', s:'.85', origin:'100% 100%', d:340 }); else popHide(cmPanel, { t:'0 8px', s:'.88', origin:'100% 100%', d:170 }); cmBtn.setAttribute('aria-expanded', cmOpen ? 'true' : 'false');
   if(cmOpen){ var f = cmPanel.querySelector('.cm-row:not([hidden])'); var vis = pomo.on ? $('cm-pause') : cmPanel.querySelector('[data-w]'); if(vis) vis.focus(); }
@@ -6487,6 +6738,8 @@ cmBtn.addEventListener('click', function(){ setCm(!cmOpen); });
 cmPanel.addEventListener('click', function(e){
   var t = e.target.closest ? e.target.closest('button') : null; if(!t) return;
   if(t.hasAttribute('data-w')){ pStart(+t.getAttribute('data-w'), +t.getAttribute('data-b')); setCm(false); clockEl.focus(); }
+  else if(t.id === 'sw-go') swGo();
+  else if(t.id === 'sw-stop') swStop();
   else if(t.id === 'cm-pause') pPause();
   else if(t.id === 'cm-skip'){ pNext(false); }
   else if(t.id === 'cm-stop'){ pStop(); setCm(false); clockEl.focus(); }
@@ -7474,6 +7727,34 @@ end $$;
 revoke all on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
 `;
+var ADM_SQL4 = `-- Médisam : restauration d'une sauvegarde complète (admin). À exécuter UNE fois : Supabase > SQL Editor > New query > Run.
+-- Remplace les données d'un compte par celles de la sauvegarde. Le compte doit exister (auth.users) : un compte supprimé n'est pas recréé.
+-- L'ancienne version est archivée dans progress_history (si la table existe). Réservé à l'administrateur.
+create or replace function public.admin_restore_progress(target uuid, payload jsonb)
+returns text language plpgsql security definer set search_path = public, auth as $$
+declare old_data jsonb;
+begin
+  if not public.is_medisam_admin() then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  if not exists (select 1 from auth.users u where u.id = target) then
+    return 'absent';
+  end if;
+  if payload is null or jsonb_typeof(payload) <> 'object' then
+    return 'invalide';
+  end if;
+  select p.data::jsonb into old_data from public.progress p where p.user_id = target;
+  if old_data is not null and to_regclass('public.progress_history') is not null then
+    insert into public.progress_history (user_id, data) values (target, old_data);
+  end if;
+  delete from public.progress where user_id = target;
+  insert into public.progress (user_id, data, updated_at) values (target, payload, now());
+  return 'ok';
+end $$;
+
+revoke all on function public.admin_restore_progress(uuid, jsonb) from public, anon;
+grant execute on function public.admin_restore_progress(uuid, jsonb) to authenticated;
+`;
 /* index41 : profil des comptes dans l'espace admin (lu dans progress.data : prefs.cfg, cur, tours, notes…) */
 var admProf = {};
 function admInfo(d){
@@ -7482,7 +7763,7 @@ function admInfo(d){
   COLLEGES.forEach(function(col){ if(col.id === d.cur) cur = col.name; });
   Object.keys(d.notes || {}).forEach(function(k){ if(k.indexOf('e:') === 0) errs.push({ k:k.slice(2), t:String(d.notes[k]) }); });
   return { fn:String(c.fn || '').trim(), ln:String(c.ln || '').trim(), promo:PROMO_CAL[c.promo] ? c.promo : '', promoDone:PROMO_CAL[c.promoDone] ? c.promoDone : '',
-    exam:!!c.examMode, examDays:Number(c.examDays) || 5, auto:!!c.examAuto, focus:c.focusCur !== false, cur:cur, done:ts.done, streak:ts.streak,
+    focus:c.focusCur !== false, cur:cur, done:ts.done, streak:ts.streak,
     stw:Object.keys(d.stw || {}).length, dl:Object.keys(d.dl || {}).length, errs:errs };
 }
 function admName(r){ var i = admProf[r.id]; return i ? (i.fn + ' ' + i.ln).trim() : ''; }
@@ -7502,7 +7783,7 @@ function admProfCard(r, d){
     kv('Prénom', i.fn || '—') + kv('Nom', i.ln || '—') + kv('Promo', i.promo ? PROMO_CAL[i.promo].lab : '—') + kv('Email', r.email) +
     kv('Calendrier de la promo appliqué', i.promoDone ? PROMO_CAL[i.promoDone].lab : 'non') + kv('Semaines de stage', i.stw) + kv('Échéances de collèges', i.dl) +
     kv('Collège en cours', i.cur || '—') + kv('Faits aujourd’hui', i.done) + kv('Série', i.streak + ' jour' + (i.streak > 1 ? 's' : '')) +
-    kv('Mode examen proche', (i.exam ? 'activé' : 'désactivé') + ' · proposé à J-' + i.examDays + (i.auto ? ' · automatique' : '')) + kv('Focus collège en cours', i.focus ? 'activé' : 'désactivé') + kv('Carnet d’erreurs', i.errs.length + ' ligne' + (i.errs.length > 1 ? 's' : '')) + '</div>';
+    kv('Focus collège en cours', i.focus ? 'activé' : 'désactivé') + kv('Carnet d’erreurs', i.errs.length + ' ligne' + (i.errs.length > 1 ? 's' : '')) + '</div>';
   if(i.errs.length) h += '<h3 style="margin-top:14px">Carnet d’erreurs</h3>' + i.errs.slice(0, 15).map(function(e){ var it = ITEM_BY_KEY[e.k]; return '<div class="adm-er"><b>' + (it ? it[0] : esc(String(e.k).split('@')[0])) + '</b><span>' + (it ? esc(it[1]) + ' — ' : '') + esc(e.t.slice(0, 200)) + '</span></div>'; }).join('');
   return h + '</section>';
 }
@@ -7814,7 +8095,9 @@ function admOverHTML(){
   rows.forEach(function(r){ var k = iso(new Date(r.created_at)); for(var j = 0; j < days.length; j++) if(days[j].k === k){ days[j].n++; break; } });
   var mx = Math.max.apply(null, days.map(function(x){ return x.n; }).concat([1]));
   var top = rows.slice().sort(function(a, b){ return b.tours - a.tours; }).filter(function(r){ return r.tours > 0; }).slice(0, 5);
-  return '<div class="adm-kpis">' + kp.map(function(k){ return '<div class="adm-kpi"><b data-n="' + k[1] + '">' + k[1] + '</b><span>' + k[0] + '</span></div>'; }).join('') + '</div>' +
+  var bkOld = !cfg.admBk || Date.now() - new Date(cfg.admBk).getTime() > 7 * 864e5;
+  var bkBan = bkOld ? '<div class="adm-warn" role="status">' + ICON_WARN_ADM + '<span>' + (cfg.admBk ? 'Dernière sauvegarde complète : ' + admAgo(cfg.admBk) + '.' : 'Aucune sauvegarde complète n’a encore été faite.') + ' <button type="button" class="adm-b" data-adm="bkall">Sauvegarder maintenant</button></span></div>' : '';
+  return bkBan + '<div class="adm-kpis">' + kp.map(function(k){ return '<div class="adm-kpi"><b data-n="' + k[1] + '">' + k[1] + '</b><span>' + k[0] + '</span></div>'; }).join('') + '</div>' +
     '<div class="adm-grid"><section class="adm-card"><h3>Inscriptions <small>14 derniers jours</small></h3><div class="adm-bars" role="img" aria-label="Inscriptions par jour sur 14 jours">' +
     days.map(function(x){ return '<i title="' + short(x.k) + ' : ' + x.n + '" data-z="' + (x.n ? 0 : 1) + '" style="height:' + Math.max(3, Math.round(x.n / mx * 100)) + '%"></i>'; }).join('') + '</div>' +
     '<div class="adm-axis"><span>' + short(days[0].k) + '</span><span>' + short(days[13].k) + '</span></div></section>' +
@@ -7867,16 +8150,89 @@ function admAnnHTML(){
   else h += admAnn.map(function(a){ return '<div class="adm-ar"><div><p>' + esc(a.message) + '</p><small><span class="adm-tag' + (a.active ? '' : ' off') + '">' + (a.active ? 'Affichée' : 'Retirée') + '</span>' + admDate(a.created_at) + '</small></div>' + (a.active ? '<button type="button" class="adm-b" data-adm="retire" data-id="' + a.id + '">Retirer</button>' : '') + '</div>'; }).join('');
   return h + '</section>';
 }
+/* Sauvegarde / restauration complète de tous les comptes (index60) */
+function admPool(items, n, fn){
+  var i = 0, out = new Array(items.length);
+  function next(){ if(i >= items.length) return Promise.resolve(); var k = i++; return fn(items[k], k).then(function(v){ out[k] = v; }).then(next); }
+  var ws = []; for(var j = 0; j < Math.min(n, items.length); j++) ws.push(next());
+  return Promise.all(ws).then(function(){ return out; });
+}
+function admBackupAll(btn){
+  if(btn.disabled) return;
+  btn.disabled = true; var lab = btn.textContent, done = 0;
+  var prog = function(){ btn.textContent = done + ' / ' + admData.length; };
+  prog();
+  var tables = ['announcements', 'suggestions'].map(function(tb){
+    return sb.from(tb).select('*').order('created_at', { ascending:false }).limit(5000).then(function(r){ return r.error ? [] : (r.data || []); }, function(){ return []; });
+  });
+  var accs = admPool(admData, 4, function(u){
+    return admRpc('admin_user_progress', { target:u.id }).then(function(d){ done++; prog(); return { id:u.id, email:u.email, created_at:u.created_at, last_sign_in_at:u.last_sign_in_at, updated_at:u.updated_at, data:d || {} }; },
+      function(){ done++; prog(); return { id:u.id, email:u.email, created_at:u.created_at, error:true, data:null }; });
+  });
+  Promise.all([accs, tables[0], tables[1]]).then(function(r){
+    var bad = r[0].filter(function(a){ return a.error; }).length;
+    if(bad){ admToast(bad + ' compte' + (bad > 1 ? 's' : '') + ' illisible' + (bad > 1 ? 's' : '') + ' : sauvegarde annulée. Réessaie.'); return; }
+    var o = { app:'medisam-admin', v:1, exported:new Date().toISOString(), accounts:r[0], announcements:r[1], suggestions:r[2] };
+    return downloadsNS.save({ filename:'medisam-sauvegarde-complete-' + today() + '.json', data:JSON.stringify(o), type:'application/json' }).then(function(){ cfg.admBk = new Date().toISOString(); cfgSave(); if(admOpen) admBody(false); admToast('Sauvegarde prête : ' + r[0].length + ' compte' + (r[0].length > 1 ? 's' : '')); }, function(err){ if(!err || err.code !== 'declined') admToast('Export impossible ici.'); });
+  }).then(function(){ btn.disabled = false; btn.textContent = lab; }, function(){ btn.disabled = false; btn.textContent = lab; admToast('Sauvegarde impossible.'); });
+}
+function admBackupPick(){
+  var inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json';
+  inp.addEventListener('change', function(){ var f = inp.files && inp.files[0]; if(f) admBackupRead(f); });
+  inp.click();
+}
+function admBackupRead(f){
+  if(f.size > 60e6){ admToast('Fichier trop volumineux.'); return; }
+  var rd = new FileReader();
+  rd.onerror = function(){ admToast('Fichier illisible.'); };
+  rd.onload = function(){
+    var o; try{ o = JSON.parse(String(rd.result)); }catch(e){ o = null; }
+    if(!o || o.app !== 'medisam-admin' || !Array.isArray(o.accounts)){ admToast('Ce n’est pas une sauvegarde complète Médisam.'); return; }
+    var accs = o.accounts.filter(function(a){ return a && typeof a.id === 'string' && a.id.length < 65 && a.data && typeof a.data === 'object' && !Array.isArray(a.data); });
+    if(!accs.length){ admToast('Aucun compte exploitable dans ce fichier.'); return; }
+    var known = {}; (admData || []).forEach(function(u){ known[u.id] = 1; });
+    var miss = accs.filter(function(a){ return !known[a.id]; }).length;
+    var when = o.exported && !isNaN(Date.parse(o.exported)) ? ' du ' + fmtLongDate.format(new Date(o.exported)) : '';
+    var nA = Array.isArray(o.announcements) ? o.announcements.length : 0, nS = Array.isArray(o.suggestions) ? o.suggestions.length : 0;
+    cxAsk({
+      title:'Restaurer cette sauvegarde ?',
+      text:'Sauvegarde' + when + ' : ' + accs.length + ' compte' + (accs.length > 1 ? 's' : '') + ', ' + nA + ' annonce' + (nA > 1 ? 's' : '') + ', ' + nS + ' suggestion' + (nS > 1 ? 's' : '') + '. Les données de ces comptes seront remplacées (l’ancienne version est archivée côté serveur).' + (miss ? ' ' + miss + ' compte' + (miss > 1 ? 's' : '') + ' n’existe' + (miss > 1 ? 'nt' : '') + ' plus et sera ignoré' + (miss > 1 ? 's' : '') + '.' : ''),
+      ok:'Restaurer', danger:true, no:'Annuler',
+      onOk:function(){ admBackupRun(o, accs); }
+    });
+  };
+  rd.readAsText(f);
+}
+function admBackupRun(o, accs){
+  var okN = 0, skip = 0, fail = 0, done = 0;
+  admToast('Restauration… 0 / ' + accs.length);
+  admPool(accs, 3, function(a){
+    return admRpc('admin_restore_progress', { target:a.id, payload:a.data }).then(function(r){ if(r === 'ok') okN++; else skip++; }, function(e){ if(admKind(e) === 'setup') throw e; fail++; }).then(function(){ done++; if(done % 5 === 0) admToast('Restauration… ' + done + ' / ' + accs.length); });
+  }).then(function(){
+    var have = {}, extra = Promise.resolve();
+    (admAnn || []).forEach(function(a){ have['a' + a.message + a.created_at] = 1; });
+    (admSug || []).forEach(function(a){ have['s' + a.message + a.created_at] = 1; });
+    (o.announcements || []).forEach(function(a){ if(a && a.message && !have['a' + a.message + a.created_at]) extra = extra.then(function(){ return sb.from('announcements').insert({ message:String(a.message).slice(0, 280), active:!!a.active }).then(function(){}, function(){}); }); });
+    (o.suggestions || []).forEach(function(a){ if(a && a.message && !have['s' + a.message + a.created_at]) extra = extra.then(function(){ return sb.from('suggestions').insert({ user_id:uid, email:a.email || null, message:String(a.message).slice(0, 600) }).then(function(){}, function(){}); }); });
+    return extra;
+  }).then(function(){
+    admToast(okN + ' compte' + (okN > 1 ? 's' : '') + ' restauré' + (okN > 1 ? 's' : '') + (skip ? ' · ' + skip + ' ignoré' + (skip > 1 ? 's' : '') : '') + (fail ? ' · ' + fail + ' en erreur' : ''));
+    admErr = ''; admData = null; admAnn = null; admSug = null; admBody(false); admLoad();
+  }, function(e){ admToast(admKind(e) === 'setup' ? 'Lance d’abord le script « Restauration de sauvegarde (SQL) ».' : 'Restauration interrompue.'); });
+}
 function admToolsHTML(){
   var rows = [
     ['Revoir le tutoriel', 'Relance la visite guidée comme pour un nouveau compte.', '<button type="button" class="adm-b" data-adm="tour">Lancer</button>'],
     ['Actualiser les données', 'Recharge la liste des comptes et les chiffres.', '<button type="button" class="adm-b" data-adm="refresh">Actualiser</button>'],
     ['Exporter les comptes', 'Fichier CSV : email, nom, promo, dates, items commencés, tours, série.', '<button type="button" class="adm-b" data-adm="csv"' + (admData ? '' : ' disabled') + '>Exporter</button>'],
+    ['Sauvegarde complète', 'Un fichier .json avec tout le contenu de tous les comptes, les annonces et les suggestions. Dernière sauvegarde : ' + (cfg.admBk ? admAgo(cfg.admBk) : 'jamais') + '.', '<button type="button" class="adm-b pri" data-adm="bkall"' + (admData ? '' : ' disabled') + '>Sauvegarder</button>'],
+    ['Importer une sauvegarde', 'Restaure les comptes depuis un fichier de sauvegarde complète. Rien n’est écrit avant ta confirmation.', '<button type="button" class="adm-b warn" data-adm="bkimp"' + (admData ? '' : ' disabled') + '>Importer</button>'],
     ['Tester la connexion', 'Mesure la réponse du serveur Supabase.', '<button type="button" class="adm-b" data-adm="ping">Tester</button>'],
     ['Vider le cache de cet appareil', 'Supprime la copie locale puis recharge. Ta progression reste sur le serveur.', '<button type="button" class="adm-b warn" data-adm="cache">Vider</button>'],
     ['Script SQL du serveur', 'À relancer seulement si une fonction a été supprimée.', '<button type="button" class="adm-b" data-adm="copysql">Copier</button>'],
     ['Protection des données (SQL)', 'À lancer une fois : le serveur garde les champs qu’une ancienne page oublierait et archive les anciennes versions.', '<button type="button" class="adm-b pri" data-adm="copysql2">Copier</button>'],
-    ['Suppression de compte (SQL)', 'À lancer une fois : permet à chaque utilisateur de supprimer son propre compte depuis les réglages.', '<button type="button" class="adm-b" data-adm="copysql3">Copier</button>']
+    ['Suppression de compte (SQL)', 'À lancer une fois : permet à chaque utilisateur de supprimer son propre compte depuis les réglages.', '<button type="button" class="adm-b" data-adm="copysql3">Copier</button>'],
+    ['Restauration de sauvegarde (SQL)', 'À lancer une fois : nécessaire pour importer une sauvegarde complète.', '<button type="button" class="adm-b" data-adm="copysql4">Copier</button>']
   ];
   return '<section class="adm-card"><h3>Outils</h3>' + rows.map(function(r){ return '<div class="adm-tl"><div><b>' + r[0] + '</b><small>' + r[1] + '</small></div>' + r[2] + '</div>'; }).join('') + '</section>' +
     '<section class="adm-card"><h3>Sécurité</h3><p class="adm-sub">Ce panneau n’apparaît que pour ' + esc(ADMIN_EMAIL) + ', mais la vraie protection est côté serveur : les fonctions SQL refusent toute requête venant d’un autre email. Garde la confirmation d’email activée dans Supabase (Authentication).</p></section>';
@@ -8036,13 +8392,16 @@ admEl.addEventListener('click', function(e){
   if(a === 'back'){ admBack(); return; }
   if(a === 'refresh'){ admErr = ''; admData = null; admAnn = null; admAnnErr = ''; admSug = null; admSugErr = ''; admBody(false); admLoad(); return; }
   if(a === 'copysql'){ admCopy(ADM_SQL, 'Script copié. Colle-le dans Supabase > SQL Editor.'); return; }
+  if(a === 'copysql4'){ admCopy(ADM_SQL4, 'Script copié. Colle-le dans Supabase > SQL Editor puis Run.'); return; }
+  if(a === 'bkall' && admData){ admBackupAll(t); return; }
+  if(a === 'bkimp' && admData){ admBackupPick(); return; }
   if(a === 'copysql3'){ admCopy(ADM_SQL3, 'Script copié. Colle-le dans Supabase > SQL Editor puis Run.'); return; }
   if(a === 'copysql2'){ admCopy(ADM_SQL2, 'Script de protection copié. Colle-le dans Supabase > SQL Editor puis Run.'); return; }
   if(a === 'copymail' && admSel){ admCopy(admSel.email, 'Email copié'); return; }
   if(a === 'tour'){ admClose(); setTimeout(function(){ tourStart(true); }, 700); return; }
   if(a === 'csv' && admData){
     var esc2 = function(v){ v = String(v == null ? '' : v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-    var lines = ['email;prenom;nom;promo;inscription;derniere_connexion;derniere_synchro;items_commences;tours;taches_ouvertes;college_en_cours;serie;mode_examen;focus_college;calendrier_applique;lignes_carnet_erreurs'].concat(admData.map(function(r){ var pi = admProf[r.id] || { errs:[] }; return [r.email, pi.fn, pi.ln, pi.promo, r.created_at, r.last_sign_in_at, r.updated_at, r.started, r.tours, r.todos, pi.cur, pi.streak, pi.exam ? 'oui' : 'non', pi.focus === false ? 'non' : 'oui', pi.promoDone, pi.errs.length].map(esc2).join(';'); }));
+    var lines = ['email;prenom;nom;promo;inscription;derniere_connexion;derniere_synchro;items_commences;tours;taches_ouvertes;college_en_cours;serie;focus_college;calendrier_applique;lignes_carnet_erreurs'].concat(admData.map(function(r){ var pi = admProf[r.id] || { errs:[] }; return [r.email, pi.fn, pi.ln, pi.promo, r.created_at, r.last_sign_in_at, r.updated_at, r.started, r.tours, r.todos, pi.cur, pi.streak, pi.focus === false ? 'non' : 'oui', pi.promoDone, pi.errs.length].map(esc2).join(';'); }));
     downloadsNS.save({ data:'﻿' + lines.join('\n'), filename:'medisam-comptes-' + today() + '.csv' }).then(function(){ admToast('Export prêt'); });
     return;
   }
@@ -8166,28 +8525,13 @@ var TI_NEXT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke
 function tourSteps(){
   var s = [
     { ic:'spark', logo:true, t:'Bienvenue sur Médisam', x:'Ton carnet de révision pour les EDN : tes tours, ton planning et tes tâches, enregistrés sur ton compte. Je te montre l’essentiel en une minute.' },
-    { sel:'#set-btn', side:'bottom', ic:'cal', t:'Importe le calendrier de ta promo', x:'Complète ton profil dans les réglages (prénom, nom, promo) : Médisam importe alors le calendrier de l’UVSQ, avec tes semaines de stage et les échéances de tes collèges.' },
-    { sel:'#set-btn', side:'bottom', ic:'down', t:'Reprends tes anciens tours depuis Excel', x:'Tu as déjà tes tours dans Excel ? Dans les réglages, « Importer mes tours » lit ton fichier .xlsx ou CSV (item, date, ressenti), sans doublons.' },
-    { tab:'colleges', sel:'#hero', side:'bottom', ic:'chart', t:'Ta progression', x:'Ce bandeau résume où tu en es : items commencés, deuxième tour, rythme de la semaine. Les chiffres bougent à chaque tour que tu ajoutes.' },
-    { tab:'colleges', sel:'#st-btn', side:'bottom', ic:'stats', t:'Les statistiques', x:'Maîtrise par ressenti, items à revoir, points faibles et date estimée de fin du premier tour. Elles suivent la matière affichée.' },
     { tab:'colleges', sel:'#colleges .cg', side:'bottom', ic:'grid', t:'Les collèges', x:'Un collège correspond à une matière. Touche une carte pour ouvrir la liste de ses items.' },
-    { tab:'colleges', sel:'#tab-items', side:'bottom', ic:'list', t:'Les items', x:'Cet onglet liste les items d’une matière. C’est là que tu notes chaque révision.' },
-    { tab:'items', sel:'#v-items .tools', side:'bottom', ic:'filter', t:'Matière, recherche et filtres', x:'Choisis ta matière, cherche un item par son nom ou son numéro, filtre les nouveaux ou ceux à revoir, et trie par numéro ou par date.' },
-    { tab:'items', sel:'#list .dotb.next', side:'bottom', ic:'plus', t:'Ajouter un tour', x:'Après chaque révision, touche le bouton + : tu choisis la date et ton ressenti (bien compris, à consolider, difficile). Jusqu’à 8 tours par item, et la couleur te dit où tu en es.' },
-    { tab:'items', sel:'#list .colt[data-act="col-tour"]', side:'bottom', ic:'loop', t:'Un tour pour tout le collège', x:'Tu as relu un collège en entier ? Ce bouton ajoute le même tour à tous ses items d’un coup, avec une confirmation. Les items déjà notés ce jour-là sont ignorés.' },
-    { tab:'items', sel:'#dl-slot|#hero', side:'bottom', ic:'flag', t:'L’échéance d’un collège', x:'Dans un collège, ajoute la date de ton échéance. Elle s’affiche avec le compte à rebours (J-25…) et passe en orange puis en rouge quand elle approche.' },
+    { tab:'items', sel:'#list .dotb.next', side:'bottom', ic:'plus', t:'Ajouter un tour', x:'Après chaque révision, touche l’anneau (le chiffre devient un +) : tu choisis la date et ton ressenti (bien compris, à consolider, difficile). L’anneau se remplit jusqu’à ton objectif (réglable dans les paramètres), jusqu’à 8 tours par item.' },
+    { tab:'items', sel:'#list .colplan', side:'bottom', ic:'flag', t:'Planifier jusqu’à l’échéance', x:'Donne la date de ton examen : Médisam organise ton planning de révision pour que tu aies tout vu le jour où tu le souhaites.' },
     { tab:'items', sel:'#list .colt[data-act="jm-open"]', side:'bottom', ic:'jm', t:'La méthode des J', x:'Choisis quand revoir chaque item : 2ᵉ tour après X jours, 3ᵉ tour après Y jours, et autant de « + » que tu veux. Applique ensuite la méthode à ce collège ou à tous.' },
-    { tab:'items', sel:'#list .nt.er|#list .nt|#list .ig', side:'bottom', ic:'list', t:'Note, carnet d’erreurs et item non prévu', x:'Trois petits boutons à droite de chaque item (survole-les pour voir leur nom) : écrire une note, noter ce que tu as raté dans ton carnet d’erreurs, ou marquer l’item comme non prévu. Un triangle rouge te rappelle qu’il y a une erreur à relire.' },
-    { tab:'today', sel:'.tdy-chips', side:'bottom', ic:'flag', t:'Série, focus et mode examen', x:'Ta série compte les jours de suite où tu as fait au moins un tour (la flamme grossit, et il reste des cendres si elle s’éteint). « Focus collège en cours » limite « À revoir en priorité » à ton collège. « Mode examen proche » prépare ta dernière ligne droite : rythme par jour, priorités et planning jusqu’à l’échéance. Il t’est proposé à J-5 par défaut (réglable dans les réglages) ; touche le petit « i » pour le détail.' },
     { tab:'plan', sel:'#plan .day.now|#plan .day|#plan', side:'bottom', ic:'cal', t:'Le planning', x:'Répartis tes cours sur la semaine avec Ajouter, déplace-les, coche-les une fois faits. Tu peux aussi passer en vue Aujourd’hui (ce qu’il reste à faire, à revoir et à échéance) ou en vue mois.' },
-    { tab:'plan', sel:'#plan .jmb', side:'bottom', ic:'jm', t:'Un planning qui se remplit seul', x:'Une fois la méthode des J réglée, Médisam place tes prochains tours dans le planning : ce sont les cartes hachurées avec un J. Valide-les, fixe-les ou ignore-les. Ce que tu ajoutes toi-même reste uni. Les jours de stage sont allégés.' },
-    { sel:'#todo-open', side:'bottom', ic:'check', t:'La to-do list', x:'Tes tâches, avec un cours lié et une échéance si tu le souhaites. Elles s’ouvrent dans un panneau sur le côté.' },
-    { sel:'#clock-btn', side:'bottom', ic:'clock', t:'L’écran Heure', x:'Une grande horloge pour réviser sans distraction, avec un minuteur pomodoro. Raccourci : la touche H.' },
-    { sel:'#set-btn', side:'bottom', ic:'sliders', t:'Les réglages', x:'Ton profil et le calendrier de ta promo, l’import et l’export de tes tours, ta sauvegarde complète et ton compte (mot de passe, suppression). Tu peux aussi choisir Anki, Fiche ou aucun bouton, régler le décompte, écrire une suggestion, agrandir le texte ou revoir ce tutoriel.' },
-    { sel:'#theme-btn', side:'bottom', ic:'moon', t:'Jour et nuit', x:'Médisam passe tout seul en mode sombre à la tombée de la nuit et revient en mode jour au lever du soleil. Tu peux aussi basculer à la main : ton choix tient jusqu’au prochain lever ou coucher du soleil.' },
-    { sel:'#sync', side:'bottom', ic:'cloud', t:'Sauvegarde automatique', x:'Tout est enregistré sur ton compte à chaque action : tu retrouves ta progression sur tous tes appareils. Le bouton tout à droite te déconnecte.' }
+    { sel:'#set-btn', side:'bottom', ic:'sliders', t:'Les réglages', x:'Ton profil, l’import de tes tours depuis Excel, ta sauvegarde complète, le nombre de tours souhaités par item, Anki ou Fiche… C’est aussi là que tu peux revoir ce tutoriel.' }
   ];
-  if(isAdmin) s.push({ sel:'#adm-btn', side:'bottom', ic:'shield', t:'Espace modérateur', x:'Réservé à ton compte : liste des comptes, activité, annonces à tous les utilisateurs et outils.' });
   s.push({ tab:'colleges', ic:'flag', t:'À toi de jouer', x:'Commence par un collège et ajoute ton premier tour. Médisam s’occupe du reste.' });
   return s;
 }
@@ -8379,7 +8723,7 @@ function tourMaybe(){
   var mine = uid;
   setTimeout(function(){ if(uid === mine && !tourOn && !admOpen) tourStart(false); }, 1500);
 }
-function afterEnter(){ annLoad(); tourMaybe(); setTimeout(catchupMaybe, 700); examAskTry = 0; setTimeout(examAskMaybe, 1800); }
+function afterEnter(){ annLoad(); tourMaybe(); setTimeout(catchupMaybe, 700); }
 tourEl.addEventListener('click', function(e){
   var b = e.target.closest ? e.target.closest('[data-tr]') : null; if(!b) return;
   var a = b.dataset.tr;
@@ -8454,6 +8798,7 @@ function demoSb(){
     rpc:function(name){
       if(name === 'admin_overview') return Promise.resolve({ data:users, error:null });
       if(name === 'admin_user_progress') return Promise.resolve({ data:{ tours:{ '226':[{ d:iso(new Date(Date.now() - 12 * 864e5)), s:'low' }, { d:iso(new Date(Date.now() - 3 * 864e5)), s:'ok' }], '224':[{ d:iso(new Date(Date.now() - 5 * 864e5)), s:'mid' }] }, todos:[{ x:false }, { x:true }], notes:{ '226':'À revoir' }, plan:{} }, error:null });
+      if(name === 'admin_restore_progress') return Promise.resolve({ data:'ok', error:null });
       return Promise.resolve({ data:null, error:null });
     }
   };
@@ -8759,11 +9104,10 @@ function promoApply(code, replace){
 
 
 /* ======================================================================
-   §J39 — Accueil, objectif, série, profil à compléter, mode examen (index41)
+   §J39 — Accueil, objectif, série, profil à compléter (index41 ; mode examen retiré en index60)
    Gère : bulle « Complète ton profil » + rond d'initiales à côté des réglages ; salutation ; anneau d'objectif du
-   jour et série ; interrupteurs « Focus collège en cours » et « Mode examen proche » ; carte d'examen.
-   Données : cfg.goal (items/jour), cfg.focusCur (true par défaut), cfg.examMode (false par défaut, jamais
-   automatique), cfg.fn/ln/promo. Le carnet d'erreurs vit dans state.notes['e:'+item] (voir §J10).
+   jour et série ; interrupteur « Focus collège en cours ». (Le mode examen proche a été supprimé en index60 : « Planifier jusqu'à l'échéance » le remplace.)
+   Données : cfg.goal (items/jour), cfg.focusCur (true par défaut), cfg.fn/ln/promo. Le carnet d'erreurs vit dans state.notes['e:'+item] (voir §J10).
    ====================================================================== */
 var profBubOff = false;   /* fermée pour cette connexion : revient à chaque nouvelle connexion (enter) */
 function profIncomplete(){ return !String(cfg.fn || '').trim() || !String(cfg.ln || '').trim() || !cfg.promo; }
@@ -8839,9 +9183,7 @@ function tdyChipsHTML(t0){
   function pill(act, on, label, tip){
     return '<span class="tdy-pill" data-on="'+(!!on)+'"><button type="button" class="tdy-chip" data-act="'+act+'" aria-pressed="'+(!!on)+'"><i aria-hidden="true"></i>'+label+'</button><button type="button" class="tdy-i" data-tip="'+esc(tip)+'" aria-label="À quoi ça sert ? '+esc(tip)+'">i</button></span>';
   }
-  var dz = Number(cfg.examDays) || 5;
   h += pill('tdy-focus', cfg.focusCur, 'Focus collège en cours', '« À revoir en priorité » ne montre que les items de ' + (cc ? cc.name : 'ton collège en cours') + '. Activé par défaut.');
-  h += pill('tdy-exam', cfg.examMode, 'Mode examen proche', 'Met en avant ce qu’il reste à voir avant l’échéance. Proposé à J-' + dz + (cfg.examAuto ? ', puis activé automatiquement' : '') + ' : réglable dans les réglages.');
   return '<div class="tdy-chips">'+h+'</div>';
 }
 /* Carnet d'erreurs : panneau rouge replié, affiché seulement s'il y a des lignes ; un clic déplie la liste */
@@ -8851,112 +9193,317 @@ function errPanelHTML(){
   if(!keys.length) return '';
   return '<section class="tdy-card tdy-errp" aria-label="Carnet d’erreurs"><button type="button" class="tdy-errh" data-act="er-open"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="scale(.8)" stroke-width="2.1"><path d="M4 2.5h8a1.5 1.5 0 0 1 1.5 1.5v4"/><path d="M4 2.5v15h4.5"/><path d="M6.8 6.5h4M6.8 9.5h2"/><path d="M17 12.2a3.7 3.7 0 1 0-1 3"/><path d="M17 9.5v2.7h-2.7"/></g></svg><span>Carnet d’erreurs</span><em>'+keys.length+'</em><svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4l4 4-4 4"/></svg></button></section>';
 }
-/* ---------- Mode examen proche (index44) : jamais automatique, activé par la pastille ou la fenêtre d'ouverture ---------- */
-var examAskTry = 0;
-function examList(maxN){
-  var r = [];
-  COLLEGES.forEach(function(c){ var d = state.deadlines[c.id]; if(!d) return; var n = dlDays(d); if(n < 0 || n > maxN) return; r.push({ c:c, d:d, n:n }); });
-  r.sort(function(a, b){ return a.n - b.n; });
-  return r;
+/* ======================================================================
+   §J41 — Planifier jusqu'à l'échéance (index60)
+   Gère : fenêtre #pe (explication la 1re fois, puis réglages), calcul du planning (peCompute), pose des cartes grisées
+   « jusqu'à l'échéance » (entrée de planning {k, p:1}, rendue par jmSlotHTML avec x.pe), « Tout fixer » (peFixAll),
+   méthode des J propre à l'option (state.jm.pe.own[clé] = {g,b}, lue par jmForKey).
+   Données : state.jm.pe = { seen, set:{margin,cap,wk,start,stg,light,jm,og,ob}, own:{} } (voyage avec state.jm, donc
+   déjà synchronisé : pas de nouveau champ de state). Utilise : §J4 §J10 §J17 §J22b §J37 (cxAsk).
+   ====================================================================== */
+var peCol = null, peBack = null, peS = null, peDate = '', peSkip = false, peR = null, peView = 'set';
+function peDow(d){ return parse(d).getDay(); }
+function peFmtAvg(a){ return a < 1 ? 'moins de 1' : String(Math.round(a * 10) / 10).replace('.', ','); }
+function peDays(s, dl){
+  var t0 = today(), start = s.start === 'tomorrow' ? addDays(t0, 1) : t0, out = [], d, g;
+  if(!dl) return out;
+  var last = addDays(dl, -s.margin);
+  for(d = start, g = 0; d <= last && g < 400; d = addDays(d, 1), g++){
+    if(kindOf(d)) continue;
+    var w = peDow(d);
+    if((s.wk === 'nosat' || s.wk === 'nowe') && w === 6) continue;
+    if((s.wk === 'nosun' || s.wk === 'nowe') && w === 0) continue;
+    var wt = 1;
+    if(s.stg && isStageDay(d)) wt = .5;
+    if(s.light && kindOf(addDays(d, -1)) === 'g') wt = Math.min(wt, .6);
+    out.push({ d:d, w:wt, load:0, r:0, cap:0 });
+  }
+  return out;
 }
-function examPick(){
-  var L = examList(120); if(!L.length) return null;
-  var best = L[0]; if(cfg.examCol) L.forEach(function(x){ if(x.c.id === cfg.examCol) best = x; });
-  return { best:best, all:L };
-}
-function examStats(best, t0){
-  var items = itemsOf([best.c]).filter(function(it){ return !state.ign[keyOf(it)]; }), un = [], due = [], hard = [], ok = 0, today = 0, prio = [];
-  items.forEach(function(it){
-    var k = keyOf(it), t = toursOf(k), d = false, h = false;
-    if(t.some(function(x){ return x.d === t0; })) today++;
-    if(!t.length){ un.push(it); return; }
-    d = isDue(t); h = t[t.length - 1].s === 'low';
-    if(d) due.push(it); else ok++;
-    if(h) hard.push(it);
-    prio.push({ it:it, sc:(h && d) ? 0 : h ? 1 : d ? 2 : 9 });
+function peIsMine(x){ return !!(x && x.p && !x.x && x.k && peCol && collegeOfKey(x.k).id === peCol.id); }
+function peCompute(){
+  var col = peCol, s = peS, t0 = today(), R = { ok:false, days:[], items:[], over:[], placed:[], old:[], N:0, nIgn:0, nDone:0, nPl:0, last:'', msg:'' };
+  if(!col) return R;
+  R.days = peDays(s, peDate); R.last = peDate ? addDays(peDate, -s.margin) : '';
+  var planned = {};
+  Object.keys(state.plan).forEach(function(d){ if(d >= t0) state.plan[d].forEach(function(x){ if(x.k && !x.x){ if(peIsMine(x)) R.old.push(x.k); else planned[x.k] = 1; } }); });
+  var list = [];
+  itemsOf([col]).forEach(function(it, i){
+    var k = keyOf(it);
+    if(state.ign[k]){ R.nIgn++; return; }
+    if(toursOf(k).length){ R.nDone++; return; }
+    if(planned[k]){ R.nPl++; return; }
+    list.push({ it:it, i:i });
   });
-  prio = prio.filter(function(x){ return x.sc < 9; });
-  var late = best.n <= 2;   /* à la veille on ne découvre plus rien de nouveau */
-  if(!late) un.slice().sort(function(a, b){ return (b.star === 'ref' ? 1 : 0) - (a.star === 'ref' ? 1 : 0); }).forEach(function(it){ prio.push({ it:it, sc:it.star === 'ref' ? 3 : 4 }); });
-  prio.sort(function(a, b){ return a.sc - b.sc; });
-  var days = 0; for(var i = 0; i < best.n; i++){ if(!kindOf(addDays(t0, i))) days++; }
-  var work = due.length + (late ? 0 : un.length), per = Math.ceil(work / Math.max(1, days));
-  return { items:items, un:un, due:due, hard:hard, ok:ok, today:today, prio:prio, days:days, work:work, per:per, late:late };
+  list.sort(function(a, b){ return ((a.it.star === 'ref' ? 0 : 1) - (b.it.star === 'ref' ? 0 : 1)) || (a.i - b.i); });
+  R.items = list.map(function(x){ return x.it; }); R.N = R.items.length;
+  R.nRef = R.items.filter(function(it){ return it.star === 'ref'; }).length;
+  if(!R.days.length || !R.N) return R;
+  var jp = jmPlan().days, cap = s.cap === 'auto' ? Math.min(10, state.jm.max || 10) : s.cap;
+  R.days.forEach(function(D){
+    D.load = (state.plan[D.d] || []).filter(function(x){ return !peIsMine(x); }).length + (jp[D.d] || []).length;
+    D.cap = Math.max(0, Math.max(1, Math.round(cap * D.w)) - D.load);
+  });
+  var placed = 0, i, j;
+  for(i = 0; i < R.N; i++){
+    var best = -1, bs = 1e9;
+    for(j = 0; j < R.days.length; j++){
+      var D = R.days[j]; if(D.r >= D.cap) continue;
+      var sc = (D.load + D.r + 1) / D.w;
+      if(sc < bs - 1e-9){ bs = sc; best = j; }
+    }
+    if(best < 0) break;
+    R.days[best].r++; placed++;
+  }
+  var n = 0;
+  R.days.forEach(function(D){ for(var q = 0; q < D.r; q++){ R.placed.push({ k:keyOf(R.items[n]), it:R.items[n], day:D.d }); n++; } });
+  R.over = R.items.slice(placed);
+  R.avg = placed / R.days.length;
+  /* révisions (2e tour) qui tomberont avant la fin : items déjà à 1 tour + 1ers tours placés ici suivis de leur 2e tour */
+  var rev = 0, g0 = s.jm === 'own' ? peGNorm()[0] : s.jm === 'col' && peJmHas() ? jmFor(col.id).g[0] : 0;
+  itemsOf([col]).forEach(function(it){ var k = keyOf(it); if(state.ign[k] || toursOf(k).length !== 1) return; var cf = jmForKey(k); if(!cf || !cf.g.length) return; var inf = jmDueInfo(k, cf); if(inf && inf.n === 2 && inf.due <= R.last) rev++; });
+  if(g0) R.placed.forEach(function(pl){ if(addDays(pl.day, g0) <= R.last) rev++; });
+  R.nRev = rev; R.avgRev = rev / R.days.length;
+  R.ok = placed > 0 && (!R.over.length || peSkip);
+  return R;
 }
-function examPhase(n){
-  if(n === 0) return ['Jour J', 'Respire. Relis seulement ton carnet d’erreurs et tes fiches clés, sans rien apprendre de nouveau.'];
-  if(n === 1) return ['Veille', 'Ne découvre plus rien : reprends les items difficiles et relis ton carnet d’erreurs, puis dors.'];
-  if(n <= 3) return ['Dernière ligne droite', 'Passe d’abord sur les items difficiles et à revoir, puis termine les jamais vus de référence.'];
-  if(n <= 7) return ['Consolidation', 'Termine ce qui reste à voir en priorité par les items de référence, puis repasse sur les difficiles.'];
-  if(n <= 14) return ['Finir le premier tour', 'Avance sur les jamais vus : chaque jour compte, garde une marge pour les révisions.'];
-  return ['Prépare le terrain', 'Il reste du temps : régularité d’abord, et note tes erreurs au fil de l’eau.'];
+function peJmHas(){ var c = peCol && jmFor(peCol.id); return !!(c && c.g.length); }
+function peGNorm(){
+  var g = peS.og.map(function(v){ return Math.min(365, Math.max(1, Math.round(Number(v)) || 1)); }).slice(0, MAX - 1);
+  if(peS.ob === 'f') for(var i = 1; i < g.length; i++) if(g[i] <= g[i - 1]) g[i] = Math.min(365, g[i - 1] + 1);
+  return g;
 }
-function examHTML(t0){
-  var P = examPick();
-  if(!P) return '<section class="tdy-card tdy-exam" aria-label="Mode examen"><h3>Mode examen</h3><p class="tdy-empty">Aucune échéance à venir. Ajoute-en une sur un collège, ou préremplis-les depuis ta promo dans les réglages.</p></section>';
-  var best = P.best, S = examStats(best, t0), ph = examPhase(best.n), tot = S.items.length || 1, pct = Math.round(S.ok / tot * 100);
-  var h = '<section class="tdy-card tdy-exam" data-h="'+best.c.hue+'" aria-label="Mode examen"><h3>Examen · '+esc(best.c.name)+'<em>'+dlLabel(best.n)+'</em></h3>';
-  if(P.all.length > 1) h += '<div class="ex-pick" role="group" aria-label="Examen visé">'+P.all.slice(0, 5).map(function(x){ return '<button type="button" data-act="exam-col" data-id="'+x.c.id+'" aria-pressed="'+(x.c.id === best.c.id)+'">'+esc(x.c.name.split(' – ')[0])+' <small>'+dlLabel(x.n)+'</small></button>'; }).join('')+'</div>';
-  h += '<p class="ex-phase"><b>'+ph[0]+'</b>'+ph[1]+'</p>';
-  h += '<div class="ex-grid"><div><b>'+(S.late ? '–' : S.un.length)+'</b><span>jamais vu'+(S.un.length > 1 ? 's' : '')+'</span></div><div><b>'+S.due.length+'</b><span>à revoir</span></div><div><b>'+S.hard.length+'</b><span>difficile'+(S.hard.length > 1 ? 's' : '')+'</span></div></div>';
-  h += '<div class="ex-bar" role="img" aria-label="'+S.ok+' items à jour sur '+S.items.length+'"><i style="--p:'+pct+'%"></i></div>';
-  h += '<p class="ex-sub">'+S.ok+' / '+S.items.length+' à jour'+(S.work ? ' · rythme : <b>'+S.per+' item'+(S.per > 1 ? 's' : '')+' par jour</b> sur '+S.days+' jour'+(S.days > 1 ? 's' : '')+' disponible'+(S.days > 1 ? 's' : '')+' (gardes et repos exclus)' : ' · tu es à jour, bravo') + (S.work ? ' · aujourd’hui : '+S.today+' / '+S.per : '')+'</p>';
-  if(S.prio.length){
-    h += '<h4>À faire en priorité</h4>' + S.prio.slice(0, 5).map(function(x){
-      var k = keyOf(x.it), why = x.sc === 0 ? 'difficile · à revoir' : x.sc === 1 ? 'difficile' : x.sc === 2 ? 'à revoir' : x.sc === 3 ? 'référence, jamais vu' : 'jamais vu';
-      return '<button type="button" class="tdy-it" data-h="'+best.c.hue+'" data-act="tj-go" data-k="'+esc(k)+'" aria-label="Aller à '+esc(x.it[1])+'"><b>'+x.it[0]+'</b><span>'+esc(x.it[1])+'</span><i'+(x.sc < 2 ? ' class="late"' : '')+'>'+why+'</i></button>';
-    }).join('');
-  } else h += '<p class="tdy-empty">Tout est vu et à jour pour ce collège.</p>';
-  var ek = S.items.map(function(it){ return keyOf(it); }).filter(function(k){ return errOf(k); });
-  h += '<div class="ex-acts"><button type="button" class="ex-btn pri" data-act="exam-plan"'+(best.n < 1 || !S.prio.length ? ' disabled' : '')+'>Planifier jusqu’à l’échéance</button>'+
-    (ek.length ? '<button type="button" class="ex-btn warn" data-act="exam-errs">Relire mes erreurs ('+ek.length+')</button>' : '')+
-    '<button type="button" class="ex-btn" data-act="opencol" data-id="'+best.c.id+'">Ouvrir le collège</button></div>';
-  return h + '</section>';
+var PE_MINI = '<svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.8h11M5.5 2.5v2.5M10.5 2.5v2.5"/><rect x="2.5" y="3.5" width="11" height="9.5" rx="2"/></svg>';
+var PE_FLAG = '<svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 6.8h11M5.5 2v3M10.5 2v3M5.8 10l1.6 1.6 3-3"/></svg>';
+function peMockSlot(cls, num, ttl, meta, fixed){
+  var ic = fixed ? '' : '<div class="jmx"><span class="rmb"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5l4 4-2 .6-2.4 2.4.3 3-1 1-2.6-2.6-3.5 3.5M6.2 6.6l-.4 0 3.6-3.6"/></svg></span><span class="rmb">'+ICON_X+'</span></div>';
+  return '<div class="slot '+cls+'" data-h="blue"><div class="num">'+num+'</div>'+ic+'<div class="main"><div class="ttl">'+ttl+'</div><span class="meta">'+meta+'</span></div><div class="act"><span class="vbtn">'+ICON_CHECK+'Valider</span></div></div>';
 }
-function examPlan(){
-  var P = examPick(); if(!P) return; var best = P.best, t0 = today(), S = examStats(best, t0), days = [], planned = {}, i;
-  for(i = 0; i < best.n; i++){ var d = addDays(t0, i); if(!kindOf(d)) days.push(d); }
-  if(!days.length){ toast('Aucun jour disponible avant l’échéance.'); return; }
-  Object.keys(state.plan).forEach(function(d){ if(d >= t0) state.plan[d].forEach(function(x){ if(x.k && !x.x) planned[x.k] = 1; }); });
-  days.forEach(function(d){ jmDay(d).forEach(function(x){ planned[x.k] = 1; }); });
-  var list = S.prio.filter(function(x){ return !planned[keyOf(x.it)]; }).slice(0, 80);
-  if(!list.length){ toast('Rien à planifier : tout est déjà prévu ou à jour.'); return; }
-  var per = Math.ceil(list.length / days.length);
-  mutate(function(){ list.forEach(function(x, n){ var day = days[Math.min(days.length - 1, Math.floor(n / per))]; (state.plan[day] = state.plan[day] || []).push({ k:keyOf(x.it), e:1 }); }); },
-    list.length + ' item' + (list.length > 1 ? 's' : '') + ' proposé' + (list.length > 1 ? 's' : '') + ' dans le planning');
+function peIntroHTML(first){
+  var cardG = function(n, w, cls){ return '<span class="pe-c '+(cls || '')+'"><b>'+n+'</b><i style="width:'+w+'%"></i></span>'; };
+  var pin = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5l4 4-2 .6-2.4 2.4.3 3-1 1-2.6-2.6-3.5 3.5M6.2 6.6l-.4 0 3.6-3.6"/></svg>';
+  var prov = peMockSlot('jm pe', 153, 'Surveillance des porteurs de valves', '<span class="jmt pet">'+PE_MINI+'</span>Tour 1 · provisoire', false);
+  var fixd = peMockSlot('', 153, 'Surveillance des porteurs de valves', 'Tour 1 à faire', true);
+  var kp = function(n){ return '<span class="pe-k pv"><b>'+n+'</b><i></i>'+pin+'</span>'; };
+  var kf = function(n, f){ return '<span class="pe-k kx f'+f+'"><b>'+n+'</b><i></i><u>✓</u></span>'; };
+  var row = function(n, f){ return '<span class="pe-r'+(f ? ' f'+f : '')+'"><b>'+n+'</b><i></i></span>'; };
+  return '<div class="jm-h"><span class="jm-ic pe-ic" aria-hidden="true">'+PE_FLAG+'</span><div><h2 id="pe-t">Planifier jusqu’à l’échéance</h2><p class="jm-sub">Comment ça marche, en 3 images.</p></div></div>'+
+  '<p class="pe-lead">Tu donnes la date d’un examen. Médisam répartit le <b>1<sup>er</sup> tour</b> de tous les items que tu n’as pas encore commencés sur les jours qu’il te reste, pour que tu aies <b>tout vu avant l’échéance</b>.</p>'+
+  '<ol class="pe-steps">'+
+  '<li class="pe-step"><div class="pe-mock pe-m1" aria-hidden="true"><div class="pe-day"><em>Lun</em>'+cardG(12, 70, 'a1')+cardG(13, 55, 'a2')+cardG(14, 80, 'a3')+'</div><div class="pe-day"><em>Mar</em>'+cardG(15, 60, 'a4')+cardG(16, 75, 'a5')+'</div><div class="pe-day"><em>Mer</em>'+cardG(17, 50, 'a6')+cardG(18, 65, 'a7')+'</div></div><div class="pe-tx"><b><i class="pe-n">1</i>Des cartes provisoires arrivent dans ton planning</b><span>Un peu chaque jour. Ce sont des <u>propositions en pointillés</u> : tant que tu ne les fixes pas, rien n’est définitif.</span></div></li>'+
+  '<li class="pe-step"><div class="pe-mock pe-m2" aria-hidden="true">'+
+    '<div class="pe-fl"><span class="pe-cap">Une carte</span><div class="pe-fx2"><span class="pe-st">'+kp(153)+'</span><span class="pe-ar"><em>Fixer</em></span><span class="pe-st">'+kf(153, 1)+'</span></div></div>'+
+    '<div class="pe-fl"><span class="pe-cap">Toutes d’un coup</span><div class="pe-fx2"><span class="pe-st">'+kp(153)+kp(154)+kp(155)+'</span><span class="pe-ar t"><em>Tout fixer</em></span><span class="pe-st">'+kf(153, 1)+kf(154, 2)+kf(155, 3)+'</span></div></div>'+
+  '</div><div class="pe-tx"><b><i class="pe-n">2</i>Tu gardes la main</b><div class="pe-legend"><span class="pe-lg"><em>'+pin+'Fixer</em><span>la carte provisoire devient une vraie carte de ton planning</span></span><span class="pe-lg"><em>×</em><span>tu retires la carte</span></span><span class="pe-lg"><em class="v">✓ Valider</em><span>tu as fait le tour</span></span><span class="pe-lg"><em class="t">Tout fixer</em><span>fixe toutes les cartes provisoires d’un coup</span></span></div></div></li>'+
+  '<li class="pe-step"><div class="pe-mock pe-m3" aria-hidden="true"><span class="pe-c dn"><b>12</b><i style="width:70%"></i><s>✓</s></span><span class="pe-arrow"><em>+3 j</em></span><span class="pe-c pj"><b>12</b><i style="width:70%"></i><u class="jmt">J</u></span></div><div class="pe-tx"><b><i class="pe-n">3</i>Ensuite, la méthode des J prend le relais</b><span>Dès que tu valides le 1<sup>er</sup> tour, les tours suivants sont proposés selon ses intervalles (ceux du collège, ou d’autres propres à cette option).</span></div></li>'+
+  '</ol>'+
+  '<div class="pe-ign" role="note"><span class="pe-ignrow" aria-hidden="true"><i>⊘</i><span>Item non prévu</span><em>pas planifié</em></span><span><b>Les items « non prévus »</b> de l’onglet Items ne sont jamais planifiés.</span></div>'+
+  (first ? '<p class="pe-redo"><span class="pe-q" aria-hidden="true">?</span><span>Tu pourras revoir cette explication à tout moment avec le « ? » en haut à droite des réglages.</span></p>' : '')+
+  '<div class="jm-act"><button type="button" class="jm-one" data-pe="ok">'+(first ? 'Compris' : 'Retour aux réglages')+'</button></div>';
 }
-/* Fenêtre proposée à chaque ouverture tant qu'une échéance est à 5 jours ou moins et que le mode est désactivé */
-function examAskMaybe(){
-  if(cfg.examMode || !uid || !ready) { if(uid && !ready && ++examAskTry < 8) setTimeout(examAskMaybe, 2500); return; }
-  var L = examList(Number(cfg.examDays) || 5), best = L[0];
-  if(!best || cfg.examNo === best.c.id + '@' + best.d) return;
-  if(cfg.examAuto){   /* activation automatique choisie dans les réglages : avec Annuler */
-    cfg.examMode = true; cfgSave(); renderAll(); popIn('.tdy-exam');
-    toast('Mode examen proche activé : ' + best.c.name + (best.n ? ' dans ' + best.n + ' jour' + (best.n > 1 ? 's' : '') : ' aujourd’hui') + '.', function(){ cfg.examMode = false; cfg.examNo = best.c.id + '@' + best.d; cfgSave(); renderAll(); });
+function peSetHTML(){
+  var col = peCol, hasJ = peJmHas();
+  var seg = function(attr, arr, lab){ return '<div class="jm-seg" role="group" aria-label="'+lab+'">'+arr.map(function(p){ return '<button type="button" data-'+attr+'="'+p[0]+'" aria-pressed="false">'+p[1]+'</button>'; }).join('')+'</div>'; };
+  var sw = function(k, t, sm){ return '<div class="jm-sw"><div><b>'+t+'</b><small>'+sm+'</small></div><button type="button" class="set-sw" role="switch" data-pesw="'+k+'" aria-checked="false" aria-label="'+t+'"></button></div>'; };
+  var step = function(id, d, inc, lab, unit){ return '<div class="jm-cust" id="'+id+'w" hidden><span class="jm-step"><button type="button" data-pe="'+d+'" aria-label="Moins">−</button><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="2" class="jm-in" id="'+id+'" aria-label="'+lab+'"><button type="button" data-pe="'+inc+'" aria-label="Plus">+</button></span><span class="jm-u">'+unit+'</span></div>'; };
+  return '<div class="jm-h"><span class="jm-ic pe-ic" aria-hidden="true">'+PE_FLAG+'</span><div><h2 id="pe-t2">Planifier jusqu’à l’échéance</h2><p class="jm-sub">'+esc(col.name)+'</p></div><button type="button" class="pe-q" data-pe="intro" aria-label="Revoir l’explication" title="Revoir l’explication">?</button></div>'+
+  '<div class="jm-sec pe-sec" style="--sc:var(--red)"><label class="jm-lb" for="pe-dl">Échéance du collège</label><input type="date" id="pe-dl" class="pe-date" value="'+esc(peDate)+'"><p class="jm-hint pe-dlh" id="pe-dlh"></p></div>'+
+  '<div class="jm-sec pe-sec" style="--sc:var(--amber)"><span class="jm-lb">Terminer avant l’échéance</span>'+seg('pem', [['1','J-1'],['3','J-3'],['5','J-5'],['7','J-7'],['c','Perso']], 'Marge avant l’échéance')+step('pe-mc', 'mdec', 'minc', 'Jours de marge', 'jours avant l’échéance')+'</div>'+
+  '<div class="jm-sec pe-sec" style="--sc:var(--blue)"><span class="jm-lb">Items par jour</span>'+seg('pec', [['auto','Auto'],['5','5'],['8','8'],['12','12'],['c','Perso']], 'Items par jour')+step('pe-cc', 'cdec', 'cinc', 'Items par jour', 'items par jour au maximum')+'<p class="jm-hint" id="pe-ch"></p></div>'+
+  
+  '<div class="jm-sec pe-sec" style="--sc:var(--green)"><span class="jm-lb">Commencer</span>'+seg('pes', [['today','Aujourd’hui'],['tomorrow','Demain']], 'Début')+'</div>'+
+  '<div class="jm-sec pe-sec" style="--sc:var(--pink)">'+sw('stg', 'Semaines de stage plus légères', 'Moitié moins d’items les jours de stage.')+sw('light', 'Journée allégée après une garde', 'Un peu moins d’items le lendemain d’une garde.')+'</div>'+
+  '<div class="jm-sec pe-sec" style="--sc:var(--violet)"><div class="jm-sw"><div><b>Appliquer à la méthode des J</b><small id="pe-jsm"></small></div><button type="button" class="set-sw" role="switch" data-pesw="jm" aria-checked="false" aria-label="Appliquer à la méthode des J"></button></div>'+
+  '<div id="pe-jbox" hidden>'+seg('pejm', [['col','Celle du collège'],['own','Une nouvelle, propre à cette option']], 'Quelle méthode des J')+
+  '<p class="jm-hint" id="pe-jh"></p><p class="jm-hint">Chaque item suit un seul calendrier : dès que son 1<sup>er</sup> tour est validé, seule la méthode choisie ici lui propose la suite. Jamais deux fois le même item rapprochés.</p>'+
+  '<div id="pe-own" hidden><div class="jm-chips pe-pre">'+JM_PRESETS.map(function(p, i){ return '<button type="button" data-pejp="'+i+'" data-h="'+['blue', 'orange', 'green'][i]+'" aria-pressed="false">'+p[0]+'<small>'+p[1].join(' · ')+'</small></button>'; }).join('')+'</div><div id="pe-rows" class="jm-rows"></div>'+seg('pejb', [['p','Depuis le tour d’avant'],['f','Depuis le 1er tour']], 'Compter les jours')+'<p class="jm-hint">Le ressenti (difficile, bien compris) se règle dans la méthode des J générale : le 1<sup>er</sup> tour n’a pas encore de ressenti.</p></div></div></div>'+
+  '<div class="pe-prev" id="pe-prev" aria-live="polite"></div>'+
+  '<div class="jm-act"><button type="button" class="jm-one" id="pe-go" data-pe="go"></button><div class="jm-foot"><button type="button" class="jm-ghost" data-pe="close">Annuler</button></div></div>';
+}
+function peRowsHTML(){
+  var g = peS.og, h = '';
+  g.forEach(function(v, i){
+    h += '<div class="jm-row" style="--rc:var(--violet)"><span class="jm-n">Tour '+(i + 2)+'</span><span class="jm-step"><button type="button" data-pe="gdec" data-i="'+i+'" aria-label="Un jour de moins">−</button><input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="3" class="jm-in" data-pegi="'+i+'" value="'+v+'" aria-label="Jours avant le tour '+(i + 2)+'"><button type="button" data-pe="ginc" data-i="'+i+'" aria-label="Un jour de plus">+</button></span><span class="jm-u">'+(peS.ob === 'f' ? 'jours après le 1er tour' : 'jours après le tour '+(i + 1))+'</span>'+(g.length > 1 ? '<button type="button" class="jm-rm" data-pe="gdel" data-i="'+i+'" aria-label="Retirer le tour '+(i + 2)+'">×</button>' : '<span class="jm-rm-sp"></span>')+'</div>';
+  });
+  if(g.length < MAX - 1) h += '<button type="button" class="jm-add" data-pe="gadd"><span>+</span>Ajouter le tour '+(g.length + 2)+'</button>';
+  return h;
+}
+function peSync(){
+  var s = peS, root = $('pe'), q = function(sel){ return root.querySelectorAll(sel); };
+  var mStd = [1, 3, 5, 7].indexOf(s.margin) > -1, cStd = s.cap === 'auto' || [5, 8, 12].indexOf(s.cap) > -1;
+  Array.prototype.forEach.call(q('[data-pem]'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.pem === 'c' ? !mStd : mStd && Number(b.dataset.pem) === s.margin)); });
+  Array.prototype.forEach.call(q('[data-pec]'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.pec === 'c' ? !cStd : cStd && (b.dataset.pec === 'auto' ? s.cap === 'auto' : Number(b.dataset.pec) === s.cap))); });
+  Array.prototype.forEach.call(q('[data-pes]'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.pes === s.start)); });
+  Array.prototype.forEach.call(q('[data-pejm]'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.pejm === s.jm)); });
+  Array.prototype.forEach.call(q('[data-pejb]'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.pejb === s.ob)); });
+  Array.prototype.forEach.call(q('[data-pejp]'), function(b){ b.setAttribute('aria-pressed', String(JSON.stringify(JM_PRESETS[Number(b.dataset.pejp)][1]) === JSON.stringify(s.og) && s.ob === 'p')); });
+  var on = { stg:s.stg, light:s.light, jm:s.jm !== 'off' };
+  Array.prototype.forEach.call(q('[data-pesw]'), function(b){ b.setAttribute('aria-checked', String(!!on[b.dataset.pesw])); });
+  $('pe-mcw').hidden = mStd; $('pe-ccw').hidden = cStd;
+  if(!mStd && document.activeElement !== $('pe-mc')) $('pe-mc').value = s.margin;
+  if(!cStd && document.activeElement !== $('pe-cc')) $('pe-cc').value = s.cap === 'auto' ? 10 : s.cap;
+  $('pe-ch').textContent = s.cap === 'auto' ? 'Réparti selon les jours disponibles (jamais plus de ' + Math.min(10, state.jm.max || 10) + ' par jour, comme le maximum de la méthode des J).' : '';
+  $('pe-ch').hidden = s.cap !== 'auto';
+  var hasJ = peJmHas(), name = peCol.name.split(' – ')[0];
+  $('pe-jbox').hidden = s.jm === 'off';
+  $('pe-own').hidden = s.jm !== 'own';
+  var colB = document.querySelector('#pe [data-pejm="col"]'); colB.disabled = !hasJ; colB.title = hasJ ? '' : 'Aucune méthode des J n’est réglée pour ce collège';
+  $('pe-jsm').textContent = s.jm === 'off' ? 'Désactivé : après le 1er tour, aucun tour n’est proposé automatiquement pour ces items.' : 'Après le 1er tour, la méthode des J propose les tours suivants.';
+  $('pe-jh').textContent = s.jm === 'col' ? 'On garde les intervalles déjà réglés pour ' + name + '.' : (hasJ ? 'Ces intervalles ne servent qu’aux items placés par ce bouton ; le reste du collège garde sa méthode.' : 'Aucune méthode des J n’est encore réglée pour ce collège : choisis des intervalles ci-dessous.');
+  var rows = $('pe-rows'); if(s.jm === 'own' && !rows.contains(document.activeElement)) rows.innerHTML = peRowsHTML();
+  var dh = $('pe-dlh'), cur = state.deadlines[peCol.id] || '';
+  dh.textContent = !peDate ? 'Choisis la date de l’examen.' : peDate <= today() ? 'La date doit être dans le futur.' : (cur === peDate ? '' : 'Elle sera enregistrée comme échéance du collège.');
+  dh.hidden = !dh.textContent;
+}
+function pePrev(){
+  var R = peR = peCompute(), el = $('pe-prev'), go = $('pe-go'), h = '', last = R.last ? short(R.last) : '';
+  var valid = peDate && peDate > today();
+  if(!valid){ h = '<p class="pe-line off">Choisis une date d’échéance dans le futur.</p>'; }
+  else if(!R.days.length){ h = '<p class="pe-line bad"><b>Pas assez de jours</b> entre '+(peS.start === 'tomorrow' ? 'demain' : 'aujourd’hui')+' et le '+last+' (gardes, repos et jours exclus déduits). Diminue la marge ou change la date.</p>'; }
+  else if(!R.N){ h = '<p class="pe-line off">Rien à planifier : tous les items de ce collège ont déjà un tour, sont déjà dans ton planning ou sont « non prévus».</p>'; }
+  else {
+    var placed = R.placed.length;
+    h = '<p class="pe-line'+(R.over.length ? ' bad' : ' good')+'"><b>'+placed+' item'+(placed > 1 ? 's' : '')+' jamais vu'+(placed > 1 ? 's' : '')+'</b> · <b>'+R.nRev+' à revoir</b> <span class="pe-2">(2<sup>e</sup> tour)</span></p>'+
+      '<p class="pe-line2">Environ <b>'+peFmtAvg(R.avg)+' nouveau'+(R.avg >= 2 ? 'x' : '')+'</b> et <b>'+peFmtAvg(R.avgRev)+' révision'+(R.avgRev >= 2 ? 's' : '')+'</b> par jour, jusqu’au <b>'+last+'</b>.</p>';
+    var bits = [];
+    if(R.nRef) bits.push(R.nRef + ' item' + (R.nRef > 1 ? 's' : '') + ' de référence en priorité');
+    if(R.old.length) bits.push(R.old.length + ' ancienne' + (R.old.length > 1 ? 's' : '') + ' carte' + (R.old.length > 1 ? 's' : '') + ' provisoire' + (R.old.length > 1 ? 's' : '') + ' remplacée' + (R.old.length > 1 ? 's' : ''));
+    if(R.nIgn) bits.push(R.nIgn + ' « non prévu' + (R.nIgn > 1 ? 's' : '') + ' » exclu' + (R.nIgn > 1 ? 's' : ''));
+    if(R.nPl) bits.push(R.nPl + ' déjà dans ton planning');
+    if(bits.length) h += '<p class="pe-sub">' + bits.join(' · ') + '</p>';
+    if(R.over.length){
+      var o = R.over.length, ex = R.over.slice(0, 3).map(function(it){ return '<b>'+it[0]+'</b> '+esc(it[1]); }).join(', ') + (o > 3 ? '…' : '');
+      h += '<div class="pe-warn"><b>Irréaliste</b> : '+o+' item'+(o > 1 ? 's' : '')+' ne tien'+(o > 1 ? 'nent' : 't')+' pas dans ces réglages.<span class="pe-ex">'+ex+'</span>'+
+        '<button type="button" class="pe-skip" data-pe="skip" aria-pressed="'+peSkip+'">'+(peSkip ? '✓ ' : '')+'Passer ces '+o+' item'+(o > 1 ? 's' : '')+' en « non prévus »</button>'+
+        '<small>'+(peSkip ? 'Ils seront classés « non prévus » dans l’onglet Items (tu pourras les remettre un par un).' : 'Ou augmente le plafond, avance la date de départ ou diminue la marge.')+'</small></div>';
+    }
+  }
+  el.innerHTML = h;
+  var n = R.placed.length;
+  go.disabled = !R.ok;
+  go.textContent = R.ok ? 'Planifier ' + n + ' item' + (n > 1 ? 's' : '') : 'Planifier';
+}
+function peShow(v){
+  peView = v;
+  var intro = $('pe-intro'), set = $('pe-set');
+  if(v === 'intro'){ intro.innerHTML = peIntroHTML(!state.jm.pe.seen); intro.hidden = false; set.hidden = true; }
+  else { intro.hidden = true; set.innerHTML = peSetHTML(); set.hidden = false; peSync(); pePrev(); }
+  var bx = document.querySelector('#pe .cf-box'); if(bx) bx.scrollTop = 0;
+  var f = document.querySelector('#pe-' + (v === 'intro' ? 'intro' : 'set') + ' .jm-one'); if(f && !f.disabled) f.focus({ preventScroll:true });
+}
+function peOpen(id, from){
+  var col = COLLEGES.filter(function(c){ return c.id === id; })[0]; if(!col) return;
+  peCol = col; peBack = from || document.activeElement; peSkip = false;
+  var set = state.jm.pe.set;
+  peS = { margin:set.margin, cap:set.cap, wk:set.wk, start:set.start, stg:set.stg, light:set.light, jm:set.jm, og:set.og.slice(), ob:set.ob };
+  var hasJ = peJmHas();
+  if(peS.jm === 'auto' || (peS.jm === 'col' && !hasJ)) peS.jm = hasJ ? 'col' : 'off';
+  peS.wk = 'all'; peDate = state.deadlines[col.id] || '';
+  document.querySelector('#pe .cf-box').setAttribute('data-h', col.hue);
+  peShow(state.jm.pe.seen ? 'set' : 'intro');
+  dlgOpen($('pe'));
+}
+function peClose(){
+  if(!peCol) return;
+  dlgClose($('pe')); peCol = null;
+  var b = peBack; peBack = null; if(b && b.isConnected && b.focus) b.focus({ preventScroll:true });
+}
+function peApply(){
+  var R = peCompute(); peR = R; if(!R.ok) return;
+  var before = JSON.stringify({ plan:state.plan, ign:state.ign, jm:state.jm, dl:state.deadlines }), col = peCol, t0 = today(), P = state.jm.pe, own = P.own, s = peS;
+  state.deadlines[col.id] = peDate;
+  Object.keys(state.plan).forEach(function(d){
+    if(d < t0) return;
+    var a = state.plan[d].filter(function(x){ return !peIsMine(x); });
+    if(a.length) state.plan[d] = a; else delete state.plan[d];
+  });
+  R.old.forEach(function(k){ delete own[k]; });
+  var g = peGNorm();
+  R.placed.forEach(function(p){
+    (state.plan[p.day] = state.plan[p.day] || []).push({ k:p.k, p:1 });
+    if(s.jm === 'own') own[p.k] = { g:g.slice(), b:s.ob };
+    else if(s.jm === 'off') own[p.k] = { g:[], b:'p' };
+    else delete own[p.k];
+  });
+  var nSkip = 0;
+  if(peSkip) R.over.forEach(function(it){ state.ign[keyOf(it)] = 1; nSkip++; });
+  P.seen = true; P.set = { margin:s.margin, cap:s.cap, wk:s.wk, start:s.start, stg:s.stg, light:s.light, jm:s.jm, og:g.slice(), ob:s.ob };
+  var n = R.placed.length, nm = col.name.split(' – ')[0];
+  persist(); peClose(); renderAll();
+  toast(n + ' item' + (n > 1 ? 's' : '') + ' proposé' + (n > 1 ? 's' : '') + ' jusqu’au ' + short(R.last) + ' · ' + nm + (nSkip ? ' · ' + nSkip + ' en « non prévus »' : ''), function(){
+    var b = JSON.parse(before);
+    state.plan = sanitizePlan(b.plan); state.ign = sanitizeIgn(b.ign); state.jm = sanitizeJm(b.jm); state.deadlines = sanitizeDeadlines(b.dl);
+    persist(); renderAll();
+  });
+  setTimeout(function(){ Array.prototype.forEach.call(document.querySelectorAll('.slot.pe'), function(el, i){ if(el.animate && !reducedFx() && i < 14) el.animate([{ opacity:0, translate:'0 10px', scale:'.96' }, { opacity:1, translate:'0 0', scale:'1' }], { duration:420, delay:i * 40, easing:EZ_SPRING, fill:'backwards' }); }); }, 60);
+}
+function peCount(){
+  var n = 0; Object.keys(state.plan).forEach(function(d){ state.plan[d].forEach(function(x){ if(x.p && !x.x && x.k) n++; }); });
+  return n;
+}
+function peFixAll(){
+  var n = peCount(); if(!n) return;
+  cxAsk({
+    title:'Fixer les cartes provisoires ?',
+    text:n + ' cartes en pointillés sont dans ton planning. Les fixer, c’est les garder pour de bon.',
+    items:[
+      '<li><b style="min-width:84px">Maintenant</b><span>Médisam peut les déplacer si tu relances le bouton.</span></li>',
+      '<li><b style="min-width:84px">Fixées</b><span>Elles restent à leur jour, comme ajoutées par toi.</span></li>',
+      '<li><b style="min-width:84px">Ensuite</b><span>Tu peux toujours en retirer ou en valider une.</span></li>'
+    ],
+    ok:'Tout fixer (' + n + ')', no:'Annuler', focus:'ok',
+    onOk:function(){
+      var ids = [];
+      mutate(function(){ Object.keys(state.plan).forEach(function(d){ state.plan[d].forEach(function(x){ if(x.p && !x.x && x.k){ delete x.p; ids.push(x.k); } }); }); }, n + ' carte' + (n > 1 ? 's' : '') + ' fixée' + (n > 1 ? 's' : '') + ' dans ton planning');
+    }
+  });
+}
+document.addEventListener('click', function(e){
+  if(!peCol) return;
+  var t = e.target; if(!t.closest) return;
+  if(t === $('pe')){ peClose(); return; }
+  var b = t.closest('[data-pe],[data-pem],[data-pec],[data-pew],[data-pes],[data-pesw],[data-pejm],[data-pejb],[data-pejp]'); if(!b || b.disabled) return;
+  var s = peS, d = b.dataset, i = Number(d.i);
+  if(d.pe){
+    var a = d.pe;
+    if(a === 'close') peClose();
+    else if(a === 'intro') peShow('intro');
+    else if(a === 'ok'){ if(!state.jm.pe.seen){ state.jm.pe.seen = true; persist(); } peShow('set'); }
+    else if(a === 'go') peApply();
+    else if(a === 'skip'){ peSkip = !peSkip; pePrev(); }
+    else if(a === 'mdec' || a === 'minc'){ s.margin = Math.min(60, Math.max(0, s.margin + (a === 'minc' ? 1 : -1))); $('pe-mc').value = s.margin; peSync(); pePrev(); }
+    else if(a === 'cdec' || a === 'cinc'){ var cv = s.cap === 'auto' ? 10 : s.cap; s.cap = Math.min(60, Math.max(1, cv + (a === 'cinc' ? 1 : -1))); $('pe-cc').value = s.cap; peSync(); pePrev(); }
+    else if(a === 'gdec' || a === 'ginc'){ s.og[i] = Math.min(365, Math.max(1, (Number(s.og[i]) || 1) + (a === 'ginc' ? 1 : -1))); var gi = document.querySelector('#pe-rows [data-pegi="'+i+'"]'); if(gi) gi.value = s.og[i]; peSync(); }
+    else if(a === 'gdel'){ if(s.og.length > 1){ s.og.splice(i, 1); $('pe-rows').innerHTML = peRowsHTML(); peSync(); } }
+    else if(a === 'gadd'){ var lg = s.og[s.og.length - 1] || 7; s.og.push(Math.min(365, lg * 2)); $('pe-rows').innerHTML = peRowsHTML(); peSync(); }
     return;
   }
-  if(cxCb || tourOn || admOpen || !ready){ if(++examAskTry < 8) setTimeout(examAskMaybe, 2500); return; }
-  cxAsk({
-    title:'Activer le mode examen proche ?',
-    text:'Ton échéance en ' + best.c.name + ' est ' + (best.n ? 'dans ' + best.n + ' jour' + (best.n > 1 ? 's' : '') : 'aujourd’hui') + '. Le mode examen proche adapte l’écran Aujourd’hui à cette dernière ligne droite :',
-    items:[
-      '<li><b>1</b><span>Une carte en haut : items jamais vus, à revoir et difficiles du collège.</span></li>',
-      '<li><b>2</b><span>Le rythme à tenir par jour pour tout voir, sans compter tes gardes et tes repos.</span></li>',
-      '<li><b>3</b><span>Les items à traiter en priorité, et un bouton pour les planifier jusqu’au jour J.</span></li>',
-      '<li><b>4</b><span>Des conseils selon le temps qu’il reste, et ton carnet d’erreurs à relire.</span></li>'
-    ],
-    ok:'Activer', no:'Pas maintenant', alt:'Ne plus demander', focus:'ok',
-    onOk:function(){ cfg.examMode = true; cfgSave(); renderAll(); popIn('.tdy-exam'); },
-    onAlt:function(){ cfg.examNo = best.c.id + '@' + best.d; cfgSave(); }
-  });
-}
+  if(d.pem){ if(d.pem === 'c'){ if([1, 3, 5, 7].indexOf(s.margin) > -1) s.margin = 2; } else s.margin = Number(d.pem); $('pe-mc').value = s.margin; }
+  else if(d.pec){ if(d.pec === 'c'){ if(s.cap === 'auto' || [5, 8, 12].indexOf(s.cap) > -1) s.cap = 10; } else s.cap = d.pec === 'auto' ? 'auto' : Number(d.pec); }
+  else if(d.pew) s.wk = d.pew;
+  else if(d.pes) s.start = d.pes;
+  else if(d.pesw){
+    if(d.pesw === 'jm') s.jm = s.jm === 'off' ? (peJmHas() ? 'col' : 'own') : 'off';
+    else s[d.pesw] = !s[d.pesw];
+  }
+  else if(d.pejm) s.jm = d.pejm;
+  else if(d.pejb){ s.ob = d.pejb; $('pe-rows').innerHTML = peRowsHTML(); }
+  else if(d.pejp){ s.og = JM_PRESETS[Number(d.pejp)][1].slice(); s.ob = 'p'; $('pe-rows').innerHTML = peRowsHTML(); }
+  peSync(); pePrev();
+});
+document.addEventListener('input', function(e){
+  if(!peCol || !e.target || !e.target.id && !e.target.dataset) return;
+  var t = e.target, s = peS;
+  if(t.id === 'pe-dl'){ peDate = /^\d{4}-\d{2}-\d{2}$/.test(t.value) ? t.value : ''; peSync(); pePrev(); }
+  else if(t.id === 'pe-mc'){ var m = parseInt(t.value, 10); if(!isNaN(m)){ s.margin = Math.min(60, Math.max(0, m)); peSync(); pePrev(); } }
+  else if(t.id === 'pe-cc'){ var c = parseInt(t.value, 10); if(!isNaN(c) && c > 0){ s.cap = Math.min(60, c); peSync(); pePrev(); } }
+  else if(t.dataset && t.dataset.pegi !== undefined){ var v = parseInt(t.value, 10); if(!isNaN(v) && v > 0) s.og[Number(t.dataset.pegi)] = Math.min(365, v); }
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && peCol && !cxCb){ e.preventDefault(); e.stopPropagation(); peClose(); }
+}, true);
+
 /* Animations d'entrée (index44) */
-function popIn(sel){
-  var e = document.querySelector(sel); if(!e || reducedFx() || !e.animate) return;
-  e.animate([{ opacity:0, translate:'0 -12px', scale:'.97' }, { opacity:1, translate:'0 0', scale:'1' }], { duration:480, easing:EZ });
-  var bi = e.querySelector('.ex-bar i'); if(bi) bi.animate([{ transform:'scaleX(0)' }, { transform:'scaleX(1)' }], { duration:900, delay:220, easing:EZ, fill:'backwards' });
-  Array.prototype.forEach.call(e.querySelectorAll('.ex-grid>div, .tdy-it'), function(c, i){ c.animate([{ opacity:0, translate:'0 8px' }, { opacity:1, translate:'0 0' }], { duration:360, delay:120 + i * 50, easing:EZ, fill:'backwards' }); });
-}
 function popDot(act){
   var d = document.querySelector('.tdy-chip[data-act="' + act + '"] i'); if(d && d.animate && !reducedFx()) d.animate([{ transform:'scale(.4)' }, { transform:'scale(1.6)' }, { transform:'scale(1)' }], { duration:420, easing:EZ_SPRING });
 }
