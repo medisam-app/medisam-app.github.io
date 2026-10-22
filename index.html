@@ -14,6 +14,18 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index60 : (1) SÉCURITÉ : plus aucun script chargé depuis un CDN. supabase-js 2.118.0 (dist/umd/supabase.js du paquet npm)
+              est le fichier « supabase.js » et xlsx 0.18.5 le fichier « xlsx.full.min.js », tous deux À POSER À LA RACINE
+              DU DÉPÔT à côté de index.html (comme les icônes d'index57). Référencés avec ?v=60 : changer ce numéro à chaque
+              mise à jour de la bibliothèque (cache). Avant, supabase-js@2 était flottant et sans integrity : un CDN
+              compromis aurait pu lire les sessions de tous les comptes. Si un des deux fichiers est absent du dépôt,
+              la connexion (supabase.js) ou l'import Excel (xlsx) ne marchent plus : c'est le premier endroit à vérifier.
+              Pour mettre à jour supabase-js : npm pack @supabase/supabase-js, prendre dist/umd/supabase.js.
+              ⚠ xlsx 0.18.5 est la dernière version publiée sur npm mais elle est ancienne (faille connue de pollution de
+              prototype, corrigée dans les versions SheetJS 0.20.x distribuées sur cdn.sheetjs.com) ; ici le fichier ne
+              lit que les fichiers que Sam choisit lui-même. À remplacer par une 0.20.x téléchargée à la main si possible.
+              (2) CONTRASTE : --ink2 du thème iOS (celui toujours actif) passe de #8A8A8E (3,4:1 sur blanc) à #68686D (5,5:1 sur
+              blanc, 5,0:1 sur --bg) ; en sombre #8E8E93 → #98989D (4,3:1 → 4,9:1 sur --line2). Ne pas rééclaircir ce gris.
     index59 : textes des deux nouvelles étapes du tutoriel (calendrier de la promo, import Excel) raccourcis à 2 lignes,
               comme les autres étapes. Ne pas les rallonger : le détail (Ajouter / Remplacer / Annuler, colonnes du fichier)
               s'affiche déjà dans les fenêtres des réglages.
@@ -969,7 +981,7 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
 .skin button{appearance:none;border:0;background:none;height:34px;padding:0 12px;border-radius:10px;font:600 13px var(--f-body);color:var(--ink2);transition:background .2s,color .2s,box-shadow .2s}
 .skin button[aria-pressed="true"]{background:var(--c);color:var(--on-c)}
 :root[data-skin="ios"]{
-  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#000000; --ink2:#8A8A8E; --line:#E3E3E8; --line2:#EEEEF2;
+  --bg:#F2F2F7; --surface:#FFFFFF; --ink:#000000; --ink2:#68686D; --line:#E3E3E8; --line2:#EEEEF2;
   --logo:#1C1C1E; --hema:#5856D6;
   --red:#FF3B30; --blue:#007AFF; --pink:#FF2D55; --violet:#AF52DE;
   --amber:#A2845E; --teal:#30B0C7; --green:#34C759; --orange:#FF9500;
@@ -984,7 +996,7 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
 }
 @media (prefers-color-scheme: dark){
   :root[data-skin="ios"]:not([data-theme="light"]){
-    --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --ink2:#8E8E93; --line:#38383A; --line2:#2C2C2E;
+    --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --ink2:#98989D; --line:#38383A; --line2:#2C2C2E;
     --logo:#F2F2F7; --hema:#5E5CE6;
     --red:#FF453A; --blue:#0A84FF; --pink:#FF375F; --violet:#BF5AF2;
     --amber:#AC8E68; --teal:#40C8E0; --green:#30D158; --orange:#FF9F0A;
@@ -995,7 +1007,7 @@ body::after{content:"";position:absolute;inset:0 0 auto;height:640px;z-index:-1;
   }
 }
 :root[data-skin="ios"][data-theme="dark"]{
-    --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --ink2:#8E8E93; --line:#38383A; --line2:#2C2C2E;
+    --bg:#000000; --surface:#1C1C1E; --ink:#FFFFFF; --ink2:#98989D; --line:#38383A; --line2:#2C2C2E;
     --logo:#F2F2F7; --hema:#5E5CE6;
     --red:#FF453A; --blue:#0A84FF; --pink:#FF375F; --violet:#BF5AF2;
     --amber:#AC8E68; --teal:#40C8E0; --green:#30D158; --orange:#FF9F0A;
@@ -2677,7 +2689,7 @@ body[data-auth="in"] #auth{display:none}
 </aside>
 
 <!-- §H4 — Scripts. 1) configuration Supabase : seule la clé anon (publique) va ici, JAMAIS la clé service_role ;
-     la sécurité des données repose sur les règles RLS de Supabase. 2) bibliothèque supabase-js. 3) §J0 puis script principal. -->
+     la sécurité des données repose sur les règles RLS de Supabase. 2) bibliothèque supabase-js (fichier supabase.js à la racine du dépôt, index60). 3) §J0 puis script principal. -->
 <script>
 /* ===== Les deux valeurs de ton projet Supabase (Project Settings > API) ===== */
 window.MEDISAM_CONFIG = {
@@ -2685,7 +2697,7 @@ window.MEDISAM_CONFIG = {
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cG1wbHNmcnpvandhZHFjbGhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0ODY3ODMsImV4cCI6MjEwODA2Mjc4M30.UysecsQG_SJlcwQmMIcq6j88LxgUQ3ZY--MQ1AMrzEY"
 };
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js?v=60"></script>
 <script>
 /* ======================================================================
    SOMMAIRE DU JAVASCRIPT (repères à chercher : « §J » suivi du numéro)
@@ -6589,7 +6601,7 @@ setPop.addEventListener('change', function(e){
 function loadXlsxLib(){
   return new Promise(function(res, rej){
     if(window.XLSX) return res(window.XLSX);
-    var sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    var sc = document.createElement('script'); sc.src = 'xlsx.full.min.js?v=60'; /* fichier du dépôt (index60), plus de CDN : voir le journal */
     sc.onload = function(){ res(window.XLSX); }; sc.onerror = function(){ rej(new Error('lib')); }; document.head.appendChild(sc);
   });
 }
