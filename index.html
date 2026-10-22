@@ -14,6 +14,14 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index59 : textes des deux nouvelles étapes du tutoriel (calendrier de la promo, import Excel) raccourcis à 2 lignes,
+              comme les autres étapes. Ne pas les rallonger : le détail (Ajouter / Remplacer / Annuler, colonnes du fichier)
+              s'affiche déjà dans les fenêtres des réglages.
+    index58 : tutoriel (§J36, tourSteps) : deux étapes ajoutées juste après l'accueil, sur le bouton des réglages :
+              « Importe le calendrier de ta promo » (profil, promo, semaines de stage et échéances de collèges, Ajouter /
+              Remplacer / Annuler) et « Reprends tes anciens tours depuis Excel » (.xlsx ou CSV : item, date, ressenti).
+              L'étape « Les réglages » est raccourcie, ces deux sujets n'y sont plus détaillés. Le tutoriel ne se relance pas
+              tout seul pour ceux qui l'ont déjà vu : Réglages > Revoir le tutoriel.
     index57 : correction des icônes d'index56 : les images en base64 ne s'affichaient pas (Safari iPhone ignore les
               icônes data:). Elles sont maintenant de vrais fichiers (apple-touch-icon.png, favicon.png, favicon.ico) à
               déposer à la racine du dépôt, référencés dans le <head> avec ?v=57. Le HTML a perdu ~48 Ko de base64.
@@ -8136,6 +8144,7 @@ var tourEl = $('tour');
 function tsvg(p){ return '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>'; }
 var TI = {
   spark:tsvg('<path d="M10 2.5l1.6 4.4 4.4 1.6-4.4 1.6L10 14.5l-1.6-4.4L4 8.5l4.4-1.6z"/><path d="M15.5 14v3M14 15.5h3"/>'),
+  down:tsvg('<path d="M10 3v9M6.5 8.5L10 12l3.5-3.5"/><path d="M4 13.5V15a1.5 1.5 0 001.5 1.5h9A1.5 1.5 0 0016 15v-1.5"/>'),
   chart:tsvg('<path d="M3.5 16.5V9M8 16.5V4.5M12.5 16.5v-5M17 16.5V7"/>'),
   stats:tsvg('<circle cx="10" cy="10" r="6.5"/><path d="M10 3.5V10h6.5"/>'),
   grid:tsvg('<rect x="3" y="3" width="6" height="6" rx="1.6"/><rect x="11" y="3" width="6" height="6" rx="1.6"/><rect x="3" y="11" width="6" height="6" rx="1.6"/><rect x="11" y="11" width="6" height="6" rx="1.6"/>'),
@@ -8157,6 +8166,8 @@ var TI_NEXT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke
 function tourSteps(){
   var s = [
     { ic:'spark', logo:true, t:'Bienvenue sur Médisam', x:'Ton carnet de révision pour les EDN : tes tours, ton planning et tes tâches, enregistrés sur ton compte. Je te montre l’essentiel en une minute.' },
+    { sel:'#set-btn', side:'bottom', ic:'cal', t:'Importe le calendrier de ta promo', x:'Complète ton profil dans les réglages (prénom, nom, promo) : Médisam importe alors le calendrier de l’UVSQ, avec tes semaines de stage et les échéances de tes collèges.' },
+    { sel:'#set-btn', side:'bottom', ic:'down', t:'Reprends tes anciens tours depuis Excel', x:'Tu as déjà tes tours dans Excel ? Dans les réglages, « Importer mes tours » lit ton fichier .xlsx ou CSV (item, date, ressenti), sans doublons.' },
     { tab:'colleges', sel:'#hero', side:'bottom', ic:'chart', t:'Ta progression', x:'Ce bandeau résume où tu en es : items commencés, deuxième tour, rythme de la semaine. Les chiffres bougent à chaque tour que tu ajoutes.' },
     { tab:'colleges', sel:'#st-btn', side:'bottom', ic:'stats', t:'Les statistiques', x:'Maîtrise par ressenti, items à revoir, points faibles et date estimée de fin du premier tour. Elles suivent la matière affichée.' },
     { tab:'colleges', sel:'#colleges .cg', side:'bottom', ic:'grid', t:'Les collèges', x:'Un collège correspond à une matière. Touche une carte pour ouvrir la liste de ses items.' },
@@ -8172,7 +8183,7 @@ function tourSteps(){
     { tab:'plan', sel:'#plan .jmb', side:'bottom', ic:'jm', t:'Un planning qui se remplit seul', x:'Une fois la méthode des J réglée, Médisam place tes prochains tours dans le planning : ce sont les cartes hachurées avec un J. Valide-les, fixe-les ou ignore-les. Ce que tu ajoutes toi-même reste uni. Les jours de stage sont allégés.' },
     { sel:'#todo-open', side:'bottom', ic:'check', t:'La to-do list', x:'Tes tâches, avec un cours lié et une échéance si tu le souhaites. Elles s’ouvrent dans un panneau sur le côté.' },
     { sel:'#clock-btn', side:'bottom', ic:'clock', t:'L’écran Heure', x:'Une grande horloge pour réviser sans distraction, avec un minuteur pomodoro. Raccourci : la touche H.' },
-    { sel:'#set-btn', side:'bottom', ic:'sliders', t:'Les réglages', x:'Complète ton profil (prénom, nom, promo) : Médisam préremplit tes semaines de stage et tes échéances d’après le calendrier de ta promo. Tu y gères aussi ton compte (mot de passe, export, suppression). Tu as déjà tes tours dans Excel ? Importe le fichier (.xlsx ou CSV : numéro de l’item, date, ressenti) et ils arrivent sans doublons. Tu peux aussi les exporter, choisir Anki, Fiche ou aucun bouton, régler le décompte, écrire une suggestion, agrandir le texte ou revoir ce tutoriel.' },
+    { sel:'#set-btn', side:'bottom', ic:'sliders', t:'Les réglages', x:'Ton profil et le calendrier de ta promo, l’import et l’export de tes tours, ta sauvegarde complète et ton compte (mot de passe, suppression). Tu peux aussi choisir Anki, Fiche ou aucun bouton, régler le décompte, écrire une suggestion, agrandir le texte ou revoir ce tutoriel.' },
     { sel:'#theme-btn', side:'bottom', ic:'moon', t:'Jour et nuit', x:'Médisam passe tout seul en mode sombre à la tombée de la nuit et revient en mode jour au lever du soleil. Tu peux aussi basculer à la main : ton choix tient jusqu’au prochain lever ou coucher du soleil.' },
     { sel:'#sync', side:'bottom', ic:'cloud', t:'Sauvegarde automatique', x:'Tout est enregistré sur ton compte à chaque action : tu retrouves ta progression sur tous tes appareils. Le bouton tout à droite te déconnecte.' }
   ];
