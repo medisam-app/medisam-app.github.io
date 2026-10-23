@@ -14,6 +14,22 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index65 : première arrivée = choix des QCM. Tant que cfg.qcmAsked est faux (aussi pour les comptes qui existaient déjà : la clé
+              n'existe pas dans leurs réglages en ligne), chaque item n'affiche qu'un bouton « QCM » (button.qcm-ask, data-qcm-ask) ;
+              un clic ouvre la fenêtre #qc (§H3, JS « fenêtre #qc » juste avant dlgOpen) : Les deux / EDNi / Hypo / Rien, avec
+              « Tu pourras changer ça plus tard dans Réglages > Révisions », ou « Plus tard » (rien n'est enregistré, le bouton
+              unique reste). Le choix pose cfg.qcmMode + cfg.qcmAsked=true (synchronisé sur le compte) ; le réglage de
+              Réglages > Révisions pose aussi qcmAsked. Pour redemander à tout le monde un jour : changer le nom de la clé.
+    index64 : (1) le bouton EDN.fr de chaque item s'appelle « EDNi » (avant « QCM »). (2) Réglages > Révisions > « QCM sur
+              chaque item » : Les deux (défaut) / EDNi / Hypo / Aucun (cfg.qcmMode, synchronisé sur le compte comme le reste de
+              cfg ; qcmMode() et qcmHTML() §J9, clic data-set qcmMode dans le gestionnaire des réglages, compteur du groupe 4 → 5).
+    index63 : QCM Hypocampus. Chaque item a maintenant deux boutons : « QCM » (EDN.fr, inchangé) et « Hypo » (bordure en
+              pointillés) qui ouvre Hypocampus > Prep EDN > Entraînements (https://www.hypocampus.fr/app/courses/166845, il faut
+              être connecté à Hypocampus). Hypocampus n'a pas d'adresse par item : on y clique l'item (« 224. HTA ») pour ouvrir
+              la fenêtre QI / KFP / DP, donc le bouton mène à la page commune et rappelle le numéro d'item dans son info-bulle.
+              Code : HYPO_URL + qcmHTML (§J9) ; CSS .qcm.hypo à la suite de .qcm. Le clic reprend l'animation de .qcm.
+              ⚠ Sur téléphone la ligne de droite de l'item contient maintenant 3 boutons (QCM, Hypo, Anki) : règle
+              « .ext .qcm » du bloc index61 ; .ext passe à flex-wrap pour que ça ne déborde pas.
     index60 : (1) SÉCURITÉ : plus aucun script chargé depuis un CDN. supabase-js 2.118.0 (dist/umd/supabase.js du paquet npm)
               est le fichier « supabase.js » et xlsx 0.18.5 le fichier « xlsx.full.min.js », tous deux À POSER À LA RACINE
               DU DÉPÔT à côté de index.html (comme les icônes d'index57). Référencés avec ?v=60 : changer ce numéro à chaque
@@ -26,6 +42,14 @@
               lit que les fichiers que Sam choisit lui-même. À remplacer par une 0.20.x téléchargée à la main si possible.
               (2) CONTRASTE : --ink2 du thème iOS (celui toujours actif) passe de #8A8A8E (3,4:1 sur blanc) à #68686D (5,5:1 sur
               blanc, 5,0:1 sur --bg) ; en sombre #8E8E93 → #98989D (4,3:1 → 4,9:1 sur --line2). Ne pas rééclaircir ce gris.
+    index62 : TÉLÉPHONE (≤ 700 px), bloc CSS « index61 » en fin de feuille de style, rien ne change au-dessus de 700 px.
+              (1) Barre d'onglets de nouveau flottante en bas (la règle iOS « position:static » l'avait fait remonter au
+              milieu de la page). (2) En-tête sur 2 lignes : logo + date, puis To-do + pastille de synchro (point seul) +
+              4 boutons ronds. (3) Bandeau de progression compact (anneau 62 px, boutons stats/carnet sur la ligne du titre,
+              courbe réduite). (4) Item : 2 lignes au lieu de 3 (titre pleine largeur, puis anneau + pastilles de tours à
+              gauche, QCM + Anki à droite). (5) En-tête de collège : nom sur toute la largeur, actions dessous.
+              (6) Bulle « Complète ton profil » masquée sur téléphone (profBubRefresh pose la classe .needs-prof sur le
+              bouton réglages : petit point rouge).
     index59 : textes des deux nouvelles étapes du tutoriel (calendrier de la promo, import Excel) raccourcis à 2 lignes,
               comme les autres étapes. Ne pas les rallonger : le détail (Ajouter / Remplacer / Annuler, colonnes du fichier)
               s'affiche déjà dans les fenêtres des réglages.
@@ -551,6 +575,9 @@ html[data-reduce="1"] *,html[data-reduce="1"] *::before,html[data-reduce="1"] *:
 @keyframes qcmFly{0%{transform:none;opacity:1}38%{transform:translate(22px,-22px) scale(.7);opacity:0}39%{transform:translate(-22px,22px) scale(.7);opacity:0}100%{transform:none;opacity:1}}
 .qcm:hover{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,var(--surface))}
 .qcm:active{transform:translateY(1px)}
+/* index63 : bouton Hypo (QCM Hypocampus), même gabarit que .qcm, un peu plus discret */
+.qcm.hypo{background:transparent;border-style:dashed}
+.qcm.hypo:hover{background:color-mix(in srgb,var(--c) 14%,var(--surface))}
 .anki{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:9px;height:40px;min-width:92px;padding:0 15px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink2);font:600 14px var(--f-body);transition:background .15s,border-color .15s,color .15s}
 .anki:hover{border-color:var(--c-mid);color:var(--ink)}
 .anki:active{transform:translateY(1px)}
@@ -2047,6 +2074,17 @@ body[data-auth="in"] #auth{display:none}
 .tc-box .cf-ok{background:var(--post);color:var(--post-ink);transition:opacity .2s,transform .15s}
 .tc-box .cf-ok:disabled{opacity:.4;cursor:default}
 .tc-box .cf-ok:not(:disabled):active{transform:scale(.97)}
+/* index65 : bouton « QCM » unique (avant le choix) et fenêtre de choix #qc */
+button.qcm{appearance:none;-webkit-appearance:none;font-family:inherit;cursor:pointer}
+.qc-box p{margin:0 0 14px}
+.qc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 10px}
+.qc-grid button{appearance:none;border:1px solid var(--line2);background:var(--surface);color:var(--ink);cursor:pointer;min-height:64px;padding:10px 8px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-family:inherit;transition:transform .15s,background .15s,border-color .15s}
+.qc-grid button b{font:600 15px/1.1 var(--f-body)}
+.qc-grid button small{font:400 12px/1.2 var(--f-body);color:var(--ink2)}
+.qc-grid button:hover{border-color:var(--post-ink);background:var(--post)}
+.qc-grid button:active{transform:scale(.96)}
+.qc-grid button:focus-visible,.qc-later:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.qc-later{appearance:none;border:0;background:none;color:var(--ink2);font:500 13.5px/1 var(--f-body);cursor:pointer;padding:8px 12px;border-radius:10px}
 .dl-slot{display:inline-flex;align-items:center;min-height:28px}
 .dl{font:500 12.5px var(--f-body);display:inline-flex;align-items:center;gap:7px;border-radius:999px;transform-origin:left center}
 .dl-add{appearance:none;height:26px;padding:0 11px;border:1px dashed color-mix(in srgb,var(--ink2) 45%,transparent);background:none;color:var(--ink2);opacity:.75;cursor:pointer;transition:opacity .2s,border-color .2s,color .2s,background .2s,transform .15s}
@@ -2540,6 +2578,79 @@ body[data-auth="in"] #auth{display:none}
 .mch.cont{border-style:dashed}
 .mch .mar{font-style:normal;flex:none;opacity:.7;margin-left:auto}
 @media (prefers-reduced-motion:reduce){.adm-badge,.ig.a-ig,.cgp.a-pin svg,.cgc.a-cur svg{animation:none!important}}
+
+/* ===== index61 : refonte de la mise en page téléphone =====
+   Constat (capture iPhone) : l'écran d'accueil était mangé par l'en-tête + le bandeau avant le moindre item, la barre d'onglets
+   restait coincée au milieu de la page (la règle iOS « position:static » l'emportait sur la barre flottante d'index32/34),
+   et chaque item prenait 3 lignes (tours, puis QCM, puis Anki empilés avec un grand vide à gauche).
+   Tout est dans ce bloc, uniquement sous 700 px : l'ordinateur et la tablette ne bougent pas. */
+@media (max-width:700px){
+  /* — Barre d'onglets : flottante en bas, comme prévu depuis index32 — */
+  :root[data-skin="ios"] .bar{position:fixed!important;left:0;right:0;bottom:0;top:auto!important;margin:0!important;z-index:60}
+
+  /* — En-tête : une ligne logo + date, une ligne d'outils — */
+  .top{display:grid!important;grid-template-columns:minmax(0,1fr);gap:8px!important;margin-bottom:10px!important;align-items:center!important}
+  .top>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+  .top .logo{width:128px!important}
+  .top .date{margin:0!important;font-size:12.5px!important;gap:6px!important;justify-content:flex-end;text-align:right;line-height:1.25}
+  .top .date .wkpill{font-size:9.5px;padding:2px 7px}
+  .topr{display:flex!important;flex-wrap:nowrap!important;gap:8px!important;width:100%;justify-content:flex-start!important}
+  .topr .todo-open{order:0;flex:1 1 auto;min-width:0;height:40px!important;padding:0 12px!important;justify-content:center}
+  .topr .sync{order:1;flex:none;width:40px;height:40px!important;padding:0!important;justify-content:center;gap:0!important}
+  .topr .sync #sync-t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .topr .theme-btn{order:2;width:40px!important;height:40px!important}
+
+  /* — Bandeau de progression : compact — */
+  .hero{padding:14px!important;gap:10px 12px!important;border-radius:22px!important;grid-template-columns:auto minmax(0,1fr)!important;align-items:center}
+  .hero .ring{width:62px!important;height:62px!important}
+  .hero .ringv{font-size:34px!important}
+  .hmid .kick{margin:0 0 8px!important;font-size:13px!important;padding-right:84px!important;min-height:34px;align-items:center}
+  .st-btn{top:-2px!important;width:34px!important;height:34px!important;right:42px!important}
+  .st-btn.er-btn{top:-2px!important;right:0!important}
+  .hero .stat{padding:0 10px!important}
+  .hero .stat:first-child{padding-left:0!important}
+  .hero .stat dd{font-size:28px!important;margin-top:4px!important}
+  .hero .stat dd small{font-size:13px!important}
+  .hero .stat dt{font-size:8.5px!important;white-space:nowrap}
+  .hero .capline{margin-top:6px;gap:4px 12px!important}
+  .hero .cap{margin:0!important;font-size:12px!important}
+  .hero .spark{padding:8px 12px 8px!important;gap:6px!important;border-radius:14px!important}
+  .hero .spark .bars{height:30px!important}
+  .hero .spark figcaption{font-size:11px!important}
+  .hero .spark figcaption b{font-size:16px!important}
+
+  /* — Outils de l'onglet Items — */
+  .tools{padding-top:10px!important;gap:8px!important}
+  .combo-btn,.search{height:50px!important;border-radius:14px!important}
+
+  /* — Collège (bandeau de couleur) : nom sur toute la largeur, actions en dessous — */
+  .colbtn{grid-template-columns:minmax(0,1fr) auto!important;row-gap:8px!important;padding:14px 14px 12px!important}
+  .colbtn .colname{grid-column:1/-1}
+  .colh.has-act .colname{padding-right:0!important}
+  .colh.has-act .colcount{min-width:0!important;min-height:36px;justify-self:end}
+  .colact{top:auto!important;bottom:30px!important;left:14px;right:auto!important}
+
+  /* — Item : 2 lignes au lieu de 3 — */
+  .row{grid-template-columns:32px minmax(0,1fr) auto!important;grid-template-areas:"num main main" "tours tours anki"!important;column-gap:10px!important;row-gap:6px!important;padding:12px 14px!important;align-items:start!important}
+  .num{height:26px!important;font-size:12px!important;border-radius:8px!important;margin-top:1px}
+  .ttl{font-size:15px!important;line-height:1.35!important}
+  .refl{margin-top:2px;font-size:12px}
+  .sub{margin-top:4px!important}
+  .tours{justify-self:start!important;align-self:center!important;margin:0!important;max-width:100%;overflow:visible!important;padding:0!important;gap:0 10px!important;justify-items:start!important}
+  .tours .dotb.ring,.tours .ringw{order:-1;width:46px!important;height:46px!important}
+  .ring svg,.ringw svg{width:100%;height:100%}
+  .tours .dotb.chip{height:22px!important}
+  .ext{justify-self:end!important;align-self:center;gap:6px!important}
+  .ext .qcm,.ext .anki{height:38px!important;padding:0 11px!important;min-width:0!important;border-radius:11px!important;font-size:13.5px!important;gap:6px!important;flex:none!important}
+  /* index63 : 3 boutons (QCM, Hypo, Anki) : retour à la ligne plutôt que débordement */
+  .ext{flex-wrap:wrap!important;justify-content:flex-end!important}
+  :root[data-skin="ios"] .item{background-position:14px 0!important;background-size:calc(100% - 14px) .5px!important}
+  .item:first-of-type{background-image:none!important}
+  /* — Bulle « Complète ton profil » : sur téléphone elle masquait le logo/le bandeau ; on garde un simple point sur le bouton réglages — */
+  .prof-bub{display:none!important}
+  #set-btn.needs-prof{position:relative}
+  #set-btn.needs-prof::after{content:"";position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:var(--red,#ff453a);box-shadow:0 0 0 2px var(--surface,#1c1c1e)}
+}
 </style>
 
 <!-- §H1 — Écran de connexion. Les id (au-*, auth-*) sont lus par §J27 : ne pas les renommer. -->
@@ -2664,6 +2775,7 @@ body[data-auth="in"] #auth{display:none}
 <div id="tc" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="tc-t" aria-describedby="tc-d"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg></div><h2 id="tc-t">Un tour pour tout le collège ?</h2><p class="tc-n" id="tc-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-tcs="ok" class="tc-ok-b" aria-pressed="true"><i></i>Bien compris</button><button type="button" data-tcs="mid" class="tc-mid-b" aria-pressed="false"><i></i>À consolider</button><button type="button" data-tcs="low" class="tc-low-b" aria-pressed="false"><i></i>Difficile</button></div><label class="tc-date"><span>Date du tour</span><input type="date" id="tc-date"></label><p id="tc-d" class="tc-d"></p><div class="cf-act"><button type="button" class="cf-no" data-tc="no">Annuler</button><button type="button" class="cf-ok" data-tc="ok">Ajouter</button></div></div></div>
 <div id="cf" class="cf" hidden><div class="cf-box" role="alertdialog" aria-modal="true" aria-labelledby="cf-t" aria-describedby="cf-d"><div class="cf-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="3.5" width="13" height="12" rx="3"/><path d="M2.5 7.5h13M6 2v3M12 2v3"/></svg></div><h2 id="cf-t">Passer en semaine de stage ?</h2><p id="cf-d"></p><div class="cf-act"><button type="button" class="cf-no" data-cf="no">Annuler</button><button type="button" class="cf-ok" data-cf="ok">Passer en stage</button></div></div></div>
 <div id="cx" class="cf" hidden><div class="cf-box" role="alertdialog" aria-modal="true" aria-labelledby="cx-t" aria-describedby="cx-d"><div class="cf-ic" id="cx-ic" aria-hidden="true"></div><h2 id="cx-t"></h2><p id="cx-d"></p><ul class="cx-l" id="cx-l" hidden></ul><div class="cf-act"><button type="button" class="cf-ok cx-alt" data-cx="alt" hidden></button><button type="button" class="cf-no cx-no" data-cx="no"></button><button type="button" class="cf-ok cx-ok" data-cx="ok"></button></div></div></div>
+<div id="qc" class="cf" hidden><div class="cf-box qc-box" role="dialog" aria-modal="true" aria-labelledby="qc-t" aria-describedby="qc-d"><div class="cf-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5l1.5 1.5L7 3.5M3 10.5L4.5 12 7 9.5M9.5 5h4M9.5 11h4"/></svg></div><h2 id="qc-t">Quels QCM veux-tu ?</h2><p id="qc-d">Choisis les boutons à afficher sur chaque item. Tu pourras changer ça plus tard dans Réglages &gt; Révisions.</p><div class="qc-grid" role="group" aria-label="QCM sur chaque item"><button type="button" data-qcv="both"><b>Les deux</b><small>EDNi + Hypocampus</small></button><button type="button" data-qcv="edni"><b>EDNi</b><small>EDN.fr</small></button><button type="button" data-qcv="hypo"><b>Hypo</b><small>Hypocampus</small></button><button type="button" data-qcv="none"><b>Rien</b><small>Aucun bouton QCM</small></button></div><button type="button" class="qc-later" data-qcv="later">Plus tard</button></div></div>
 <section id="st-pop" class="st-pop" role="dialog" aria-modal="false" aria-labelledby="st-title" hidden></section>
 <section id="adm" class="adm" role="dialog" aria-modal="true" aria-labelledby="adm-title" hidden></section>
 <div id="tour" class="tour" hidden></div>
@@ -2697,7 +2809,7 @@ window.MEDISAM_CONFIG = {
   key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1cG1wbHNmcnpvandhZHFjbGhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0ODY3ODMsImV4cCI6MjEwODA2Mjc4M30.UysecsQG_SJlcwQmMIcq6j88LxgUQ3ZY--MQ1AMrzEY"
 };
 </script>
-<script src="supabase.js?v=60"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <script>
 /* ======================================================================
    SOMMAIRE DU JAVASCRIPT (repères à chercher : « §J » suivi du numéro)
@@ -4312,7 +4424,24 @@ function ankiHTML(key){
 var EDN_IDS = '7ZFJZ877SYB5JVYRMWYJNWJPG1 5C190BQCEZB1YTF708QXX85QXJ 2SSNJEXHKCBN8SPCDZ9AVRWH7N 6P3FR28TK4BCVTNMTGAXRRT0Y5 0X4Z30GJJYBV29DXT7HW8112FJ 7SV7Y9CQA5AW9BNS39ERA83GYB 1HKVTCACYQA0JANTEWFA0ZZQD4 37WTNKJEN9AMDSNPFXKQJBHZR9 472BQHQ31FBQKS4QGZEAKY5RFC 0QQAHCQQPRAT0VEKKN5J0R9TD2 0HGWDNHH1AB8KV5PXPYYH9858Q 2Q4NAYF1MVABDBH5T8A795B7W2 7J22NGTTPBBQZVH5VVTDBYC1PQ 5VNFS474RJAKCVS1624RKP1KQF 02DSBWT24QAM9SAQEQDSSG2WY3 2B4DFW8SATBBK84K9CND18HKNV 66FM89BT7CANRSWCS99AGH3AV8 7Y7GPYWEGVAP7VR0PSH7DCCEK3 5SEXC542DFB0CAJNZW286CE6HK 3V4VHB64NPAJMAA5XYV9V9NR76 70PR1F4GECA5RT8B7GXV7TT79C 368A4D82HNBJ1A8MWNXEHD2BG5 60BCQVMQ1TBK9SVSGRG7EV2MNZ 1Y8MCZM5VAAP4V71TXTMCNQCGH 4BCR6DNXX5BFAS4VAH7D4EAT5X 08PCCJG12BA4RT3T6WV4KPQQMB 1PAX6CHVXAA6RATH6A8QWSB41F 5RAZEZDK5RB0X8ZQWYWZANP9M2 0WRBRSW6N4BS6VB4NBYY2E3GFS 6PGK2XFTEFBBT9PV5N51KZYJND 0FVRVGY02BA0AAKG4YHWN2Z6KP 7J33AJ4F35AJDRZXW2QK3WAY2G 0EFTZ1F0N1AYD9251T1YSBDTTR 6A2Q6ZDGZEB7HTA5ZWQ9QHAF72 51ZXWPRKXKBQQR69ZSFWFW8WFA 69W9BRX7SNATPSDWAF3RKW3VMH 6FRKHBX172ACH9Q9RAAK00PNQK 606R76PYBQAXJRJBS2N8HVFGEJ 7739H79NAZB4B9JXY4FPJF9V8F 6J6N9WV08GAN8A94YC7WVMPCKY 08JX0GBGREAAG93ARGTD17VTQP 3QK02166X6BNB8M2K84YENGM69 6J9A0TRRJFBAF8RCBWCSRRSS2X 5F183E9CXPBKFV1K6TZFMHX0HM 22S0XG63VHB0DT35265PPMTR4N 584602F3B7B58SWDQE80SJDC3D 3F2VEE22H0AR58N1ZY2KN35JE9 2FWW9CJ1Y8B9RVM7G3A861532T 3Y29P6H5QHB65BQE9PJRYJD8T0 2456G454MXAPR9410C9PHW5ZX3 612PTWTZ8KA8JA1J9BPY0X8PAK 2WHX1K3D0FA9ZR1F0BTGV0D1C2 663Z7VSGMEB3AACHCTB5VWW26T 17KVT2998TA6CA8621J1V643AB 752VZYFF2NBGF9XZYW12ZTMF08 76HVWH5EX0AFARWP1BZV8ZFV5H 6Q372HJKDZACRV0K3PJXZ0ABZV 6HWSZJDSWFBKBB4KN9N3JKPYAF 2WC8B9VGT1B2ZS30WM094YNX9B 5SH1DWV4EVBAJRTV341NT5RZ7Y 1S5W0YA0KJAD1TZN154G4W7ME8 066PNTFBKRAACSPXQ8ZHGYZ7HG 1YACT1T5BSASGSNP7J5BTEGFBY 2KBAQ6BZBNBEYAYF6A8H39JZ35 7A8K65D6WSB3K9DWFPX6PRG27Z 41JQ4N94HFAQNBG9ZKB7KEH937 29E9F8EGBQAWYAC4JPS5QY5PGC 04P20Y0BXSBVXTRD69KXMQQBEZ 150NH72P0GBKSAWMXWNSK8K8B7 282R06454NB3D9FXB8Q3XKSEW2 7G0QQYWSKYBJW8QWQEY9CR2EYJ 1H80D6ADNVAEJ9R1Q8P15K2NC5 2BK1RP2Z0HAVQVY80GGB8MF9BE 0R93G6B870A2QT11Y6VWDVVVPG 7AAAKPXCNEA62TZC32YG0X8FCF 5YB5M1FADPBJVVRGQG7VVFQKQ3 3MZ6V4FTZYBK5RB0A63R3CVJBW 4W1ZAEXR5XA24R2SJVA0D09K6S 0NQ8G5RASGBESSXM5NPNK04BFE 3K66R94B5JB27RAAXX6RS7DFE8 78GDB2X2RHB5QVHC1AKQB9WZJH 41AH6SE4S1AT4RXQZWQ0THKZHS 7ZDT01M81HATNRN4G4S5MW700X 12GFGNE62KAWD8PDWSBK3W2CNF 3T0DF59H7GBKBR6C88T0GMDDMX 2H7A1FD41WA6RS2XNQB3XPKFYD 0ZTNKP4F46B8PTX4XR6QVPC61G 6BHEX57730ANT9Q7B05A7V33F2 573JEDJ1ZNA41TZDXJC8FR4CS1 2V5CVYGK64BZ2S3FR6NEEWNCDQ 6M6F0P4F0YA8TRRYVYZ57SPBRD 1YT4NPVRW2B6F93CEYAFAZ98NR 5T1XG92SDGAZVTFHDSQRNNAFW4 0CDGPRFC5VBPGAKJ7H3TG6EKWX 7RC63JK66ZBA2TR4TRVC6818HR 5KRRMCDQPNA5FV768H5DKP8XNM 3MDQWV87ZMB6GRFEZBSTSFGX2A 4QKGN7E8STAA7SKE1DAY64FS3V 2EX8A96P1CA848WA5WFKNQWF3W 7SG2VTTJ93AP2AGXPFTQ3RPKEA 096FHDZZ9ABC9S2PVCYT9RPNAY 3SMYD3T6K1BT2VWRRR5F0ZR2SE 05THV9PEC5AW2RBB1GEWAECCNP 7R71HNTK54BR6SNKCN2S1XXZTZ 1SFS7JYERYBX6A9AZXFYG17E3M 7JYQ74HGKJBRNSXS083C9G25WA 0N6GWMZHTYBW68JQAMAKFWE37K 4QN8493TEMAVTAKW1SA0ZWSS8W 6ZQRRT0XS4BGC9QNY5VA8FSEXF 2BZY3544JTA249FAVKMMTBBD2T 0Z6W2VB1H5AYZBRF1DQGAXB6M6 21T6FPZFZ4AH9T31KDS5658ST0 70HZJ2V2Q1BVYAPAKCKG9QB7SP 2TRVJDPDYFBSA81ZG1C65J3BQ9 57R7S7FSDBB47A2RTTX6YRFRPA 1SD92FTFWGBX8AHJW8AWPKXJK4 2HK9YVBCH5BG0BAZBHY7AG945A 6JNM3SMFFNBNZ87YTQ8TR5EB4V 500DBR1Y6BA0SAJYPN2Y4M54ZW 1HJ9KMYNGVBQ29GVECAYNX884G 226CNKMXNGBSK99M48BX0QVGCN 1HBA4V1FQ5A6TSQX2NQCJGD7G3 1NX3V1A39PB5JTKBKD4K1K432W 552B1VV9TMB5ZV8W3B9H82866R 3ZVGHE3V5JA0ETE7QYET4N9QHZ 0JM6HZPXTSBDMRYHDTM56TWT32 2SRVP6TEE3AE1RDCG5MDB02100 769EV28CWXAD6T79ZPQD9459YC 6XP6QA23XQARG9E771Z6DD5WMK 67K2VAY7N1BQCRABX1CMWJWTFH 4ERDMQQ0C8AQDBHZ0B64W5PVZ2 2GVNW3RRANBKF8H4BNPP7RTQVZ 4ZFX22SKPFACTSS25N1B4HWGW0 2TW7KEG4HJADS8GVC3QGXP457B 071A9MPN6BAN7TZQC9JJKM1HT7 0KBF2JBV3QBZBRP0HDMNCZH430 2B5HRB7E5DB8NAV4HCWE92JQJE 7BK24ZQ2NYBCFA25EF5ZB139D0 2Q7AJ4FRHZB7BAWDQEP5VGM1E0 1D6AWXHEP0AHEBS8EQEDK5VZ6N 09DAKDCPVRAWBVF7B4MBH4EG5T 7GNGB12M1GASBT7DFRJJG45QYA 3TTSVSVJ83AKD8Y4FXR0A27TCC 5R1WVCH20QAESTDYR88WM66VSB 24Y05B1BN2ABMTEN7JKA1NX9Z9 39KVHX2Q42BZ3B9020DW4MRBHK 6Q7XWZHX3FARHB2GN794PQYRB9 35EXZ0E9G6A63ASMM9RSC72K46 31C10YEA1DBZFSHJBMMJ9V1BPP 6C8TDYVNSWB4QAY5W6W4F05SJH 0DFJ9YA1AYA8HSKM3S5NDSNXFJ 7C8ZP47H7JB9T9C26N6X7TC8HR 3A1HFZ2TV1APRAW0ZJT7QP0Y78 0F61QD495WABJBSY7BS6JFJ9N1 11N6Y4N4F9BXST3J016E4G9F2G 1X4XV4F1TPBFV845G0WRQW9X87 7ETN5PT96VAQZBJ3FPEQNSKD9G 7PR3WMAEK4A2WVV937ZR3ZCQTW 7MR3WV6FRQB1T9EW4A3N8HA7C4 5WCKC7KMA6A92V253XG493DSTN 75ZTS2Q4GTBS1TBZ3VRM73V4BM 005Q5EY67ZBV8S0G69NQAATCCR 070MSEH7VNA90B55JHHKNJNAH0 5C1NX06M5DB28BGRHFATYF3Y96 7T8TQPX4NYA02BYDT9BT09WSEW 651B68V5CMAM09D5SB8BJK61JX 16MPKWXHZGBEMSMS794YT51VYW 349D2EM2DDB9HTCMJ15TP8RJG3 37BSERQRJVB3VRGZWRRMZ7S236 3JPWWTF83BA9ZA1G99Q0J2JJ2Y 0KC5JWV9MVA36S8G8P964KSC5K 3E50QVT7VNAY1BRMRJY80FFT0N 4JBQAD1A2DACPR01ZQ4FKQGX0R 2XXPMWY782ANK9PAMXXD8V304W 19VVAPR677B81AVGX1XQRY3MCZ 6SYX2CAY4ZBKE8WQRRH21Q5PTQ 60ESVGAQD1ABVVD94PFK2G0K0W 5A4J7DSXSWAKE89RZ9VPPP825R 15BC3CPMKMA2Y9FMV12CJG9C9D 1A2N4Z8EQ8B7TVBCX3NNDGV51W 1A6HZ03QXDBV6R1072CVF938DG 5ERVJSAWZ7BPVT0DQGK3WR8X47 51P4MTWDHEB9NV5G594KCK94GB 5FK9YGMG95BKAA7AH9GCV78NRK 46FD03DBEBA45T8015D5T637A3 4ZNWER6ZDPBRX8H1EHGDC454N6 1A0BHGYY9EBSVATC1AZE5AXXAS 33AT90RNFNBGYRGPV2SQTWSPY9 6FH3M14BWWAZJ92Z9ASCCMWBEY 35X3R0DG7RBRB9ZRY0DVAWCYXS 4YJJ28Z56MA79AZ5NJBS5VV5JF 459CE0SZEMA4CR65CMV2B4NKHN 31QZ6QJ07DATN9TG6WYW6BBVQT 6YZD4GS5W0B10A05PWKYPN63HN 6GP2XERFSJA0JTMK3AM31GETRQ 4Q8XNNKVE1BGGS6H87SJ90K1RV 0Q5MQ7J7DEADW8D8JVKFNJ70C1 19WTMX1Y9VB3JT8YVYSZM9PZYG 6Y6W4WHEM2BZGTXDTCK23KBGNZ 7N2W27DSW7B05R9FVFXC5K9HR3 0QRS1ME3F8BKKRYBT43J26T82C 3T5Z1V0Q54BN6SCC4AZNEV7CBB 0KPYPAQ9B4AHZ9MZ6WEQ1D43J5 1MAKD0BJQ6BSMV8EM9CFSMA7S7 7E1S32C704BHPAS20DBCC5ED5S 4ZD0FZT9NSAVZBQFRHDPR4DZAY 4G0BW81VH6A8M92PA4GJ1XDHE6 7XBCKQ8KDKAZZ8ZR5C4MEGMM9G 4PC8HQCXYNBXGT3WVN0E9W3STX 44MRHK0M8QB97S92PST8J6ZZBC 6T7DQV4M7ZACA9TG33TR7ZWCYM 0C9WV8W8MNACBSQV87NXAVNWPX 4QEDY0SCEBAH9R00EDGW8YVRF0 25RJZBYYQCAH0TT7PWTDT6TQDG 0E26VA2GW5ASFRTS84WVJAJKT2 4VB56TK16YBRZA1TT705GP4YMB 5KE39T05H6B2JVFB9RMYVVSWF4 2S74E2DFZMAZ1TASZPQQJHP31K 1HNZ6KS5G3BQW8A575VXMY6ZS9 5A4083D3R6B388P26NF57Z8XY5 119WXVM39CAGHRX8EPMFKYM1A0 7KG0A8B6QTBBFBJCTY4KRZVQRX 52W0RYZQE3A0HTBE37KRVVVDBA 2B3P67V2RGA1EBXK19C25FAZR3 6V9EG049JJBTTAJMEG324THHJK 62H9JBF3QEBAKRYT0C3H4RRP4K 5XCB7EBVC3BGD8VQA5CEYRXF06 3RWZW174ZMBQR9G13HHWR9ZP9H 4YNTM753CSA3MA09NJ3060SP1S 60F1YF2H56A6K9H175G1NGZKB5 2YQWDXH25SAXRSJSK4CNHRTJJ2 7ESQ9QTXZYBW8V2C4E48S0GJTD 5D417JMJCRBAATEXTNJ4RFG158 1QXPTEXJXDBMN9WM33BAJTPG9N 2TCKMN5AZ9BNWSX161786RTS61 7KEVQ0ZCBVAF7SVQE77G34JJGJ 1NHCMHZN0ABTV95647ZMDBN829 0WCDK2E1ZAA2D8SR92WR94WD8Z 0WWZ4MKSG1B3PBQEQV8VAZ2G5F 0JJQ7JR9JVBJQRVQ6BYSSGVE1B 4N7CJXS88SBP89PWFAVQHK6CXR 5X0TB2PCW6BHTR5CATBD2W8PF8 56AVH9K00JAQKTWA9DC53FQ00E 4ENESJKNZPBRS8KZ6NCVP3ZZPS 4WVNM115B9BDASN9VXHXZKG8KN 5DTBVK95FCBT780RHSHN5V0AA5 5J3WR94D3PBEWRBYEEXH3T35DC 6XK7VGV6VAAQ5AZJ6ZHW7KKA6R 1ETGZ1J0VXACSAMEZ6G8DBGMEA 4JXEA59BVYB9H80CDSCRNVN3YA 62171RJTGRAJH8BT31HB4MKWAS 386QCM9RWFA8ARD14QCM783B4E 25CYP5KV2GBCPBBVZG1GFA2YM7 61S425VKBFANZAMD1XJ7VHVMVQ 39VJSKHC00ARCTQ45J5P7WRGW0 5SV68QPXR6ANNTB128JMTKNHC8 0Y236XH88AAC7VRG4X5BXC0YW7 7NCF0MS1BNA4SAV7M703MM0AFB 5E2VHAWEFKATYSVA2YQFXRBYV9 17VAQ85H9NBWMA9NJX938BVHAF 3CFH58VV6WAFXB6RBCF3RCDHNT 74XBTM2HR9BQRSSKA62260A8BE 0Z9JC54VXEADNB7B5P9XFRZMXS 0N5G91WJSEA9GTARNKNVW5R06S 3883S078BVA5RTRDP55HX8MYSA 17S7291RA4B2VBP101SMYWSFKW 5EB92XW091ASWRA2WCA22TFFSS 60F4M23CCCAH6VQ4KA4VSQCRA5 0JYG93M8GCAH1SJVV1W486SQPV 059S6MNF9EB679J7FXA7SNB102 5G0Q2C8Q52BT88XXCT1JZCTKTF 6T9FGA6PG3BK5ACE19P040XKJE 47RPQCCRW3A5TAHPK1157MCJ6H 2Q36R1B3W9BNHTGHRT3Y975SY2 6PJ35SYYRRAZ2TVHDJSAMP30FC 069AH7HJWFAMETA46RM528WDT3 2WPWXWFH3JBJNVC1MKAPHT9F61 3GGH8M15GMBWQ9EQEHH700R10H 61AXFYGMN8ACB8KNF1XNA42FYE 50HZ9WRQFFB33RQG3MHF6V0WGP 4SE1A46789B83RB3YHC736TBEV 5FP54E0BYNAA1AXD9H7BE5W67D 6JE967N55JAG8R15D3MB5XB1SM 3HN12FRT43AC2VPF8ZRBP19SGF 1GNS4G58WGA0A8ABSNMP2HJV0K 299MDQJAJGAG79CFKZ7PJ92G06 52WKRT3W7SB1FVT596H5Y2EZTV 4NSMKDP71QBXMA60KKK2XX13GV 0ABQ64PX1PBD5SHZ7YF1T9Z7YG 2GY244XYNMA6M89994JRH0J1E6 6ZZS7BY4XJBDYS2M1VHNNZ54BZ 0QRR8E2E71ARQBSHWTN89EJBG2 35FGD171KWBFPRK0TYZ5EGJ7E1 1SDM5TQYY2BP5BSY8BFYSM8F5X 6T98348H8YBHWSC32NPNCT1X2Q 2YMT4WT1F6A5W8KCND6SZT61QZ 7BFT3CBDAKA718BX2T0XYM7WFF 44RW3SJP3TBRGB4XCATNGMFRBZ 4TAHGG2QGSBTDRE5YQA5M99SX1 7VRM9BR8X5A7DB8GXQQXZFA6C9 1KR8J5G4D4AJGAKFKV45BYZ3W1 21QT20T15ZBVRAQSFK8GP6R0WW 11SGZ4GS2FBW1BVRANJJB86VZP 1GB459X8RVBP68CP70J4N1AHMH 7VJ12JCGAFBACRSX7SG7WK371P 5CN1B9VRF8BYDBSYKQDA52QN07 05DTVEGQGHB07SQEPGZXN1F986 4PVS99Z9S9AB1BE4144C6TWHR2 7G0F1RN5VQB3X9G82W961ZGHBD 4TP7VAV5ANAQ6S8C7GJJPKSB0Y 4SFQSZ0QGAAVZTS4TMCFA2XEM0 4Z1H593NMSBX7A4N7Y4YS6SYE5 2T3MARCCETAT696DVN6AMX5QAN 3NX4VMH63AAMHRAMG97HWYFNSX 4KY7EV1NW2A348FYSKF7XFFXZR 2E63R45BC4AWESSKGAZPQMVVX0 08JWA8TTVZAGDBCWP9PMP994AT 7QF2YE1MCHB50V62KXRSFG7KDC 4YRK9EF9CBAP1R3FXREA5BPV93 00Q38H282SAF7RE8EBM60KJT92 7ZJT5ANN88AD0BFA1MNNXCGNX6 7TSVB1D8MVA0WA4A2HGWQJ0NZX 2WS9TM932CBC6APCE9X87V9XG8 3Y7P065T8QA308KSFGNEA8F8Q2 6863K38R85BV1S0RHTBAE2SXYX 6DQ9HDFM42AWD8YT75ZVPED2TX 1VPH7H4FA3B6ZTMS8PZ5V0G4PQ 2QDTR3X8GHB4VVNK95NXVV20X0 66MC7D0C3WB3NB56FS725M9NHR 5Y094TE6G3AZSAW12R8RRA8XJZ 1NYW0BGQW3A0KVHY0NHTETW7ZR 0EEAG4CGKABW1A3WYGFAHMDVB5 4WWVWX53YRAZ2BMVK52X9QSTE1 2D039MYNBQAGVTFA9KSXAXQWF2 0RXR5CJNQNAZH9W0Z5PVNA5FE7 2BZ7XYZ4VSBS7RNR4C9G20SFTJ 335PTNJQCTB019QWXZ8SESWK4P 13CP5MYH1TAQMT66ZQW5MJVWFG 6TCE5K6VFJBGYS157298JJDQT8 1RM2JKFR4TAAYR4FDPJ31NK83A 0A22VDRYTQAMVRGVJ9XCFZDJF9 1Q3PQ4ENR0BX0VCGZJ90VQV0M1 5GQ94FW037BTM8DT786MN44CPJ 6BN8ZMSRA0AC0A7N4R8PVTNQ5S 0Q1DTPSFW8B0ARQXDEFMPD1F0K 7RCRT4M49CBRGRMYSWD5R4ANYD 52SS8M3J3MBCMR4MH7S83HG133 70EPEMEFEJA4P9J3TJGH2H7T6W 2732FB3YMNBDTB0HNNS4GQ1MHB 31VSP37ZNSA0QSNCEBRZHDHDB9 27ZPFYYQ3AAMASVA99W4M70CB4 0ZM3SPXN7XBRNBN1EKJGJ1C0YT 3HYHH80DRKAQPB0QYK81560Y1M 0XKZGBPV2YBXVBJN5GSCV3Y20Y 3W55RPT66PB60ACBAN4ATSZJAN 1KA1R5XF5DA71TYK4Y13K9GKG7 3M4EP57M4SA3YRG186M4ZDJC1F 1AT6XHWHAGBT6AQ3DYFD4Y2QWQ 7S9BEXZ9DHA9KVQ3VM8T7Z7F0T 4HFGK9RPSTBP0VMGZY371XMXJ4 42M3PH6WVSBMETS7VK14QXNQ12 3MJX35PC47BR3TKYHRFADSGW6F 6EFH224KB6A8WTET5CNQCPRBDG 7SR4EFNBTXBCBBNMG8MC2XSMZF 4JJZJ5DH4BBN98X6ZE5FFGEAJE 7GC69HM27EBZC9V5VP342D24GN 3G8JVMARE6AD6S70T29BPRZQRX'.split(' ');
 function ednUrl(n){ var id = EDN_IDS[n-1]; return id ? 'https://www.edn.fr/app/trainings/detail/items/'+id+'/preview' : ''; }
 var ICON_EXT = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5H3.5v9h9v-3"/><path d="M9.5 2.5h4v4M13.5 2.5L7.5 8.5"/></svg>';
-function qcmHTML(it){ var u = ednUrl(it[0]); return u ? '<a class="qcm" href="'+u+'" target="_blank" rel="noopener" aria-label="QCM EDN.fr de l’item '+it[0]+' (nouvel onglet)">QCM'+ICON_EXT+'</a>' : ''; }
+/* index63 : QCM Hypocampus. Hypocampus n'a PAS d'adresse par item : « Prep EDN > Entraînements » est une seule page
+   (cours 166845) où l'on clique l'item (« 224. HTA ») pour ouvrir la fenêtre QI / KFP / DP. Le bouton « Hypo » ouvre donc
+   cette page, et l'info-bulle / aria-label rappelle le numéro d'item à y chercher. Le numéro it[0] est le numéro officiel. */
+var HYPO_URL = 'https://www.hypocampus.fr/app/courses/166845';
+/* index64 : réglage Réglages > Révisions > « QCM sur chaque item » (cfg.qcmMode) : both (défaut) | edni | hypo | none.
+   Le bouton EDN.fr s'appelle maintenant « EDNi » (avant : « QCM »). La classe CSS .qcm reste la même pour les deux boutons. */
+function qcmMode(){ var m = (typeof cfg !== 'undefined' && cfg.qcmMode) || 'both'; return m === 'edni' || m === 'hypo' || m === 'none' ? m : 'both'; }
+/* index65 : tant que cfg.qcmAsked est faux (première arrivée, y compris pour les comptes déjà existants : la clé n'existe pas en
+   ligne), chaque item n'a qu'un bouton « QCM » qui ouvre la fenêtre #qc (choix EDNi / Hypo / les deux / aucun). Le choix pose
+   cfg.qcmMode ET cfg.qcmAsked=true ; le réglage Réglages > Révisions pose aussi qcmAsked. Fermer la fenêtre sans choisir ne
+   change rien : le bouton unique reste. */
+var ICON_ASK = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>';
+function qcmHTML(it){
+  if(typeof cfg !== 'undefined' && !cfg.qcmAsked) return '<button type="button" class="qcm qcm-ask" data-qcm-ask aria-haspopup="dialog" aria-label="QCM de l’item '+it[0]+' : choisir EDNi, Hypocampus ou les deux">QCM'+ICON_ASK+'</button>';
+  var m = qcmMode(); if(m === 'none') return '';
+  var u = ednUrl(it[0]); var a = (u && m !== 'hypo') ? '<a class="qcm" href="'+u+'" target="_blank" rel="noopener" aria-label="QCM EDNi (EDN.fr) de l’item '+it[0]+' (nouvel onglet)">EDNi'+ICON_EXT+'</a>' : '';
+  var h = m !== 'edni' ? '<a class="qcm hypo" href="'+HYPO_URL+'" target="_blank" rel="noopener" title="Hypocampus : entraînements, cherche l’item '+it[0]+'" aria-label="QCM Hypocampus (page Entraînements, cherche l’item '+it[0]+', nouvel onglet)">Hypo'+ICON_EXT+'</a>' : '';
+  return a + h; }
 var ICON_STAR = '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.2l2.1 4.5 4.9.6-3.6 3.4.9 4.9L8 12.2 3.7 14.6l.9-4.9L1 6.3l4.9-.6z"/></svg>';
 function starHTML(it){
   if(!it.star) return '';
@@ -4713,6 +4842,31 @@ function tcClose(go){
   }
   var back = tcBack; tcBack = null; if(back && back.isConnected && back.focus) back.focus({ preventScroll:true });
 }
+/* ===== index65 : fenêtre #qc, choix des boutons QCM (première arrivée) ===== */
+var qcBack = null, qcOpen = false;
+function qcShow(from){ qcBack = from || document.activeElement; qcOpen = true; dlgOpen($('qc')); var f = document.querySelector('#qc [data-qcv="both"]'); if(f) f.focus(); }
+function qcHide(v){
+  qcOpen = false; dlgClose($('qc'));
+  if(v === 'both' || v === 'edni' || v === 'hypo' || v === 'none'){ cfg.qcmMode = v; cfg.qcmAsked = true; cfgSave(); syncSettings(); renderList(); }
+  var back = qcBack; qcBack = null; if(back && back.isConnected && back.focus) back.focus({ preventScroll:true });
+}
+document.addEventListener('click', function(e){
+  var ask = e.target.closest && e.target.closest('[data-qcm-ask]');
+  if(ask){ e.preventDefault(); qcShow(ask); return; }
+  if(!qcOpen) return;
+  var v = e.target.closest && e.target.closest('[data-qcv]');
+  if(v){ qcHide(v.dataset.qcv); return; }
+  if(e.target === $('qc')) qcHide(null);
+});
+document.addEventListener('keydown', function(e){
+  if(!qcOpen) return;
+  if(e.key === 'Escape'){ e.preventDefault(); qcHide(null); }
+  else if(e.key === 'Tab'){
+    var bs = Array.prototype.filter.call(document.querySelectorAll('#qc button'), function(x){ return !x.disabled; }), first = bs[0], last = bs[bs.length-1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+});
 function dlgOpen(c){
   if(c._hid){ try{ c._hid.cancel(); }catch(e){} c._hid = null; }
   c.hidden = false;
@@ -6282,7 +6436,7 @@ document.addEventListener('keydown', function(e){
    seconde fois en §J28.
    ====================================================================== */
 /* ---------- Réglages (propres à cet appareil, gardés dans le navigateur) ---------- */
-var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, wake:false, cdUnit:'d', ankiMode:'anki', ankiLabel:'', catchup:true, fn:'', ln:'', promo:'', promoDone:'', focusCur:true, tg:3, tgTip:false, admBk:'' };
+var cfg = { clockFs:false, reduce:false, autoTheme:true, size:100, wake:false, cdUnit:'d', ankiMode:'anki', qcmMode:'both', qcmAsked:false, ankiLabel:'', catchup:true, fn:'', ln:'', promo:'', promoDone:'', focusCur:true, tg:3, tgTip:false, admBk:'' };
 try{ var rc = JSON.parse(lsGet(LS_CFG) || '{}'); if(rc && typeof rc === 'object') Object.keys(cfg).forEach(function(k){ if(rc[k] !== undefined && typeof rc[k] === typeof cfg[k]) cfg[k] = rc[k]; }); }catch(e){}
 if(cfg.cdUnit === 'mo') cfg.cdUnit = 'w';
 var wakeLock = null;
@@ -6379,10 +6533,11 @@ function renderSettings(){
     '<div class="set-r" style="--i:3"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.wind+'</span><div><b>Réduire les animations</b><small>Supprime les transitions et effets.</small></div>'+swHTML('reduce', cfg.reduce, 'Réduire les animations')+'</div>'+
     '<div class="set-r" style="--i:4"><span class="set-ic" style="--g:var(--blue)" aria-hidden="true">'+SIC.text+'</span><div><b>Taille d’écriture</b><small>Agrandit ou réduit toute l’interface.</small></div>'+segHTML('size', [[90,'A−'],[100,'A'],[112,'A+'],[125,'A++']], cfg.size)+'</div>'+
     '</div></section>'+
-    '<section class="set-grp" style="--g:var(--violet);--i:2"><button type="button" class="set-g" data-set-grp aria-expanded="true"><span class="set-gi" aria-hidden="true">'+SIC.loop+'</span><span class="set-gt">Révisions</span><span class="set-gn">4</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card">'+
+    '<section class="set-grp" style="--g:var(--violet);--i:2"><button type="button" class="set-g" data-set-grp aria-expanded="true"><span class="set-gi" aria-hidden="true">'+SIC.loop+'</span><span class="set-gt">Révisions</span><span class="set-gn">5</span><svg class="set-gc" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></button><div class="set-card">'+
     '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.loop+'</span><div><b>Tours souhaités par item</b><small>L’anneau de chaque item affiche « 1/3 », « 2/3 »… Si tu fais un tour de plus sur un item, son objectif monte tout seul.</small></div>'+segHTML('tg', [[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5'],[6,'6']], cfg.tg)+'</div>'+
     '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>Bouton sur chaque item</b><small>Pour marquer tes cartes ou ta fiche comme prêtes.</small></div>'+segHTML('ankiMode', [['anki','Anki'],['fiche','Fiche'],['perso','Personnalisé'],['off','Aucun']], ankiMode())+'</div>'+
     '<div class="set-r set-perso" id="set-perso-r" style="--i:7"'+(ankiMode() === 'perso' ? '' : ' hidden')+'><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.tag+'</span><div><b>Nom du bouton</b><small>Par exemple Résumé, Schéma, Flashcards.</small></div><input type="text" id="set-perso" maxlength="14" value="'+esc(cfg.ankiLabel)+'" placeholder="Perso" aria-label="Nom du bouton personnalisé" autocomplete="off"></div>'+
+    '<div class="set-r" style="--i:7"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.card+'</span><div><b>QCM sur chaque item</b><small>EDNi (EDN.fr), Hypocampus, les deux ou aucun.</small></div>'+segHTML('qcmMode', [['both','Les deux'],['edni','EDNi'],['hypo','Hypo'],['none','Aucun']], qcmMode())+'</div>'+
     '<div class="set-r" style="--i:8"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.undo+'</span><div><b>Rattrapage des items d’hier</b><small>À l’ouverture du planning, propose de décaler à aujourd’hui ce qui n’a pas été validé.</small></div>'+swHTML('catchup', cfg.catchup, 'Rattrapage des items d’hier')+'</div>'+
     '<div class="set-r" style="--i:9"><span class="set-ic" style="--g:var(--violet)" aria-hidden="true">'+SIC.hourglass+'</span><div><b>Décompte jusqu’au 21 octobre 2028</b></div>'+segHTML('cdUnit', [['s','Secondes'],['m','Minutes'],['d','Jours'],['w','Semaines']], cfg.cdUnit)+'</div>'+
     '</div></section>'+
@@ -6547,6 +6702,7 @@ setPop.addEventListener('click', function(e){
   else if(n === 'cdUnit'){ cfg.cdUnit = b.dataset.v; }
   else if(n === 'tg'){ cfg.tg = Math.min(MAX, Math.max(1, parseInt(b.dataset.v, 10) || 3)); cfgSave(); syncSettings(); renderList(); return; }
   else if(n === 'ankiMode'){ cfg.ankiMode = b.dataset.v; cfgSave(); syncSettings(); renderList(); return; }
+  else if(n === 'qcmMode'){ cfg.qcmMode = ['both','edni','hypo','none'].indexOf(b.dataset.v) > -1 ? b.dataset.v : 'both'; cfg.qcmAsked = true; cfgSave(); syncSettings(); renderList(); return; }
   else cfg[n] = !cfg[n];
   cfgSave(); syncSettings(); cdTick();
   if(n === 'autoTheme' && window.medisamThemeRefresh) window.medisamThemeRefresh();
@@ -6601,7 +6757,7 @@ setPop.addEventListener('change', function(e){
 function loadXlsxLib(){
   return new Promise(function(res, rej){
     if(window.XLSX) return res(window.XLSX);
-    var sc = document.createElement('script'); sc.src = 'xlsx.full.min.js?v=60'; /* fichier du dépôt (index60), plus de CDN : voir le journal */
+    var sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; /* fichier du dépôt (index60), plus de CDN : voir le journal */
     sc.onload = function(){ res(window.XLSX); }; sc.onerror = function(){ rej(new Error('lib')); }; document.head.appendChild(sc);
   });
 }
@@ -9151,13 +9307,14 @@ function openSettingsProfil(){
 function profBubRefresh(){
   var bub = $('prof-bub'), sbn = $('set-btn'); if(!bub || !sbn) return;
   var inn = !!uid;
+  sbn.classList.toggle('needs-prof', inn && profIncomplete() && !profBubOff);
   var show = inn && profIncomplete() && !profBubOff && setPop.hidden;
   if(show){ var r0 = sbn.getBoundingClientRect(); if(!r0.width || r0.bottom < 0) show = false; }
   if(!show){ bub.hidden = true; return; }
   var r = sbn.getBoundingClientRect(), vw = document.documentElement.clientWidth, right = Math.max(8, Math.round(vw - r.right - 6));
   var was = bub.hidden;
   bub.hidden = false;
-  var up = r.top > 62;   /* au-dessus du bouton ; en dessous seulement s'il n'y a pas la place */
+  var up = vw > 700 && r.top > 62;   /* au-dessus du bouton ; en dessous seulement s'il n'y a pas la place */
   bub.classList.toggle('below', !up);
   if(up){ bub.style.top = 'auto'; bub.style.bottom = Math.round(window.innerHeight - r.top + 10) + 'px'; }
   else { bub.style.bottom = 'auto'; bub.style.top = Math.round(r.bottom + 10) + 'px'; }
