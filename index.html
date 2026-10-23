@@ -14,6 +14,9 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index80 : le plafond du jour est une limite DURE pour la méthode des J (avant : une journée pleine à la fin de l'échéance était
+              surchargée, 5-7 cartes). jmPickDay élargit d'abord la recherche vers l'arrière (dès le lendemain du tour précédent) puis,
+              si l'échéance + 3 j est atteinte sans place, renvoie '' et jmPlan RETIRE le tour (les derniers tours, T4+, sautent en premier).
     index79 : « Planifier jusqu'à l'échéance » équilibre d'abord le nombre de NOUVEAUX cours par jour (score (r+1 + 0,5×charge)/poids) pour
               viser ≈ 1-2 nouveaux + 1-2 révisions par jour ; stage plus léger ; samedi/dimanche = jours comme les autres (rien dans le code
               ne les pénalise : seuls les réglages « pas le samedi/dimanche » les excluent). Modèle de référence : captures de Sam, sem. 43-45
@@ -5293,17 +5296,25 @@ function jmPickDay(inf, P, load, cap, t0){
   if(P.dl && P.dl >= lo && hi > P.dl) hi = P.dl;
   var HD = jmHard(P.k); if(HD && hi > HD) hi = HD;                /* index76 */
   if(hi < lo) hi = lo;
-  var best = '', bs = 1e9, d, n = 0;
-  for(d = lo; d <= hi && n < 40; d = addDays(d, 1), n++){
-    if(kindOf(d)) continue;
-    var w = jmDayW(d), cd = cap >= 999 ? 999 : Math.max(1, Math.round(cap * w));
-    if((load[d] || 0) >= cd) continue;
-    var sc = ((load[d] || 0) + 1) / w + Math.abs(daysBetween(d, due)) * .02;
-    if(sc < bs){ bs = sc; best = d; }
+  var best = '', bs = 1e9, d, n = 0, w, cd, sc;
+  function scan(from){
+    for(d = from, n = 0; d <= hi && n < 60; d = addDays(d, 1), n++){
+      if(kindOf(d)) continue;
+      w = jmDayW(d); cd = cap >= 999 ? 999 : Math.max(1, Math.round(cap * w));
+      if((load[d] || 0) >= cd) continue;
+      sc = ((load[d] || 0) + 1) / w + Math.abs(daysBetween(d, due)) * .02;
+      if(sc < bs){ bs = sc; best = d; }
+    }
   }
+  scan(lo);
+  /* index80 : plus de jour libre dans la fenêtre idéale → on élargit vers l'arrière (dès le lendemain du tour précédent) AVANT de
+     surcharger : le plafond du jour (× poids) est une limite dure. Si même ça ne suffit pas avant le plafond d'échéance (HD),
+     la fonction renvoie '' : jmPlan retire ce tour (mieux vaut un tour en moins qu'une journée infaisable). */
+  if(!best){ var lo2 = t0; if(lastD && lo2 <= lastD) lo2 = addDays(lastD, 1); if(lo2 < lo) scan(lo2); }
   if(best) return best;
-  var day = lo, g = 0;                        /* tout est plein dans la fenêtre : premier jour libre après (sans dépasser le plafond HD) */
-  while(g < 150 && !(HD && day >= HD) && (kindOf(day) || (load[day] || 0) >= (cap >= 999 ? 999 : Math.max(1, Math.round(cap * jmDayW(day)))))){ day = addDays(day, 1); g++; }
+  if(HD) return '';
+  var day = lo, g = 0;                        /* sans échéance : premier jour libre après la fenêtre */
+  while(g < 150 && (kindOf(day) || (load[day] || 0) >= (cap >= 999 ? 999 : Math.max(1, Math.round(cap * jmDayW(day)))))){ day = addDays(day, 1); g++; }
   return day;
 }
 function jmPlan(){
@@ -5344,7 +5355,7 @@ function jmPlan(){
       day = inf.due > t0 ? inf.due : t0;
       while(g < 150 && (kindOf(day) === 'g' || kindOf(day) === 'r' || (load[day] || 0) >= (state.jm.stg && isStageDay(day) ? Math.min(cap, scap) : cap))){ day = addDays(day, 1); g++; }
     } else day = jmPickDay(inf, P, load, cap, t0);
-    var HDp = P.one ? '' : jmHard(P.k); if(HDp && day > HDp){ pend.splice(bi, 1); continue; }   /* index76 : jamais > échéance + 3 j : on n'ajoute pas ce tour */
+    var HDp = P.one ? '' : jmHard(P.k); if(!day || (HDp && day > HDp)){ pend.splice(bi, 1); continue; }   /* index76 : jamais > échéance + 3 j : on n'ajoute pas ce tour */
     load[day] = (load[day] || 0) + 1;
     (out.days[day] = out.days[day] || []).push({ k:P.k, due:inf.due, n:inf.n, gap:inf.gap, b:inf.b, adj:inf.adj, num:P.it[0], late:(P.first && inf.due < t0) ? daysBetween(inf.due, t0) : 0, day:day });
     out.n++;
