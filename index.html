@@ -14,6 +14,16 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index76 : charge HOMOGÈNE avant la date exacte. jmPickDay : fenêtre proportionnelle à l'intervalle (tol = 35 % de l'écart, 2 à 7 j ;
+              avant la date : tol/2 ; tour en retard : aujourd'hui → +9 j), pénalité de distance réduite (0,02/j) : le jour le moins
+              chargé gagne. Collèges anciens (P.one) inchangés. Voir §J22.
+    index75 : (1) répartition de la charge : jmPickDay / jmDayW (§J22). Poids d'un jour : 1 (week-end compris), 0,4 en stage,
+              0,6 le lendemain d'une garde ; un tour de la méthode des J est posé dans une fenêtre autour de sa date (2 j avant,
+              3 j après ; en retard : aujourd'hui + 4 j) sur le jour le moins chargé par rapport à son poids, plafond du jour =
+              plafond × poids. Avant : posé sur sa date, puis décalé seulement si le jour était plein, d'où des jours de stage
+              pleins (plafond / 2) et des week-ends vides. Collèges « anciens » (peLegacy) : ancien placement (P.one).
+              (2) « Planifier jusqu'à l'échéance » : poids d'un jour de stage 0,5 -> 0,4 (peDays). (3) « Dépasser l'échéance »
+              = limite échéance + 3 jours (avant : aucune limite, la chaîne partait très loin).
     index74 : les nouveautés de la méthode des J / de « Planifier jusqu'à l'échéance » ne touchent PAS un collège déjà planifié avec
               l'ancienne version de l'option. peLegacy(collège) = fenêtre déjà utilisée (pe.seen) + échéance posée + cours de ce
               collège dans le planning + pas encore (re)planifié avec la version actuelle (state.jm.pe.nv[collège], posé par
@@ -5249,6 +5259,33 @@ function jmNextHTML(key){
   return '<span class="jmnext'+(late ? ' late' : '')+'" title="Proposé par la méthode des J'+(info.adj ? ' ('+info.adj+')' : '')+'"><span class="jmt" aria-hidden="true">J</span>Tour '+info.n+(late ? ' à refaire depuis le ' : ' conseillé le ')+short(info.due)+'</span>';
 }
 var jmMemo = { k:'', v:null };
+/* index75 : répartition de la charge de la méthode des J. Poids d'un jour : 1 (week-end compris : autant que les autres jours),
+   0,4 un jour de stage (si l'option « semaines de stage » est active), 0,6 le lendemain d'une garde ; garde et repos = fermés.
+   Un tour n'est plus posé forcément sur sa date idéale : on prend, dans une fenêtre autour d'elle (2 jours avant, 3 après ; pour un
+   tour en retard : aujourd'hui + 4 jours), le jour le moins chargé par rapport à son poids, en respectant le plafond du jour
+   (plafond × poids) et la limite de date. Collèges déjà planifiés avec l'ancienne version : ancien placement (voir peLegacy). */
+function jmDayW(d){ var w = 1; if(state.jm.stg && isStageDay(d)) w = .4; if(kindOf(addDays(d, -1)) === 'g') w = Math.min(w, .6); return w; }
+function jmPickDay(inf, P, load, cap, t0){
+  /* index76 : fenêtre élargie et proportionnelle à l'intervalle (tol = 35 % de l'écart, de 2 à 7 jours) : on préfère une charge homogène
+     (≈ même nombre de cartes chaque jour) à la date exacte de la méthode. Avant la date : la moitié de la tolérance seulement. */
+  var due = inf.due < t0 ? t0 : inf.due, lastD = P.tl.length ? P.tl[P.tl.length - 1].d : '';
+  var tol = Math.max(2, Math.min(7, Math.ceil((inf.gap || 3) * .35)));
+  var lo = inf.due < t0 ? t0 : addDays(inf.due, -Math.ceil(tol / 2)); if(lo < t0) lo = t0; if(lastD && lo <= lastD) lo = addDays(lastD, 1);
+  var hi = inf.due < t0 ? addDays(t0, 9) : addDays(inf.due, tol);
+  if(P.dl && P.dl >= lo && hi > P.dl) hi = P.dl; if(hi < lo) hi = lo;
+  var best = '', bs = 1e9, d, n = 0;
+  for(d = lo; d <= hi && n < 40; d = addDays(d, 1), n++){
+    if(kindOf(d)) continue;
+    var w = jmDayW(d), cd = cap >= 999 ? 999 : Math.max(1, Math.round(cap * w));
+    if((load[d] || 0) >= cd) continue;
+    var sc = ((load[d] || 0) + 1) / w + Math.abs(daysBetween(d, due)) * .02;
+    if(sc < bs){ bs = sc; best = d; }
+  }
+  if(best) return best;
+  var day = lo, g = 0;                        /* tout est plein dans la fenêtre : premier jour libre après */
+  while(g < 150 && (kindOf(day) || (load[day] || 0) >= (cap >= 999 ? 999 : Math.max(1, Math.round(cap * jmDayW(day)))))){ day = addDays(day, 1); g++; }
+  return day;
+}
 function jmPlan(){
   var ck = JSON.stringify([state.tours, state.plan, state.jm, state.days, state.stw, state.deadlines, state.ign, today()]);
   if(jmMemo.k === ck) return jmMemo.v;
@@ -5282,8 +5319,11 @@ function jmPlan(){
     var bi = 0;
     for(var q = 1; q < pend.length; q++){ var A = pend[q], B = pend[bi]; if(A.info.due < B.info.due || (A.info.due === B.info.due && A.it[0] < B.it[0])) bi = q; }
     var P = pend[bi], inf = P.info;
-    var day = inf.due > t0 ? inf.due : t0, g = 0;
-    while(g < 150 && (kindOf(day) === 'g' || kindOf(day) === 'r' || (load[day] || 0) >= (state.jm.stg && isStageDay(day) ? Math.min(cap, scap) : cap))){ day = addDays(day, 1); g++; }
+    var day, g = 0;
+    if(P.one){                                /* ancien placement (collège déjà planifié avec l'ancienne version) */
+      day = inf.due > t0 ? inf.due : t0;
+      while(g < 150 && (kindOf(day) === 'g' || kindOf(day) === 'r' || (load[day] || 0) >= (state.jm.stg && isStageDay(day) ? Math.min(cap, scap) : cap))){ day = addDays(day, 1); g++; }
+    } else day = jmPickDay(inf, P, load, cap, t0);
     load[day] = (load[day] || 0) + 1;
     (out.days[day] = out.days[day] || []).push({ k:P.k, due:inf.due, n:inf.n, gap:inf.gap, b:inf.b, adj:inf.adj, num:P.it[0], late:(P.first && inf.due < t0) ? daysBetween(inf.due, t0) : 0, day:day });
     out.n++;
@@ -9546,7 +9586,7 @@ function peDays(s, dl){
     if((s.wk === 'nosat' || s.wk === 'nowe') && w === 6) continue;
     if((s.wk === 'nosun' || s.wk === 'nowe') && w === 0) continue;
     var wt = 1;
-    if(s.stg && isStageDay(d)) wt = .5;
+    if(s.stg && isStageDay(d)) wt = .4;   /* index75 : 0,5 -> 0,4, comme jmDayW */
     if(s.light && kindOf(addDays(d, -1)) === 'g') wt = Math.min(wt, .6);
     out.push({ d:d, w:wt, load:0, r:0, cap:0 });
   }
@@ -9756,10 +9796,10 @@ function peApply(){
     items:[
       '<li><b style="min-width:120px">Aucun dépassement</b><span>Le tour 2 reste avant le ' + lastS + ' (rapproché si besoin).</span></li>' +
       (multi ? '<li><b style="min-width:120px">Dépasser la date</b><span>Le tour 2 peut passer le ' + lastS + ', jusqu’à l’échéance du ' + dlS + '.</span></li>' : '') +
-      '<li><b style="min-width:120px">Dépasser l’échéance</b><span>Le tour 2 garde son intervalle, même après le ' + dlS + '.</span></li>'
+      '<li><b style="min-width:120px">Dépasser l’échéance</b><span>Le tour 2 peut passer le ' + dlS + ', de 3 jours au maximum.</span></li>'
     ],
-    no:'Aucun dépassement', alt:multi ? 'Dépasser le ' + lastS : '', ok:'Dépasser l’échéance',
-    onNo:function(){ peApplyGo(R, R.last); }, onAlt:function(){ peApplyGo(R, peDate); }, onOk:function(){ peApplyGo(R, ''); }
+    no:'Aucun dépassement', alt:multi ? 'Dépasser le ' + lastS : '', ok:'Dépasser (3 j max)',
+    onNo:function(){ peApplyGo(R, R.last); }, onAlt:function(){ peApplyGo(R, peDate); }, onOk:function(){ peApplyGo(R, addDays(peDate, 3)); }
   });
 }
 function peApplyGo(R, lim){
