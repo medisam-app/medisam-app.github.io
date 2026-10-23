@@ -14,6 +14,9 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index81 : message discret sous chaque collège ouvert (onglet Items) : « N cours non planifiés » ou « Tous les cours sont planifiés »
+              (colUnplanned, §J renderList ; CSS .colpn). Un cours est « planifié » s'il a une carte dans le planning, quelle qu'en soit
+              l'origine ; les items « non prévus » et déjà commencés ne comptent pas.
     index80 : le plafond du jour est une limite DURE pour la méthode des J (avant : une journée pleine à la fin de l'échéance était
               surchargée, 5-7 cartes). jmPickDay élargit d'abord la recherche vers l'arrière (dès le lendemain du tour précédent) puis,
               si l'échéance + 3 j est atteinte sans place, renvoie '' et jmPlan RETIRE le tour (les derniers tours, T4+, sautent en premier).
@@ -501,6 +504,9 @@ h1{margin:0;line-height:0}
 .chev{transition:transform .18s}
 .colbtn[aria-expanded="false"] .chev{transform:rotate(-90deg)}
 .empty{margin:0;padding:24px;color:var(--ink2)}
+.colpn{margin:0;padding:10px 24px 0;font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.colpn i{width:6px;height:6px;border-radius:50%;background:var(--amber);flex:none}
+.colpn.ok i{background:var(--ok)}
 
 /* Item */
 .item{border-top:1px solid var(--line2);transition:background .12s}
@@ -4620,6 +4626,16 @@ document.addEventListener('focusout', function(e){ if(e.target && e.target.id ==
 document.addEventListener('keydown', function(e){
   if(e.target && e.target.id === 'er-ta' && e.key === 'Escape'){ e.preventDefault(); clearTimeout(errT); errSave(); var k = errOpen; errOpen = null; renderList(); focusLater('[data-act="err"][data-num="'+k+'"]'); }
 });
+/* index81 : petit message discret sous l'en-tête d'un collège : nombre de cours « non planifiés » = cours du collège qui n'ont
+   AUCUNE carte dans le planning (posée par l'utilisateur, par « Planifier jusqu'à l'échéance » ou par la méthode des J, provisoire
+   ou fixée, passée ou à venir). Ne comptent pas : les items « non prévus » (state.ign). Un cours déjà commencé (tour validé) a une
+   carte (la validation en crée une) ou n'est plus à planifier : il est compté comme planifié. Vide = « Tous les cours sont planifiés ». */
+function colUnplanned(col){
+  var inPlan = {}, n = 0;
+  Object.keys(state.plan).forEach(function(d){ state.plan[d].forEach(function(x){ if(x.k) inPlan[x.k] = 1; }); });
+  col.items.forEach(function(it){ var k = keyOf(it); if(state.ign[k] || inPlan[k] || toursOf(k).length) return; n++; });
+  return n;
+}
 function renderList(){
   var q = norm($('q').value.trim()), out = '';
   selColleges().forEach(function(col){
@@ -4641,6 +4657,7 @@ function renderList(){
       meterHTML(p1,p2)+'</button>';
     if(open) out += '<div class="colact"><button type="button" class="colt colplan" data-act="pe-open" data-id="'+col.id+'" aria-label="Planifier jusqu’à l’échéance" title="Planifier jusqu’à l’échéance"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3.5" width="11" height="10" rx="2"/><path d="M2.5 6.8h11M5.5 2v3M10.5 2v3M5.8 10l1.6 1.6 3-3"/></svg><span class="colt-l">Planifier jusqu’à l’échéance</span></button><button type="button" class="colt" data-act="jm-open" data-id="'+col.id+'" aria-label="Méthode des J" title="Méthode des J"><span class="jmt" aria-hidden="true">J</span><span class="colt-l">Méthode des J</span></button></div>';
     out += '</h2>';
+    if(open){ var un = colUnplanned(col); out += '<p class="colpn'+(un ? '' : ' ok')+'"><i aria-hidden="true"></i>'+(un ? un + ' cours non planifié' + (un > 1 ? 's' : '') : 'Tous les cours sont planifiés')+'</p>'; }
     if(open) out += vis.length ? vis.map(rowHTML).join('') : '<p class="empty">'+(refOnly ? 'Aucun item de référence ne correspond ici.' : 'Aucun item ne correspond à ce filtre.')+'</p>';
     out += '</section>';
   });
