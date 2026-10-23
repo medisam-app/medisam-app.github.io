@@ -14,6 +14,12 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index66 : pastilles d'origine sur les cours du planning, même une fois fixés. Nouveau champ d'entrée de planning `o`
+              ('e' | 'j' | 'ej', conservé par sanitizePlan) : « J » = placé par la méthode des J (jm-pin), « E » = placé par
+              « Planifier jusqu'à l'échéance » (peFixAll, ex-acc), « J » + « E » si l'item suit aussi une méthode des J (la sienne
+              ou celle du collège : peOrigin(k) = jmForKey(k).g non vide). Rendu : originBadges(o) dans slotHTML (avant le texte
+              de .meta) ; la carte provisoire en pointillés affiche aussi le J quand l'item suit une méthode des J. Les cours
+              ajoutés à la main n'ont pas de pastille. Les cours déjà fixés avant index66 n'ont pas d'origine connue : pas de pastille.
     index65 : première arrivée = choix des QCM. Tant que cfg.qcmAsked est faux (aussi pour les comptes qui existaient déjà : la clé
               n'existe pas dans leurs réglages en ligne), chaque item n'affiche qu'un bouton « QCM » (button.qcm-ask, data-qcm-ask) ;
               un clic ouvre la fenêtre #qc (§H3, JS « fenêtre #qc » juste avant dlgOpen) : Les deux / EDNi / Hypo / Rien, avec
@@ -4001,6 +4007,7 @@ function sanitizePlan(p){
     var clean = p[day].filter(function(x){ return x && ((typeof x.k === 'string' && ITEM_BY_KEY[x.k]) || (!x.k && typeof x.t === 'string' && x.t.trim())); }).slice(0,40).map(function(x){
       var o = x.k ? { k:x.k } : { t:x.t.trim().slice(0,120) };
       if(x.p && !x.x && x.k) o.p = 1;   /* p = proposé par « Planifier jusqu'à l'échéance », pas encore fixé (index60) */
+      if((x.o === 'e' || x.o === 'j' || x.o === 'ej') && x.k) o.o = x.o;   /* o = origine du cours fixé (index66) : e = « Planifier jusqu'à l'échéance », j = méthode des J, ej = les deux ; affichée en pastille par slotHTML */
       if(x.e && !x.x && x.k) o.e = 1;   /* e = proposition de l'ancien mode examen (retiré en index60), conservée pour les anciennes données : pas encore accepté (affiché grisé comme la méthode des J) */
       if(x.x){ o.x = 1; if(typeof x.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.d)) o.d = x.d; if(x.a) o.a = 1; }
       /* c = cours commencé, à finir le jour indiqué ; s = suite d'un cours commencé le jour indiqué */
@@ -5177,6 +5184,14 @@ function jmPlan(){
   return out;
 }
 function jmDay(day){ return jmPlan().days[day] || []; }
+/* index66 : origine d'un cours fixé. Une carte « jusqu'à l'échéance » est un E ; si l'item suit une méthode des J (la sienne ou
+   celle du collège, jmForKey), c'est un E et un J (« ej »). Une carte proposée par la méthode des J seule est un J. */
+function peOrigin(k){ var c = null; try{ c = jmForKey(k); }catch(e){} return (c && c.g && c.g.length) ? 'ej' : 'e'; }
+function originBadges(o){
+  if(!o) return '';
+  return (o.indexOf('j') > -1 ? '<span class="jmt" title="Placé avec la méthode des J" aria-label="Méthode des J">J</span>' : '')
+       + (o.indexOf('e') > -1 ? '<span class="jmt pet" title="Placé par Planifier jusqu’à l’échéance" aria-label="Jusqu’à l’échéance">E</span>' : '');
+}
 function jmSlotHTML(x){
   var it = ITEM_BY_KEY[x.k], hue = collegeOfKey(x.k).hue, title = it[1];
   var when = x.b === 'f' ? 'J+' + x.gap : x.gap + ' j après T' + (x.n - 1);
@@ -5185,6 +5200,7 @@ function jmSlotHTML(x){
   if(x.ex) meta = 'Tour ' + x.n + ' · proposé pour l’examen';
   if(x.pe) meta = 'Tour ' + x.n + ' · jusqu’à l’échéance';
   var badge = x.pe ? '<span class="jmt pet" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.8h11M5.5 2.5v2.5M10.5 2.5v2.5"/><rect x="2.5" y="3.5" width="11" height="9.5" rx="2"/></svg></span>' : '<span class="jmt" aria-hidden="true">'+(x.ex ? 'E' : 'J')+'</span>';
+  if(x.pe && peOrigin(x.k) === 'ej') badge += '<span class="jmt" aria-hidden="true">J</span>';
   return '<div class="slot jm'+(x.pe ? ' pe' : '')+(x.late ? ' late' : '')+'" data-h="'+hue+'" data-jk="'+x.k+'" data-jday="'+x.day+'"><div class="num">'+it[0]+'</div>'+
     '<div class="jmx"><button type="button" class="rmb" data-act="'+A.pin+'"'+exI+' data-k="'+x.k+'" data-day="'+x.day+'" aria-label="Fixer '+esc(title)+' dans mon planning" title="Fixer dans mon planning"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5l4 4-2 .6-2.4 2.4.3 3-1 1-2.6-2.6-3.5 3.5M6.2 6.6l-.4 0 3.6-3.6"/></svg></button>'+
     '<button type="button" class="rmb" data-act="'+A.x+'"'+exI+' data-k="'+x.k+'" data-day="'+x.day+'" aria-label="Ignorer ce tour proposé pour '+esc(title)+'" title="Ignorer">'+ICON_X+'</button></div>'+
@@ -5355,7 +5371,7 @@ function slotHTML(day,s,i){
   else if(s.s) meta = s.x ? meta+' · suite du '+short(s.s) : 'Suite du '+short(s.s)+' · '+meta.charAt(0).toLowerCase()+meta.slice(1);
   var cp = (s.c || s.s) ? chainPos(day, s) : null, chn = cp && cp.N > 1 ? '<span class="chn" title="Jour '+cp.n+' sur '+cp.N+'" aria-label="Jour '+cp.n+' sur '+cp.N+'">'+cp.n+'/'+cp.N+'</span>' : '';
   return '<div class="slot'+(s.x?' ok':'')+(it?'':' free')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+'" data-h="'+hue+'" data-day="'+day+'" data-i="'+i+'">'+numH+chn+
-    '<div class="main"><div class="ttl mvb">'+esc(title)+'</div><span class="meta">'+meta+'</span></div>'+
+    '<div class="main"><div class="ttl mvb">'+esc(title)+'</div><span class="meta">'+originBadges(s.o)+meta+'</span></div>'+
     '<div class="act"><button class="vbtn" data-act="pl-done" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(s.x?'true':'false')+'" aria-label="'+(s.x?'Annuler la validation de ':'Valider ')+esc(title)+'">'+ICON_CHECK+(s.x?'Fait':'Valider')+'</button>'+
       (s.x ? '' : '<button type="button" class="nxb'+(s.c ? ' on' : '')+'" data-act="pl-cont" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(!!s.c)+'" aria-label="'+(s.c ? 'Annuler la suite de ' : 'Pas fini : finir demain, ')+esc(title)+'" title="'+(s.c ? 'Annuler la suite' : 'Pas fini : finir demain')+'">'+ICON_NEXT+'</button>')+'</div>'+
     '<button class="rmb" data-act="pl-rm" data-day="'+day+'" data-i="'+i+'" aria-label="Retirer '+esc(title)+' du planning">'+ICON_X+'</button></div>';
@@ -5959,7 +5975,7 @@ document.addEventListener('click', function(e){
     if(errOpen){ var eta = $('er-ta'); if(eta){ eta.focus(); eta.setSelectionRange(eta.value.length, eta.value.length); } }
   } else if(a === 'ex-acc'){
     var exd = state.plan[el.dataset.day], exs = exd && exd[Number(el.dataset.i)];
-    if(exs){ delete exs.e; delete exs.p; persist(); renderAll(); }
+    if(exs){ if(exs.k) exs.o = peOrigin(exs.k); delete exs.e; delete exs.p; persist(); renderAll(); }
   } else if(a === 'er-open'){
     erShow(true, 'all');
   } else if(a === 'pe-open'){
@@ -6031,13 +6047,13 @@ document.addEventListener('click', function(e){
     jmOpen(el.dataset.id, el);
   } else if(a === 'jm-pin'){
     var pk = el.dataset.k, pday = el.dataset.day;
-    mutate(function(){ (state.plan[pday] = state.plan[pday] || []).push({ k:pk }); }, 'Fixé dans ton planning');
+    mutate(function(){ (state.plan[pday] = state.plan[pday] || []).push({ k:pk, o:'j' }); }, 'Fixé dans ton planning');
   } else if(a === 'jm-done'){
     var jk = el.dataset.k, jday = el.dataset.day, jt = toursOf(jk), jvd = tourDateFor(jday);
     if(jt.length >= MAX){ toast('Cet item a déjà '+MAX+' tours.'); return; }
     var jadds = !jt.some(function(x){ return x.d === jvd; });
     mutate(function(){
-      (state.plan[jday] = state.plan[jday] || []).push({ k:jk, x:1, d:jvd, a:jadds ? 1 : 0 });
+      (state.plan[jday] = state.plan[jday] || []).push({ k:jk, x:1, d:jvd, a:jadds ? 1 : 0, o:'j' });
       if(jadds){ var jarr = state.tours[jk] = state.tours[jk] || []; jarr.push({ d:jvd, s:'ok' }); jarr.sort(function(p,q){ return p.d < q.d ? -1 : p.d > q.d ? 1 : 0; }); }
     }, 'Tour '+(jt.length + (jadds ? 1 : 0))+' ajouté dans Items, daté du '+fmtMv.format(parse(jvd)));
   } else if(a === 'jm-x'){
@@ -6110,6 +6126,7 @@ document.addEventListener('click', function(e){
   } else if(a === 'pl-done'){
     var dday = el.dataset.day, di = Number(el.dataset.i), sl = slotsOf(dday)[di];
     if(!sl) return;
+    if(!sl.x && sl.k && (sl.p || sl.e) && !sl.o) sl.o = peOrigin(sl.k);   /* index66 : valider une carte provisoire garde sa pastille E / J+E */
     var vd = tourDateFor(dday);
     if(sl.x){
       /* annuler la validation (et le tour qu'elle avait ajouté, s'il y en a un) */
@@ -9127,6 +9144,7 @@ function cuMove(){
       src.splice(i, 1); if(!src.length) delete state.plan[x.day];
       if(dup) return;
       var ns = x.s.k ? { k:x.s.k } : { t:x.s.t };
+      if(x.s.o) ns.o = x.s.o;
       if(x.s.s){
         ns.s = x.s.s;
         (state.plan[x.s.s] || []).forEach(function(q){ if(q.c === x.day && sameSlot(q, x.s)) q.c = t0; });
@@ -9623,7 +9641,7 @@ function peFixAll(){
     ok:'Tout fixer (' + n + ')', no:'Annuler', focus:'ok',
     onOk:function(){
       var ids = [];
-      mutate(function(){ Object.keys(state.plan).forEach(function(d){ state.plan[d].forEach(function(x){ if(x.p && !x.x && x.k){ delete x.p; ids.push(x.k); } }); }); }, n + ' carte' + (n > 1 ? 's' : '') + ' fixée' + (n > 1 ? 's' : '') + ' dans ton planning');
+      mutate(function(){ Object.keys(state.plan).forEach(function(d){ state.plan[d].forEach(function(x){ if(x.p && !x.x && x.k){ delete x.p; x.o = peOrigin(x.k); ids.push(x.k); } }); }); }, n + ' carte' + (n > 1 ? 's' : '') + ' fixée' + (n > 1 ? 's' : '') + ' dans ton planning');
     }
   });
 }
