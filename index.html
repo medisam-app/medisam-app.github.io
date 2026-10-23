@@ -14,6 +14,69 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index78 : « ignorer » (croix d'un tour proposé par la méthode des J) tient aussi quand l'item a un cours fixé à venir : signature jmXSig
+              (avant, le tour réapparaissait car le test était sauté dès qu'il y avait un tour virtuel).
+    index77 : PLAFOND ABSOLU de la méthode des J = échéance du collège + 3 j (jmHard, voir index76 ci-dessous : jmDueInfo, jmPickDay, jmPlan).
+    index76 : charge HOMOGÈNE avant la date exacte. jmPickDay : fenêtre proportionnelle à l'intervalle (tol = 35 % de l'écart, 2 à 7 j ;
+              avant la date : tol/2 ; tour en retard : aujourd'hui → +9 j), pénalité de distance réduite (0,02/j) : le jour le moins
+              chargé gagne. Collèges anciens (P.one) inchangés. Voir §J22.
+    index75 : (1) répartition de la charge : jmPickDay / jmDayW (§J22). Poids d'un jour : 1 (week-end compris), 0,4 en stage,
+              0,6 le lendemain d'une garde ; un tour de la méthode des J est posé dans une fenêtre autour de sa date (2 j avant,
+              3 j après ; en retard : aujourd'hui + 4 j) sur le jour le moins chargé par rapport à son poids, plafond du jour =
+              plafond × poids. Avant : posé sur sa date, puis décalé seulement si le jour était plein, d'où des jours de stage
+              pleins (plafond / 2) et des week-ends vides. Collèges « anciens » (peLegacy) : ancien placement (P.one).
+              (2) « Planifier jusqu'à l'échéance » : poids d'un jour de stage 0,5 -> 0,4 (peDays). (3) « Dépasser l'échéance »
+              = limite échéance + 3 jours (avant : aucune limite, la chaîne partait très loin).
+    index74 : les nouveautés de la méthode des J / de « Planifier jusqu'à l'échéance » ne touchent PAS un collège déjà planifié avec
+              l'ancienne version de l'option. peLegacy(collège) = fenêtre déjà utilisée (pe.seen) + échéance posée + cours de ce
+              collège dans le planning + pas encore (re)planifié avec la version actuelle (state.jm.pe.nv[collège], posé par
+              peApplyGo, conservé par sanitizePe). Pour ces collèges : jmPlan (§J22) garde l'ancien calcul (un seul tour proposé
+              par item, sur les tours validés, rien pour un item déjà posé dans le planning) et jmNextHTML n'utilise pas les cours
+              fixés ; la garde « plus de place avant la limite » de jmDueInfo ne joue que si une limite a été choisie dans la
+              fenêtre (jmLimSet). Relancer « Planifier jusqu'à l'échéance » sur le collège le fait passer au fonctionnement actuel.
+              Les pastilles E / J / point rouge n'affectent que l'affichage et ne changent aucun cours déjà posé.
+    index73 : « Planifier jusqu'à l'échéance » : si des cours de tour 1 sont placés si près de la date que leur tour 2 (méthode des J)
+              tomberait après la date choisie (R.last = échéance moins la marge), une fenêtre (#cx via cxAsk, dans peApply)
+              demande : « Aucun dépassement » (limite R.last, aussi choix d'Échap), « Dépasser le <date> » (limite = échéance, absent si
+              la marge est 0) ou « Dépasser l'échéance » (pas de limite). Le choix est enregistré dans state.jm.pe.lim[collège]
+              ('' = sans limite ; conservé par sanitizePe) et lu par jmLimit(k), qui remplace le test « J.dl + échéance » dans
+              jmDueInfo et jmPlan : la limite propre au collège passe avant l'option générale « avant l'échéance ». Le corps de
+              l'ancienne peApply est devenu peApplyGo(R, lim). #cx a un z-index de 80 pour passer au-dessus de #pe.
+    index72 : la pastille « Nouveau » d'index71 devient un petit point rouge en haut à droite du numéro de l'item (classe .frst
+              posée sur la carte par slotHTML et jmSlotHTML ; CSS .slot.frst .num::after). Mêmes règles que index71 (tour 1 seulement).
+    index71 : pastille « Nouveau » (.firstt, FIRST_B) dans le planning sur les cours vus pour la première fois (tour 1), pour les
+              distinguer des révisions. slotHTML : cours non validé sans aucun tour validé pour l'item et sans cours fixé plus tôt
+              (hasEarlierSlot, hors suite d'un cours commencé), ou cours validé qui est le tour n° 1. jmSlotHTML : cartes grisées de
+              tour 1 (« jusqu'à l'échéance »). Les tours proposés par la méthode des J (tour 2 et plus) n'ont jamais la pastille.
+    index70 : méthode des J : tous les tours prévus sont placés d'un coup dans le planning (cartes grisées J), plus seulement le
+              prochain. jmPlan() (§J22) traite les items par échéance croissante : chaque carte est posée sur son jour (plafond
+              par jour et gardes respectés), puis le tour suivant est calculé à partir d'un tour virtuel daté de ce jour, jusqu'au
+              dernier intervalle de la méthode (cf.g) ou jusqu'à l'échéance du collège (si « avant l'échéance » est activé). Seule
+              la première carte d'un item peut être « en retard ». La croix « Ignorer » d'une carte masque toute la chaîne de
+              l'item tant que son nombre de tours ne change pas (state.jm.x). jmNextHTML (« Tour n conseillé le… ») reste le prochain tour.
+    index69 : un tour ajouté à un item depuis Items (fenêtre « tp-add », date + ressenti) est aussi ajouté dans le planning, déjà
+              validé (x:1, d = date du tour, a:0), au jour du tour, s'il n'y a pas déjà cet item ce jour-là et si le jour n'est
+              pas plein. Le message précise « ajouté au planning ». Non concerné : import Excel, « un tour pour tout le collège »
+              (tcClose), tours validés depuis le planning (qui créent déjà le tour dans Items).
+    index68 : règles des pastilles précisées (remplace celles d'index66). « Planifier jusqu'à l'échéance » ne place que le tour 1 :
+              carte placée par lui (provisoire, fixée ou validée) = E seul. Tour proposé par la méthode des J = J ; = E + J si la
+              chaîne de l'item vient de « jusqu'à l'échéance » (peChain(k) : une entrée du planning de l'item porte déjà un E ;
+              jmOrigin(k) renvoie 'ej' ou 'j'). Cours ajouté à la main : pas de pastille ; les tours que la méthode des J en
+              déduit ont un J seul. peOrigin(k) renvoie toujours 'e' (gardée pour peFixAll / ex-acc / pl-done). La carte grisée
+              proposée par la méthode des J (jmSlotHTML) affiche J ou J + E de la même façon.
+    index67 : la méthode des J est calculée dès qu'un cours est FIXÉ dans le planning (ajouté à la main ou fixé depuis une
+              proposition), plus seulement quand il est validé. jmVirtDates(k) liste les jours à venir où l'item est posé
+              (ni validé, ni carte provisoire « jusqu'à l'échéance », ni suite d'un cours commencé) ; jmToursFor les ajoute aux
+              tours validés comme tours « virtuels » (statut « mid »), et jmDueInfo(key, cf, tl) calcule le tour suivant à
+              partir d'eux. Utilisé par jmPlan (propositions grisées J) et jmNextHTML (« Tour n conseillé le… »). Un item sans
+              aucun tour validé mais avec un cours fixé reçoit aussi sa proposition. Le calcul de « Planifier jusqu'à
+              l'échéance » (peOpen, jmDueInfo sans 3e argument) est inchangé.
+    index66 : pastilles d'origine sur les cours du planning, même une fois fixés. Nouveau champ d'entrée de planning `o`
+              ('e' | 'j' | 'ej', conservé par sanitizePlan) : « J » = placé par la méthode des J (jm-pin), « E » = placé par
+              « Planifier jusqu'à l'échéance » (peFixAll, ex-acc), « J » + « E » si l'item suit aussi une méthode des J (la sienne
+              ou celle du collège : peOrigin(k) = jmForKey(k).g non vide). Rendu : originBadges(o) dans slotHTML (avant le texte
+              de .meta) ; la carte provisoire en pointillés affiche aussi le J quand l'item suit une méthode des J. Les cours
+              ajoutés à la main n'ont pas de pastille. Les cours déjà fixés avant index66 n'ont pas d'origine connue : pas de pastille.
     index65 : première arrivée = choix des QCM. Tant que cfg.qcmAsked est faux (aussi pour les comptes qui existaient déjà : la clé
               n'existe pas dans leurs réglages en ligne), chaque item n'affiche qu'un bouton « QCM » (button.qcm-ask, data-qcm-ask) ;
               un clic ouvre la fenêtre #qc (§H3, JS « fenêtre #qc » juste avant dlgOpen) : Les deux / EDNi / Hypo / Rien, avec
@@ -2084,6 +2147,9 @@ button.qcm{appearance:none;-webkit-appearance:none;font-family:inherit;cursor:po
 .qc-grid button:hover{border-color:var(--post-ink);background:var(--post)}
 .qc-grid button:active{transform:scale(.96)}
 .qc-grid button:focus-visible,.qc-later:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.slot.frst .num::after{content:"";position:absolute;top:-4px;right:-4px;width:10px;height:10px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 2px var(--surface);pointer-events:none}
+.slot.frst.ok .num::after{box-shadow:0 0 0 2px var(--c,var(--surface))}
+#cx{z-index:80}   /* index73 : la fenêtre de choix s'ouvre aussi par-dessus #pe */
 .qc-later{appearance:none;border:0;background:none;color:var(--ink2);font:500 13.5px/1 var(--f-body);cursor:pointer;padding:8px 12px;border-radius:10px}
 .dl-slot{display:inline-flex;align-items:center;min-height:28px}
 .dl{font:500 12.5px var(--f-body);display:inline-flex;align-items:center;gap:7px;border-radius:999px;transform-origin:left center}
@@ -4001,6 +4067,7 @@ function sanitizePlan(p){
     var clean = p[day].filter(function(x){ return x && ((typeof x.k === 'string' && ITEM_BY_KEY[x.k]) || (!x.k && typeof x.t === 'string' && x.t.trim())); }).slice(0,40).map(function(x){
       var o = x.k ? { k:x.k } : { t:x.t.trim().slice(0,120) };
       if(x.p && !x.x && x.k) o.p = 1;   /* p = proposé par « Planifier jusqu'à l'échéance », pas encore fixé (index60) */
+      if((x.o === 'e' || x.o === 'j' || x.o === 'ej') && x.k) o.o = x.o;   /* o = origine du cours fixé (index66) : e = « Planifier jusqu'à l'échéance », j = méthode des J, ej = les deux ; affichée en pastille par slotHTML */
       if(x.e && !x.x && x.k) o.e = 1;   /* e = proposition de l'ancien mode examen (retiré en index60), conservée pour les anciennes données : pas encore accepté (affiché grisé comme la méthode des J) */
       if(x.x){ o.x = 1; if(typeof x.d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(x.d)) o.d = x.d; if(x.a) o.a = 1; }
       /* c = cours commencé, à finir le jour indiqué ; s = suite d'un cours commencé le jour indiqué */
@@ -4051,7 +4118,7 @@ function jmCfg(c){
   var g = c.g.map(function(v){ return Math.round(Number(v)); }).filter(function(v){ return v >= 1 && v <= 365; }).slice(0, MAX - 1);
   return { g:g, b:c.b === 'f' ? 'f' : 'p' };
 }
-function peDef(){ return { seen:false, set:{ margin:3, cap:'auto', wk:'all', start:'today', stg:true, light:true, jm:'auto', og:[3,7,15,30], ob:'p' }, own:{} }; }
+function peDef(){ return { seen:false, set:{ margin:3, cap:'auto', wk:'all', start:'today', stg:true, light:true, jm:'auto', og:[3,7,15,30], ob:'p' }, own:{}, lim:{}, nv:{} }; }
 function sanitizePe(o){
   var r = peDef(); if(!o || typeof o !== 'object') return r;
   r.seen = o.seen === true;
@@ -4066,6 +4133,9 @@ function sanitizePe(o){
     var og = jmCfg({ g:s.og, b:s.ob }); if(og && og.g.length){ r.set.og = og.g; r.set.ob = og.b; }
   }
   if(o.own && typeof o.own === 'object') Object.keys(o.own).slice(0, 2000).forEach(function(k){ if(ITEM_BY_KEY[k]){ var c = jmCfg(o.own[k]); if(c) r.own[k] = c; } });
+  /* index73 : lim[collège] = jusqu'où le tour 2 des cours placés près de l'échéance peut aller (date AAAA-MM-JJ), ou '' = sans limite */
+  if(o.lim && typeof o.lim === 'object') Object.keys(o.lim).slice(0, 80).forEach(function(c){ var v = o.lim[c]; if(v === '' || (typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v))) r.lim[c] = v; });
+  if(o.nv && typeof o.nv === 'object') Object.keys(o.nv).slice(0, 80).forEach(function(c){ if(o.nv[c]) r.nv[c] = 1; });
   return r;
 }
 function sanitizeJm(o){
@@ -5125,58 +5195,200 @@ var JM_PRESETS = [['Classique', [3,7,15,30]], ['Intensive', [1,3,7,14]], ['Lég�
 function jmFor(cid){ var j = state.jm; return j.cols[cid] || j.all || null; }
 /* index60 : un item placé par « Planifier jusqu'à l'échéance » peut avoir ses propres intervalles (state.jm.pe.own) */
 function jmForKey(k){ var o = state.jm.pe.own[k]; return o || jmFor(collegeOfKey(k).id); }
+/* index73 : limite de date pour les tours de la méthode des J d'un item : celle choisie dans la fenêtre « tour 2 près de l'échéance »
+   (state.jm.pe.lim[collège], '' = aucune limite) ; sinon l'échéance du collège si l'option « avant l'échéance » est active ; sinon rien. */
+/* index74 : COLLÈGE DÉJÀ PLANIFIÉ AVEC L'ANCIENNE VERSION de « Planifier jusqu'à l'échéance » : on ne change rien pour lui.
+   Définition : la fenêtre a déjà servi (pe.seen), une échéance est posée pour ce collège, il y a des cours de ce collège dans le
+   planning, et il n'a PAS été (re)planifié avec la version actuelle (pe.nv[collège], posé par peApplyGo). Pour ces collèges, la
+   méthode des J garde l'ancien comportement : seulement le prochain tour de chaque item, calculé sur les tours VALIDÉS, et rien
+   n'est proposé pour un item déjà posé dans le planning. Relancer « Planifier jusqu'à l'échéance » sur le collège le fait passer
+   au fonctionnement actuel. Les collèges jamais planifiés avec l'option ont le fonctionnement actuel. */
+function peLegacy(cid){
+  var P = state.jm.pe; if(!P || !P.seen || (P.nv && P.nv[cid]) || !state.deadlines[cid]) return false;
+  var days = Object.keys(state.plan);
+  for(var a = 0; a < days.length; a++){ var arr = state.plan[days[a]]; for(var q = 0; q < arr.length; q++){ var e = arr[q]; if(e.k && ITEM_BY_KEY[e.k] && collegeOfKey(e.k).id === cid) return true; } }
+  return false;
+}
+function jmLimSet(k){ var l = state.jm.pe && state.jm.pe.lim; return !!l && l[collegeOfKey(k).id] !== undefined; }
+function jmLimit(k){
+  var cid = collegeOfKey(k).id, lim = state.jm.pe && state.jm.pe.lim ? state.jm.pe.lim[cid] : undefined;
+  if(lim !== undefined) return lim;
+  return state.jm.dl ? (state.deadlines[cid] || '') : '';
+}
+/* index76 : plafond ABSOLU de la méthode des J = échéance du collège + 3 jours (jamais plus), quels que soient les réglages
+   (limite choisie, tour en retard, jours pleins). Vide si le collège n'a pas d'échéance, est déjà passée, ou est « ancien » (peLegacy). */
+function jmHard(k){
+  var cid = collegeOfKey(k).id, e = state.deadlines && state.deadlines[cid];
+  if(!e || e < today() || peLegacy(cid)) return '';
+  return addDays(e, 3);
+}
+/* index78 : signature de « ignorer » (state.jm.x[k], un nombre) = tours validés + 1000 × cours fixés à venir (tours virtuels, index67).
+   Avant, l'ignorance ne marchait que sans cours fixé : avec un tour virtuel la proposition réapparaissait. */
+function jmXSig(k){ var vd = peLegacy(collegeOfKey(k).id) ? [] : jmVirtDates(k); return toursOf(k).length + 1000 * vd.length; }
 function jmAny(){ var j = state.jm; return !!(j.all && j.all.g.length) || Object.keys(j.pe.own).some(function(k){ return j.pe.own[k].g.length; }) || COLLEGES.some(function(c){ return j.cols[c.id] && j.cols[c.id].g.length; }); }
 var JM_FA = { low:.5, mid:1, ok:1.3 };
 /* Prochain tour d'un item : { due, n, gap, adj } ; adj = ce qui a décalé la date par rapport au réglage */
-function jmDueInfo(key, cf){
-  var t = toursOf(key), n = t.length;
+/* index67 : la méthode des J compte aussi les cours FIXÉS dans le planning (ajoutés à la main, ou fixés depuis une proposition),
+   pas seulement les tours validés. Un cours fixé sur un jour à venir (non validé, ni carte provisoire « jusqu'à l'échéance »,
+   ni suite d'un cours commencé) est traité comme un tour « virtuel » daté de ce jour (statut « mid » : pas de décalage
+   difficile / bien compris). La proposition du tour suivant est donc calculée dès la pose, sans attendre la validation. */
+function jmVirtDates(key){
+  var t0 = today(), out = [];
+  Object.keys(state.plan).forEach(function(d){
+    if(d < t0) return;
+    state.plan[d].forEach(function(x){ if(x.k === key && !x.x && !x.p && !x.e && !x.s) out.push(d); });
+  });
+  return out.sort();
+}
+function jmToursFor(key, vd){
+  var t = toursOf(key).slice();
+  vd.forEach(function(d){ t.push({ d:d, s:'mid' }); });
+  return t.sort(function(a, b){ return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+}
+function jmDueInfo(key, cf, tl){
+  var t = tl || toursOf(key), n = t.length;
   if(n < 1 || n >= MAX || n > cf.g.length) return null;
   var last = t[n-1].d, nom = addDays(cf.b === 'f' ? t[0].d : last, cf.g[n-1]), due = nom, adj = '';
   var nd = Math.max(1, daysBetween(last, nom)), fa = 1, fd = 1, J = state.jm;
   if(J.adapt){ fa = JM_FA[t[n-1].s] || 1; if(fa < 1) adj = 'plus tôt (difficile)'; else if(fa > 1) adj = 'plus tard (bien compris)'; }
-  var cid = collegeOfKey(key).id, dl = state.deadlines[cid];
-  if(J.dl && dl && dl > today()){
+  var dl = jmLimit(key);
+  if(dl && dl > today()){
     var finalNom = addDays(cf.b === 'f' ? t[0].d : last, cf.b === 'f' ? cf.g[cf.g.length-1] : cf.g.slice(n-1).reduce(function(a, b){ return a + b; }, 0));
     var rem = Math.max(1, daysBetween(last, finalNom)), avail = Math.max(1, daysBetween(last, addDays(dl, -1)));
     if(avail < rem){ fd = Math.max(.25, avail / rem); adj = 'resserré pour l’échéance'; }
   }
   if(fa * fd !== 1) due = addDays(last, Math.max(1, Math.round(nd * fa * fd)));
-  if(J.dl && dl && due > dl){ due = dl; adj = 'avant l’échéance'; }
+  if(dl && due > dl){
+    if(dl > today() && last >= dl && jmLimSet(key)) return null;   /* index73 : plus de place avant la limite (le tour précédent est déjà à la limite ou après) : pas de proposition */
+    due = dl; adj = 'avant l’échéance';
+  }
+  var hd = jmHard(key); if(hd && due > hd) return null;          /* index76 : jamais plus de 3 j après l'échéance */
   return { due:due, n:n + 1, gap:cf.g[n-1], b:cf.b, adj:adj };
 }
 function jmNextHTML(key){
   if(!jmAny() || state.ign[key]) return '';
   var cf = jmForKey(key); if(!cf || !cf.g.length) return '';
-  var info = jmDueInfo(key, cf); if(!info || state.jm.x[key] === toursOf(key).length) return '';
+  var vd = peLegacy(collegeOfKey(key).id) ? [] : jmVirtDates(key), info = jmDueInfo(key, cf, vd.length ? jmToursFor(key, vd) : null); if(!info || state.jm.x[key] === jmXSig(key)) return '';
   var late = info.due < today();
   return '<span class="jmnext'+(late ? ' late' : '')+'" title="Proposé par la méthode des J'+(info.adj ? ' ('+info.adj+')' : '')+'"><span class="jmt" aria-hidden="true">J</span>Tour '+info.n+(late ? ' à refaire depuis le ' : ' conseillé le ')+short(info.due)+'</span>';
 }
 var jmMemo = { k:'', v:null };
+/* index75 : répartition de la charge de la méthode des J. Poids d'un jour : 1 (week-end compris : autant que les autres jours),
+   0,4 un jour de stage (si l'option « semaines de stage » est active), 0,6 le lendemain d'une garde ; garde et repos = fermés.
+   Un tour n'est plus posé forcément sur sa date idéale : on prend, dans une fenêtre autour d'elle (2 jours avant, 3 après ; pour un
+   tour en retard : aujourd'hui + 4 jours), le jour le moins chargé par rapport à son poids, en respectant le plafond du jour
+   (plafond × poids) et la limite de date. Collèges déjà planifiés avec l'ancienne version : ancien placement (voir peLegacy). */
+function jmDayW(d){ var w = 1; if(state.jm.stg && isStageDay(d)) w = .4; if(kindOf(addDays(d, -1)) === 'g') w = Math.min(w, .6); return w; }
+function jmPickDay(inf, P, load, cap, t0){
+  /* index76 : fenêtre élargie et proportionnelle à l'intervalle (tol = 35 % de l'écart, de 2 à 7 jours) : on préfère une charge homogène
+     (≈ même nombre de cartes chaque jour) à la date exacte de la méthode. Avant la date : la moitié de la tolérance seulement. */
+  var due = inf.due < t0 ? t0 : inf.due, lastD = P.tl.length ? P.tl[P.tl.length - 1].d : '';
+  var tol = Math.max(2, Math.min(7, Math.ceil((inf.gap || 3) * .35)));
+  var lo = inf.due < t0 ? t0 : addDays(inf.due, -Math.ceil(tol / 2)); if(lo < t0) lo = t0; if(lastD && lo <= lastD) lo = addDays(lastD, 1);
+  var hi = inf.due < t0 ? addDays(t0, 9) : addDays(inf.due, tol);
+  if(P.dl && P.dl >= lo && hi > P.dl) hi = P.dl;
+  var HD = jmHard(P.k); if(HD && hi > HD) hi = HD;                /* index76 */
+  if(hi < lo) hi = lo;
+  var best = '', bs = 1e9, d, n = 0;
+  for(d = lo; d <= hi && n < 40; d = addDays(d, 1), n++){
+    if(kindOf(d)) continue;
+    var w = jmDayW(d), cd = cap >= 999 ? 999 : Math.max(1, Math.round(cap * w));
+    if((load[d] || 0) >= cd) continue;
+    var sc = ((load[d] || 0) + 1) / w + Math.abs(daysBetween(d, due)) * .02;
+    if(sc < bs){ bs = sc; best = d; }
+  }
+  if(best) return best;
+  var day = lo, g = 0;                        /* tout est plein dans la fenêtre : premier jour libre après (sans dépasser le plafond HD) */
+  while(g < 150 && !(HD && day >= HD) && (kindOf(day) || (load[day] || 0) >= (cap >= 999 ? 999 : Math.max(1, Math.round(cap * jmDayW(day)))))){ day = addDays(day, 1); g++; }
+  return day;
+}
 function jmPlan(){
   var ck = JSON.stringify([state.tours, state.plan, state.jm, state.days, state.stw, state.deadlines, state.ign, today()]);
   if(jmMemo.k === ck) return jmMemo.v;
   var out = { days:{}, n:0 }, t0 = today(), planned = {}, load = {}, items = [];
-  Object.keys(state.plan).forEach(function(d){ load[d] = state.plan[d].length; if(d >= t0) state.plan[d].forEach(function(x){ if(x.k && !x.x) planned[x.k] = 1; }); });
-  Object.keys(state.tours).forEach(function(k){
+  var virt = {}, plannedOld = {}, legC = {};
+  function leg(k){ var c = collegeOfKey(k).id; return c in legC ? legC[c] : (legC[c] = peLegacy(c)); }
+  Object.keys(state.plan).forEach(function(d){ load[d] = state.plan[d].length; if(d >= t0) state.plan[d].forEach(function(x){
+    if(!x.k || x.x) return;
+    plannedOld[x.k] = 1;                                   /* ancien fonctionnement (collèges déjà planifiés) : tout item déjà posé est ignoré */
+    if(x.p || x.e){ planned[x.k] = 1; return; }          /* carte provisoire : l'item est déjà géré par « jusqu'à l'échéance » */
+    if(!x.s) (virt[x.k] = virt[x.k] || []).push(d);        /* cours fixé : compte comme un tour virtuel (index67) */
+  }); });
+  var keys = Object.keys(state.tours); Object.keys(virt).forEach(function(k){ if(keys.indexOf(k) < 0) keys.push(k); });
+  /* index70 : TOUTE la suite des tours prévus est placée d'un coup (tour n+1, n+2… jusqu'au dernier intervalle de la méthode), pas
+     seulement le prochain. Chaque tour est placé sur son jour (plafond par jour respecté) ; le suivant est calculé comme si le
+     précédent était fait ce jour-là (tour virtuel daté du jour de placement). On traite toujours la plus proche échéance d'abord,
+     pour que le plafond par jour soit réparti dans l'ordre. La chaîne s'arrête avant l'échéance du collège (state.jm.dl). */
+  var pend = [];
+  keys.forEach(function(k){
     var it = ITEM_BY_KEY[k]; if(!it || planned[k] || state.ign[k]) return;
+    var old = leg(k);                                       /* index74 : collège déjà planifié avec l'ancienne version */
+    if(old && (plannedOld[k] || !state.tours[k])) return;
     var cf = jmForKey(k); if(!cf || !cf.g.length) return;
-    var info = jmDueInfo(k, cf); if(!info) return;
-    if(state.jm.x[k] === state.tours[k].length) return;
-    items.push({ k:k, due:info.due, n:info.n, gap:info.gap, b:info.b, adj:info.adj, num:it[0] });
+    var vd = (!old && virt[k]) ? virt[k].slice().sort() : [];
+    var tl = jmToursFor(k, vd), info = jmDueInfo(k, cf, tl); if(!info) return;
+    if(state.jm.x[k] === (state.tours[k] || []).length + 1000 * vd.length) return;
+    pend.push({ k:k, it:it, cf:cf, tl:tl, info:info, first:true, dl:jmLimit(k), one:old });
   });
-  items.sort(function(a, b){ return a.due < b.due ? -1 : a.due > b.due ? 1 : a.num - b.num; });
-  var cap = state.jm.max || 999, scap = Math.max(2, Math.ceil((state.jm.max || 12) / 2));
-  items.forEach(function(x){
-    var day = x.due > t0 ? x.due : t0, g = 0;
-    while(g < 150 && (kindOf(day) === 'g' || kindOf(day) === 'r' || (load[day] || 0) >= (state.jm.stg && isStageDay(day) ? Math.min(cap, scap) : cap))){ day = addDays(day, 1); g++; }
+  var cap = state.jm.max || 999, scap = Math.max(2, Math.ceil((state.jm.max || 12) / 2)), guard = 0;
+  while(pend.length && guard++ < 8000){
+    var bi = 0;
+    for(var q = 1; q < pend.length; q++){ var A = pend[q], B = pend[bi]; if(A.info.due < B.info.due || (A.info.due === B.info.due && A.it[0] < B.it[0])) bi = q; }
+    var P = pend[bi], inf = P.info;
+    var day, g = 0;
+    if(P.one){                                /* ancien placement (collège déjà planifié avec l'ancienne version) */
+      day = inf.due > t0 ? inf.due : t0;
+      while(g < 150 && (kindOf(day) === 'g' || kindOf(day) === 'r' || (load[day] || 0) >= (state.jm.stg && isStageDay(day) ? Math.min(cap, scap) : cap))){ day = addDays(day, 1); g++; }
+    } else day = jmPickDay(inf, P, load, cap, t0);
+    var HDp = P.one ? '' : jmHard(P.k); if(HDp && day > HDp){ pend.splice(bi, 1); continue; }   /* index76 : jamais > échéance + 3 j : on n'ajoute pas ce tour */
     load[day] = (load[day] || 0) + 1;
-    x.late = x.due < t0 ? daysBetween(x.due, t0) : 0; x.day = day;
-    (out.days[day] = out.days[day] || []).push(x); out.n++;
-  });
+    (out.days[day] = out.days[day] || []).push({ k:P.k, due:inf.due, n:inf.n, gap:inf.gap, b:inf.b, adj:inf.adj, num:P.it[0], late:(P.first && inf.due < t0) ? daysBetween(inf.due, t0) : 0, day:day });
+    out.n++;
+    P.tl = P.tl.concat([{ d:day, s:'mid' }]).sort(function(a, b){ return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    P.first = false;
+    var ni = P.one ? null : jmDueInfo(P.k, P.cf, P.tl);
+    if(ni && P.dl && P.dl > t0 && (ni.adj === 'avant l’échéance' || ni.due >= P.dl)) ni = null;
+    if(ni) P.info = ni; else pend.splice(bi, 1);
+  }
   jmMemo = { k:ck, v:out };
   return out;
 }
 function jmDay(day){ return jmPlan().days[day] || []; }
+/* index66-68 : pastilles d'origine d'un cours du planning (champ `o` de l'entrée : 'e' | 'j' | 'ej').
+   « Planifier jusqu'à l'échéance » ne place QUE le tour 1 des items non commencés : une carte qu'il a placée (fixée ou validée)
+   est un E, jamais J. Ensuite, un tour proposé par la méthode des J (jm-pin, jm-done, carte grisée) est un J ; c'est un E + J
+   quand la chaîne de l'item vient de « jusqu'à l'échéance » (peChain : une entrée du planning de cet item porte déjà un E).
+   Un cours ajouté à la main n'a pas de pastille ; la méthode des J appliquée à partir de lui donne un J seul. */
+function peOrigin(k){ return 'e'; }
+function peChain(k){
+  var days = Object.keys(state.plan);
+  for(var i = 0; i < days.length; i++){ var a = state.plan[days[i]]; for(var q = 0; q < a.length; q++){ if(a[q].k === k && a[q].o && a[q].o.indexOf('e') > -1) return true; } }
+  return false;
+}
+function jmOrigin(k){ return peChain(k) ? 'ej' : 'j'; }
+/* index71-72 : pastille (point rouge à droite du numéro, index72 ; texte « Nouveau » en index71) sur les cours vus pour la première fois (tour 1), pour les distinguer des cours de révision.
+   Carte du planning : tour 1 = aucun tour validé pour l'item ET aucun cours fixé plus tôt (hors suite d'un cours commencé) ;
+   cours validé : c'est son tour n° 1. Cartes grisées : seulement celles du tour 1 (« jusqu'à l'échéance »). Les tours proposés
+   par la méthode des J sont toujours des révisions. */
+/* index72 : la pastille est un point rouge en haut à droite du numéro d'item (classe .frst sur la carte, voir CSS .slot.frst .num::after). */
+function hasEarlierSlot(k, day, s, i){
+  var days = Object.keys(state.plan);
+  for(var a = 0; a < days.length; a++){
+    var d = days[a]; if(d > day) continue;
+    var arr = state.plan[d];
+    for(var q = 0; q < arr.length; q++){
+      var e = arr[q];
+      if(e === s || e.k !== k || e.x || e.s || e.p || e.e) continue;
+      if(d < day || q < i){ if(d !== s.s) return true; }
+    }
+  }
+  return false;
+}
+function originBadges(o){
+  if(!o) return '';
+  return (o.indexOf('j') > -1 ? '<span class="jmt" title="Placé avec la méthode des J" aria-label="Méthode des J">J</span>' : '')
+       + (o.indexOf('e') > -1 ? '<span class="jmt pet" title="Placé par Planifier jusqu’à l’échéance" aria-label="Jusqu’à l’échéance">E</span>' : '');
+}
 function jmSlotHTML(x){
   var it = ITEM_BY_KEY[x.k], hue = collegeOfKey(x.k).hue, title = it[1];
   var when = x.b === 'f' ? 'J+' + x.gap : x.gap + ' j après T' + (x.n - 1);
@@ -5184,8 +5396,8 @@ function jmSlotHTML(x){
   var A = x.ex ? { pin:'ex-acc', x:'pl-rm', done:'pl-done' } : { pin:'jm-pin', x:'jm-x', done:'jm-done' }, exI = x.ex ? ' data-i="' + x.i + '"' : '';
   if(x.ex) meta = 'Tour ' + x.n + ' · proposé pour l’examen';
   if(x.pe) meta = 'Tour ' + x.n + ' · jusqu’à l’échéance';
-  var badge = x.pe ? '<span class="jmt pet" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.8h11M5.5 2.5v2.5M10.5 2.5v2.5"/><rect x="2.5" y="3.5" width="11" height="9.5" rx="2"/></svg></span>' : '<span class="jmt" aria-hidden="true">'+(x.ex ? 'E' : 'J')+'</span>';
-  return '<div class="slot jm'+(x.pe ? ' pe' : '')+(x.late ? ' late' : '')+'" data-h="'+hue+'" data-jk="'+x.k+'" data-jday="'+x.day+'"><div class="num">'+it[0]+'</div>'+
+  var badge = x.pe ? '<span class="jmt pet" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.8h11M5.5 2.5v2.5M10.5 2.5v2.5"/><rect x="2.5" y="3.5" width="11" height="9.5" rx="2"/></svg></span>' : (x.ex ? '<span class="jmt" aria-hidden="true">E</span>' : originBadges(jmOrigin(x.k)));
+  return '<div class="slot jm'+(x.n === 1 ? ' frst' : '')+(x.pe ? ' pe' : '')+(x.late ? ' late' : '')+'" data-h="'+hue+'" data-jk="'+x.k+'" data-jday="'+x.day+'"><div class="num">'+it[0]+'</div>'+
     '<div class="jmx"><button type="button" class="rmb" data-act="'+A.pin+'"'+exI+' data-k="'+x.k+'" data-day="'+x.day+'" aria-label="Fixer '+esc(title)+' dans mon planning" title="Fixer dans mon planning"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 2.5l4 4-2 .6-2.4 2.4.3 3-1 1-2.6-2.6-3.5 3.5M6.2 6.6l-.4 0 3.6-3.6"/></svg></button>'+
     '<button type="button" class="rmb" data-act="'+A.x+'"'+exI+' data-k="'+x.k+'" data-day="'+x.day+'" aria-label="Ignorer ce tour proposé pour '+esc(title)+'" title="Ignorer">'+ICON_X+'</button></div>'+
     '<div class="main"><div class="ttl">'+esc(title)+'</div><span class="meta">'+badge+meta+'</span></div>'+
@@ -5353,9 +5565,10 @@ function slotHTML(day,s,i){
   else if(!s.x && s.c && s.s) meta = 'Suite du '+short(s.s)+' · suite le '+short(s.c);
   else if(!s.x && s.c) meta = 'Commencé · suite le '+short(s.c);
   else if(s.s) meta = s.x ? meta+' · suite du '+short(s.s) : 'Suite du '+short(s.s)+' · '+meta.charAt(0).toLowerCase()+meta.slice(1);
+  var fst = !!(it && (s.x ? n === 1 : (toursOf(s.k).length === 0 && !hasEarlierSlot(s.k, day, s, i))));
   var cp = (s.c || s.s) ? chainPos(day, s) : null, chn = cp && cp.N > 1 ? '<span class="chn" title="Jour '+cp.n+' sur '+cp.N+'" aria-label="Jour '+cp.n+' sur '+cp.N+'">'+cp.n+'/'+cp.N+'</span>' : '';
-  return '<div class="slot'+(s.x?' ok':'')+(it?'':' free')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+'" data-h="'+hue+'" data-day="'+day+'" data-i="'+i+'">'+numH+chn+
-    '<div class="main"><div class="ttl mvb">'+esc(title)+'</div><span class="meta">'+meta+'</span></div>'+
+  return '<div class="slot'+(fst ? ' frst' : '')+(s.x?' ok':'')+(it?'':' free')+(s.c ? ' cont' : '')+(s.s ? ' suit' : '')+'" data-h="'+hue+'" data-day="'+day+'" data-i="'+i+'">'+numH+chn+
+    '<div class="main"><div class="ttl mvb">'+esc(title)+'</div><span class="meta">'+originBadges(s.o)+meta+'</span></div>'+
     '<div class="act"><button class="vbtn" data-act="pl-done" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(s.x?'true':'false')+'" aria-label="'+(s.x?'Annuler la validation de ':'Valider ')+esc(title)+'">'+ICON_CHECK+(s.x?'Fait':'Valider')+'</button>'+
       (s.x ? '' : '<button type="button" class="nxb'+(s.c ? ' on' : '')+'" data-act="pl-cont" data-day="'+day+'" data-i="'+i+'" aria-pressed="'+(!!s.c)+'" aria-label="'+(s.c ? 'Annuler la suite de ' : 'Pas fini : finir demain, ')+esc(title)+'" title="'+(s.c ? 'Annuler la suite' : 'Pas fini : finir demain')+'">'+ICON_NEXT+'</button>')+'</div>'+
     '<button class="rmb" data-act="pl-rm" data-day="'+day+'" data-i="'+i+'" aria-label="Retirer '+esc(title)+' du planning">'+ICON_X+'</button></div>';
@@ -5959,7 +6172,7 @@ document.addEventListener('click', function(e){
     if(errOpen){ var eta = $('er-ta'); if(eta){ eta.focus(); eta.setSelectionRange(eta.value.length, eta.value.length); } }
   } else if(a === 'ex-acc'){
     var exd = state.plan[el.dataset.day], exs = exd && exd[Number(el.dataset.i)];
-    if(exs){ delete exs.e; delete exs.p; persist(); renderAll(); }
+    if(exs){ if(exs.k) exs.o = peOrigin(exs.k); delete exs.e; delete exs.p; persist(); renderAll(); }
   } else if(a === 'er-open'){
     erShow(true, 'all');
   } else if(a === 'pe-open'){
@@ -6023,27 +6236,32 @@ document.addEventListener('click', function(e){
     if(t.length >= MAX) return;
     var n = t.length + 1, tgTip = !cfg.tgTip;
     if(tgTip){ cfg.tgTip = true; cfgSave(); }
+    /* index69 : un tour ajouté depuis Items est aussi posé, déjà validé, dans le planning au jour du tour, sauf si l'item y est déjà
+       ce jour-là (cours fixé ou validé) ou si le jour est plein (40). a:0 = la validation n'a pas créé le tour : « annuler la
+       validation » dans le planning ne le supprimera pas. Pas fait pour l'import Excel ni « un tour pour tout le collège ». */
+    var inPlan = (state.plan[td] || []).some(function(x){ return x.k === key; }), addPl = !inPlan && (state.plan[td] || []).length < 40;
     mutate(function(){
       var arr = state.tours[key] = state.tours[key] || [];
       arr.push({ d:td, s:st }); arr.sort(function(p,q){ return p.d < q.d ? -1 : p.d > q.d ? 1 : 0; });
-    }, 'Tour '+n+' enregistré · '+STAT[st]+(td === today() ? '' : ' ('+short(td)+')')+(tgTip ? '. Astuce : tu peux changer le nombre de tours souhaités par item (3 par défaut) dans les paramètres.' : ''));
+      if(addPl) (state.plan[td] = state.plan[td] || []).push({ k:key, x:1, d:td, a:0 });
+    }, 'Tour '+n+' enregistré · '+STAT[st]+(td === today() ? '' : ' ('+short(td)+')')+(addPl ? ' · ajouté au planning' : '')+(tgTip ? '. Astuce : tu peux changer le nombre de tours souhaités par item (3 par défaut) dans les paramètres.' : ''));
   } else if(a === 'jm-open'){
     jmOpen(el.dataset.id, el);
   } else if(a === 'jm-pin'){
     var pk = el.dataset.k, pday = el.dataset.day;
-    mutate(function(){ (state.plan[pday] = state.plan[pday] || []).push({ k:pk }); }, 'Fixé dans ton planning');
+    mutate(function(){ (state.plan[pday] = state.plan[pday] || []).push({ k:pk, o:jmOrigin(pk) }); }, 'Fixé dans ton planning');
   } else if(a === 'jm-done'){
     var jk = el.dataset.k, jday = el.dataset.day, jt = toursOf(jk), jvd = tourDateFor(jday);
     if(jt.length >= MAX){ toast('Cet item a déjà '+MAX+' tours.'); return; }
     var jadds = !jt.some(function(x){ return x.d === jvd; });
     mutate(function(){
-      (state.plan[jday] = state.plan[jday] || []).push({ k:jk, x:1, d:jvd, a:jadds ? 1 : 0 });
+      (state.plan[jday] = state.plan[jday] || []).push({ k:jk, x:1, d:jvd, a:jadds ? 1 : 0, o:jmOrigin(jk) });
       if(jadds){ var jarr = state.tours[jk] = state.tours[jk] || []; jarr.push({ d:jvd, s:'ok' }); jarr.sort(function(p,q){ return p.d < q.d ? -1 : p.d > q.d ? 1 : 0; }); }
     }, 'Tour '+(jt.length + (jadds ? 1 : 0))+' ajouté dans Items, daté du '+fmtMv.format(parse(jvd)));
   } else if(a === 'jm-x'){
     var xk = el.dataset.k, xprev = state.jm.x[xk];
     fxCollapse(el.closest('.slot'), function(){
-      state.jm.x[xk] = toursOf(xk).length; persist(); renderAll();
+      state.jm.x[xk] = jmXSig(xk); persist(); renderAll();
       toast('Tour proposé ignoré', function(){ if(xprev === undefined) delete state.jm.x[xk]; else state.jm.x[xk] = xprev; persist(); renderAll(); });
     });
   } else if(a === 'col-tour'){
@@ -6110,6 +6328,7 @@ document.addEventListener('click', function(e){
   } else if(a === 'pl-done'){
     var dday = el.dataset.day, di = Number(el.dataset.i), sl = slotsOf(dday)[di];
     if(!sl) return;
+    if(!sl.x && sl.k && (sl.p || sl.e) && !sl.o) sl.o = peOrigin(sl.k);   /* index66 : valider une carte provisoire garde sa pastille E / J+E */
     var vd = tourDateFor(dday);
     if(sl.x){
       /* annuler la validation (et le tour qu'elle avait ajouté, s'il y en a un) */
@@ -9127,6 +9346,7 @@ function cuMove(){
       src.splice(i, 1); if(!src.length) delete state.plan[x.day];
       if(dup) return;
       var ns = x.s.k ? { k:x.s.k } : { t:x.s.t };
+      if(x.s.o) ns.o = x.s.o;
       if(x.s.s){
         ns.s = x.s.s;
         (state.plan[x.s.s] || []).forEach(function(q){ if(q.c === x.day && sameSlot(q, x.s)) q.c = t0; });
@@ -9383,7 +9603,7 @@ function peDays(s, dl){
     if((s.wk === 'nosat' || s.wk === 'nowe') && w === 6) continue;
     if((s.wk === 'nosun' || s.wk === 'nowe') && w === 0) continue;
     var wt = 1;
-    if(s.stg && isStageDay(d)) wt = .5;
+    if(s.stg && isStageDay(d)) wt = .4;   /* index75 : 0,5 -> 0,4, comme jmDayW */
     if(s.light && kindOf(addDays(d, -1)) === 'g') wt = Math.min(wt, .6);
     out.push({ d:d, w:wt, load:0, r:0, cap:0 });
   }
@@ -9577,8 +9797,30 @@ function peClose(){
   dlgClose($('pe')); peCol = null;
   var b = peBack; peBack = null; if(b && b.isConnected && b.focus) b.focus({ preventScroll:true });
 }
+/* index73 : si des cours de tour 1 sont placés si près de la date que leur tour 2 (méthode des J) tomberait après la date choisie
+   (R.last), une fenêtre demande jusqu'où le tour 2 peut aller : aucun dépassement (limite = R.last, choix par défaut / Échap),
+   dépasser la date choisie mais pas l'échéance (limite = peDate), ou dépasser l'échéance (pas de limite). Enregistré dans
+   state.jm.pe.lim[collège], lu par jmLimit. Sans cours concernés, aucune limite propre : le réglage « avant l'échéance » reste seul. */
 function peApply(){
   var R = peCompute(); peR = R; if(!R.ok) return;
+  var sv = peS, cl = peCol, g0 = sv.jm === 'own' ? peGNorm()[0] : (sv.jm === 'off' ? 0 : (peJmHas() ? jmFor(cl.id).g[0] : 0));
+  var near = g0 ? R.placed.filter(function(pl){ return addDays(pl.day, g0) > R.last; }).length : 0;
+  if(!near){ peApplyGo(R, undefined); return; }
+  var multi = R.last !== peDate, lastS = short(R.last), dlS = short(peDate);
+  cxAsk({
+    title:'Tour 2 près de l’échéance',
+    text:near + ' cours de tour 1 sont placés si près de la date que leur tour 2 tomberait après le ' + lastS + '. Que veux-tu pour le tour 2 de ces cours ?',
+    items:[
+      '<li><b style="min-width:120px">Aucun dépassement</b><span>Le tour 2 reste avant le ' + lastS + ' (rapproché si besoin).</span></li>' +
+      (multi ? '<li><b style="min-width:120px">Dépasser la date</b><span>Le tour 2 peut passer le ' + lastS + ', jusqu’à l’échéance du ' + dlS + '.</span></li>' : '') +
+      '<li><b style="min-width:120px">Dépasser l’échéance</b><span>Le tour 2 peut passer le ' + dlS + ', de 3 jours au maximum.</span></li>'
+    ],
+    no:'Aucun dépassement', alt:multi ? 'Dépasser le ' + lastS : '', ok:'Dépasser (3 j max)',
+    onNo:function(){ peApplyGo(R, R.last); }, onAlt:function(){ peApplyGo(R, peDate); }, onOk:function(){ peApplyGo(R, addDays(peDate, 3)); }
+  });
+}
+function peApplyGo(R, lim){
+  peR = R;
   var before = JSON.stringify({ plan:state.plan, ign:state.ign, jm:state.jm, dl:state.deadlines }), col = peCol, t0 = today(), P = state.jm.pe, own = P.own, s = peS;
   state.deadlines[col.id] = peDate;
   Object.keys(state.plan).forEach(function(d){
@@ -9588,6 +9830,8 @@ function peApply(){
   });
   R.old.forEach(function(k){ delete own[k]; });
   var g = peGNorm();
+  P.lim = P.lim || {}; if(lim === undefined) delete P.lim[col.id]; else P.lim[col.id] = lim;   /* index73 */
+  P.nv = P.nv || {}; P.nv[col.id] = 1;   /* index74 : ce collège est maintenant planifié avec la version actuelle (voir peLegacy) */
   R.placed.forEach(function(p){
     (state.plan[p.day] = state.plan[p.day] || []).push({ k:p.k, p:1 });
     if(s.jm === 'own') own[p.k] = { g:g.slice(), b:s.ob };
@@ -9623,7 +9867,7 @@ function peFixAll(){
     ok:'Tout fixer (' + n + ')', no:'Annuler', focus:'ok',
     onOk:function(){
       var ids = [];
-      mutate(function(){ Object.keys(state.plan).forEach(function(d){ state.plan[d].forEach(function(x){ if(x.p && !x.x && x.k){ delete x.p; ids.push(x.k); } }); }); }, n + ' carte' + (n > 1 ? 's' : '') + ' fixée' + (n > 1 ? 's' : '') + ' dans ton planning');
+      mutate(function(){ Object.keys(state.plan).forEach(function(d){ state.plan[d].forEach(function(x){ if(x.p && !x.x && x.k){ delete x.p; x.o = peOrigin(x.k); ids.push(x.k); } }); }); }, n + ' carte' + (n > 1 ? 's' : '') + ' fixée' + (n > 1 ? 's' : '') + ' dans ton planning');
     }
   });
 }
