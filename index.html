@@ -1,4 +1,179 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+/* ===== index85 : Heatmap des items de référence (§J41) =====
+   Bouton rond sous le carnet d'erreurs (.st-btn.hm-btn) ; il ouvre une feuille de verre (.hm-panel) qui sort du bouton
+   (iPad/Mac : la feuille grandit depuis le bouton ; téléphone : feuille du bas qu'on peut faire glisser vers le bas).
+   Couleurs des cases = variables --hm-c0…c3 (0 non vu, 1 = 1-2 tours, 2 = ≥3 tours, 3 = à réviser) ; --hm-ring = anneau de survol. */
+:root{--hm-btn:#27AE60;--hm-c0:rgba(120,120,128,.13);--hm-c1:#EBBE45;--hm-c2:#55B560;--hm-c3:#E5873E;--hm-ring:#9A7A2E;--hm-fill:rgba(120,120,128,.14);--hm-thumb:rgba(120,120,128,.2);--hm-ez:cubic-bezier(.2,.85,.25,1);--hm-spring:cubic-bezier(.3,1.25,.5,1);
+  --hm-glass:linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.22)),color-mix(in srgb,var(--surface) 76%,transparent);
+  --hm-edge:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 .5px rgba(255,255,255,.55),0 0 0 .5px rgba(0,0,0,.08),0 44px 100px -26px rgba(20,24,50,.5)}
+:root[data-theme="dark"]{--hm-btn:#4CC77A;--hm-c0:rgba(235,235,245,.13);--hm-c1:#DDB23F;--hm-c2:#4FB05B;--hm-c3:#EC9450;--hm-ring:#E4C46E;--hm-fill:rgba(235,235,245,.12);--hm-thumb:rgba(235,235,245,.2);
+  --hm-glass:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),#1B1B1E;
+  --hm-edge:inset 0 1px 0 rgba(255,255,255,.14),0 0 0 .5px rgba(255,255,255,.1),0 44px 100px -26px rgba(0,0,0,.8)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--hm-btn:#4CC77A;--hm-c0:rgba(235,235,245,.13);--hm-c1:#DDB23F;--hm-c2:#4FB05B;--hm-c3:#EC9450;--hm-ring:#E4C46E;--hm-fill:rgba(235,235,245,.12);--hm-thumb:rgba(235,235,245,.2);
+  --hm-glass:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02)),#1B1B1E;
+  --hm-edge:inset 0 1px 0 rgba(255,255,255,.14),0 0 0 .5px rgba(255,255,255,.1),0 44px 100px -26px rgba(0,0,0,.8)}}
+.st-btn.hm-btn{top:88px;color:var(--hm-btn)}
+.st-btn.hm-btn[aria-expanded="true"]{background:var(--hm-btn)!important;color:#fff}
+.hmid{min-height:132px}
+@media (min-width:701px){.hmid .capline{padding-right:52px}}
+.hm-scrim{position:fixed;inset:0;z-index:70;background:color-mix(in srgb,#000 24%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);opacity:0;transition:opacity .4s var(--hm-ez)}
+.hm-scrim.on{opacity:1}
+.hm-panel{position:fixed;z-index:71;inset:0;margin:auto;width:min(1000px,calc(100vw - 32px));height:fit-content;max-height:calc(100dvh - 40px);display:flex;flex-direction:column;border-radius:30px;overflow:hidden;color:var(--ink);outline:none;
+  background:var(--hm-glass);-webkit-backdrop-filter:blur(44px) saturate(190%);backdrop-filter:blur(44px) saturate(190%);box-shadow:var(--hm-edge);visibility:hidden;pointer-events:none;will-change:transform}
+.hm-panel.on{visibility:visible;pointer-events:auto}
+.hm-in{display:flex;flex-direction:column;min-height:0;flex:1}
+.hm-grab{display:none}
+.hm-h{display:flex;align-items:center;justify-content:space-between;gap:12px 20px;flex-wrap:wrap;padding:24px 26px 14px}
+.hm-h h2{margin:0;font:700 26px/1.15 var(--f-body);letter-spacing:-.028em;font-variant-numeric:tabular-nums}
+.hm-h h2 em{font-style:normal;font-weight:700}
+.hm-hr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.hm-leg{display:flex;align-items:center;gap:2px;flex-wrap:wrap}
+.hm-lg{appearance:none;border:0;background:none;display:flex;align-items:center;gap:8px;height:36px;padding:0 12px 0 9px;border-radius:99px;font:500 15px var(--f-body);color:var(--ink2);cursor:pointer;transition:background-color .25s,color .25s,transform .2s var(--hm-ez)}
+.hm-lg:hover{background:var(--hm-fill)}
+.hm-lg:active{transform:scale(.96)}
+.hm-lg i{width:20px;height:20px;border-radius:50%;flex:none;background:var(--hm-c0)}
+.hm-lg i.s1{background:var(--hm-c1)}.hm-lg i.s2{background:var(--hm-c2)}.hm-lg i.s3{background:var(--hm-c3)}
+.hm-lg b{font:600 12.5px var(--f-body);font-variant-numeric:tabular-nums;color:var(--ink2);opacity:.75}
+.hm-lg[aria-pressed="true"]{background:var(--hm-fill);color:var(--ink)}
+.hm-lg:focus-visible,.hm-seg button:focus-visible,.hm-x:focus-visible{outline:2px solid var(--hm-ring);outline-offset:2px}
+.hm-seg{position:relative;display:flex;padding:3px;border-radius:99px;box-shadow:inset 0 0 0 1px var(--line);isolation:isolate}
+.hm-seg::before{content:"";position:absolute;z-index:-1;top:3px;left:3px;width:calc(50% - 3px);height:calc(100% - 6px);border-radius:99px;background:var(--hm-thumb);transform:translateX(calc(var(--i,0) * 100%));transition:transform .5s var(--hm-spring)}
+.hm-seg button{appearance:none;border:0;background:none;width:50px;height:42px;border-radius:99px;display:grid;place-items:center;color:var(--ink);cursor:pointer;opacity:.62;transition:opacity .25s,transform .2s var(--hm-ez)}
+.hm-seg button[aria-pressed="true"]{opacity:1}
+.hm-seg button:active{transform:scale(.92)}
+.hm-x{appearance:none;border:0;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--hm-fill);color:var(--ink2);cursor:pointer;transition:transform .2s var(--hm-ez),color .2s}
+.hm-x:hover{color:var(--ink)}.hm-x:active{transform:scale(.9)}
+.hm-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:10px 30px 6px;transition:opacity .22s}
+.hm-body.swap{opacity:0}
+.hm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(28px,1fr));gap:5px;padding:12px 4px 14px;margin:-6px -4px 0}
+.hm-c{appearance:none;border:0;padding:0;margin:0;aspect-ratio:1;border-radius:24%;background:var(--hm-c0);cursor:pointer;position:relative;
+  transition:background-color .4s,transform .22s var(--hm-spring),box-shadow .2s,opacity .35s;animation:hm-pop .62s var(--hm-ez) backwards;animation-delay:calc(var(--d,0ms) + 170ms)}
+.hm-c.s1{background:var(--hm-c1)}.hm-c.s2{background:var(--hm-c2)}.hm-c.s3{background:var(--hm-c3)}
+.hm-c:hover,.hm-c:focus-visible,.hm-c.sel{outline:none;transform:scale(1.55);box-shadow:0 0 0 1.6px var(--hm-ring);z-index:3}
+.hm-c:active{transform:scale(1.4)}
+.hm-grid[data-f="0"] .hm-c:not(.s0),.hm-grid[data-f="1"] .hm-c:not(.s1),.hm-grid[data-f="2"] .hm-c:not(.s2),.hm-grid[data-f="3"] .hm-c:not(.s3){opacity:.16}
+.hm-noanim .hm-c,.hm-noanim .hm-r{animation:none}
+@keyframes hm-pop{from{opacity:0;transform:scale(.3)}}
+@keyframes hm-row{from{opacity:0;transform:translateY(8px)}}
+.hm-q{appearance:none;display:block;width:100%;height:40px;border-radius:12px;border:0;background:var(--hm-fill);color:var(--ink);padding:0 14px;margin:2px 0 10px;font:500 15px var(--f-body);box-sizing:border-box}
+.hm-q::placeholder{color:var(--ink2)}
+.hm-q:focus{outline:2px solid var(--hm-ring);outline-offset:1px}
+.hm-list{display:grid;gap:1px;padding-bottom:10px}
+.hm-r{appearance:none;border:0;background:none;display:grid;grid-template-columns:14px 44px 1fr auto;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;border-radius:14px;font:500 15px var(--f-body);color:var(--ink);cursor:pointer;animation:hm-row .45s var(--hm-ez) backwards;animation-delay:calc(var(--d,0ms) + 120ms);transition:background-color .2s}
+.hm-r:hover,.hm-r:focus-visible{background:var(--hm-fill);outline:none}
+.hm-r i{width:14px;height:14px;border-radius:50%;background:var(--hm-c0)}
+.hm-r i.s1{background:var(--hm-c1)}.hm-r i.s2{background:var(--hm-c2)}.hm-r i.s3{background:var(--hm-c3)}
+.hm-r .n{color:var(--ink2);font-variant-numeric:tabular-nums}
+.hm-r .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-r .m{color:var(--ink2);font-size:13px;white-space:nowrap}
+.hm-empty{margin:36px 0;text-align:center;color:var(--ink2);font:500 15px var(--f-body)}
+.hm-f{padding:10px 30px 24px;display:grid;gap:10px}
+.hm-bar{display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px;background:none}
+.hm-bar i{display:block;height:100%;min-width:0;transition:width .7s var(--hm-ez);background:var(--hm-c0)}
+.hm-bar i.s1{background:var(--hm-c1)}.hm-bar i.s2{background:var(--hm-c2)}.hm-bar i.s3{background:var(--hm-c3)}
+.hm-note{display:flex;justify-content:space-between;gap:6px 18px;flex-wrap:wrap;font:500 13px/1.45 var(--f-body);color:var(--ink2)}
+.hm-note b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.hm-tip{position:absolute;z-index:6;left:0;top:0;max-width:min(380px,calc(100% - 20px));padding:12px 16px;border-radius:16px;pointer-events:none;background:var(--surface);color:var(--ink);
+  box-shadow:0 0 0 .5px rgba(0,0,0,.07),0 14px 34px -10px rgba(0,0,0,.34);opacity:0;visibility:hidden;transform:translateY(6px) scale(.97);transition:opacity .16s,transform .24s var(--hm-ez),visibility 0s .16s}
+.hm-tip.on{opacity:1;visibility:visible;transform:none;transition:opacity .16s,transform .24s var(--hm-ez),visibility 0s}
+.hm-tip b{display:block;font:600 16px/1.32 var(--f-body);letter-spacing:-.01em}
+.hm-tip span{display:block;margin-top:3px;font:500 15px/1.35 var(--f-body);color:var(--ink2)}
+.hm-tip em{font-style:normal;font-weight:600;color:var(--hm-c3)}
+.hm-tip u{display:block;margin-top:6px;text-decoration:none;font:500 12.5px var(--f-body);color:var(--ink2);opacity:.85}
+:root[data-theme="dark"] .hm-tip{background:#2C2C30}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hm-tip{background:#2C2C30}}
+@media (max-width:900px){.hm-h{padding:22px 22px 12px}.hm-body{padding:8px 22px 4px}.hm-f{padding:8px 22px 22px}}
+@media (max-width:700px){
+  .st-btn.hm-btn{top:-2px!important;right:84px!important}
+  .hmid .kick{padding-right:126px!important}
+  .hmid{min-height:0}
+  .hm-panel{inset:auto 0 0 0;margin:0;width:100%;max-height:90dvh;border-radius:28px 28px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .hm-grab{display:block;width:38px;height:5px;border-radius:99px;margin:9px auto 0;background:color-mix(in srgb,var(--ink2) 45%,transparent);touch-action:none;flex:none}
+  .hm-h{padding:12px 18px 8px;touch-action:none}
+  .hm-h h2{font-size:22px}
+  .hm-hr{width:100%;justify-content:space-between}
+  .hm-leg{gap:0;margin-left:-6px}
+  .hm-lg{height:32px;padding:0 8px 0 6px;font-size:13.5px;gap:6px}
+  .hm-lg i{width:16px;height:16px}
+  .hm-lg b{display:none}
+  .hm-seg button{width:42px;height:36px}
+  .hm-x{display:none}
+  .hm-body{padding:6px 18px 2px}
+  .hm-grid{grid-template-columns:repeat(auto-fill,minmax(22px,1fr));gap:4px}
+  .hm-c:hover,.hm-c:focus-visible,.hm-c.sel{transform:scale(1.4)}
+  .hm-f{padding:6px 18px 16px}
+  .hm-r{grid-template-columns:12px 38px 1fr auto;gap:10px;padding:10px 6px}
+}
+@media (prefers-reduced-motion:reduce){.hm-c,.hm-r,.hm-seg::before,.hm-bar i,.hm-scrim,.hm-tip,.hm-body{animation:none!important;transition:none!important}}
+@media (prefers-reduced-transparency:reduce){.hm-panel{background:var(--surface);-webkit-backdrop-filter:none;backdrop-filter:none}.hm-scrim{-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+/* ===== index86 : Assistant IA flottant (§J42) =====
+   Bouton rond « IA » en bas à droite, visible dans toute l'application une fois connecté (body[data-auth="in"]).
+   Il ouvre un panneau de discussion (.ia-panel) : feuille du bas sur téléphone, fenêtre ancrée au bouton sur ordinateur/tablette.
+   Couleurs : --hema (accent) + variables du thème, donc clair/sombre automatiques. Tout est préfixé .ia- pour ne rien toucher d'autre. */
+.ia-fab{position:fixed;z-index:58;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));height:52px;min-width:52px;padding:0 18px 0 15px;border:0;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--hema);color:var(--on-fill);font:700 14px var(--f-body);letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 12px 28px -10px color-mix(in srgb,var(--hema) 75%,transparent),0 2px 6px rgba(0,0,0,.18);transition:transform .22s cubic-bezier(.3,1.25,.5,1),box-shadow .22s}
+.ia-fab:hover{transform:translateY(-2px)}
+.ia-fab:active{transform:scale(.95)}
+.ia-fab:focus-visible,.ia-ib:focus-visible,.ia-send:focus-visible,.ia-chip:focus-visible,.ia-ta:focus-visible{outline:2px solid var(--hema);outline-offset:2px}
+.ia-fab svg{flex:none}
+body:not([data-auth="in"]) .ia-fab,body:not([data-auth="in"]) .ia-panel{display:none!important}
+.ia-panel{position:fixed;z-index:97;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(84px + env(safe-area-inset-bottom,0px));width:min(430px,calc(100vw - 32px));height:min(660px,calc(100dvh - 120px));display:flex;flex-direction:column;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow-pop);overflow:hidden;transform-origin:100% 100%;animation:ia-in .3s cubic-bezier(.2,.85,.25,1)}
+@keyframes ia-in{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.ia-h{display:flex;align-items:center;gap:6px;padding:14px 12px 12px 18px;border-bottom:1px solid var(--line2)}
+.ia-ht{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ia-ht strong{font:700 16px/1.2 var(--f-body);letter-spacing:-.01em}
+.ia-ctx{font:500 12px/1.3 var(--f-body);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ia-ib{appearance:none;border:0;background:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex:none;color:var(--ink2);cursor:pointer;transition:background-color .2s,color .2s}
+.ia-ib:hover{background:var(--line2);color:var(--ink)}
+.ia-log{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:16px 16px 8px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.ia-empty{margin:auto 0;padding:8px 6px;text-align:center;color:var(--ink2);font:500 14px/1.5 var(--f-body)}
+.ia-empty b{display:block;color:var(--ink);font:700 17px var(--f-body);margin-bottom:6px;letter-spacing:-.01em}
+.ia-m{max-width:92%;font:400 14.5px/1.5 var(--f-body);word-wrap:break-word;overflow-wrap:anywhere}
+.ia-m.u{align-self:flex-end;background:color-mix(in srgb,var(--hema) 15%,var(--surface));padding:9px 13px;border-radius:18px 18px 5px 18px;white-space:pre-wrap}
+.ia-m.u img{display:block;max-width:100%;max-height:180px;border-radius:12px;margin-bottom:6px}
+.ia-m.a{align-self:flex-start;background:var(--bg);padding:10px 14px;border-radius:18px 18px 18px 5px;max-width:100%}
+.ia-m.a>:first-child{margin-top:0}.ia-m.a>:last-child{margin-bottom:0}
+.ia-m p{margin:.5em 0}
+.ia-m h4{margin:.9em 0 .3em;font:700 14px/1.3 var(--f-body);letter-spacing:.01em;color:var(--hema)}
+.ia-m ul,.ia-m ol{margin:.4em 0;padding-left:1.25em}
+.ia-m li{margin:.2em 0}
+.ia-m code{font:500 12.5px var(--f-mono);background:var(--line2);padding:1px 5px;border-radius:6px}
+.ia-m hr{border:0;border-top:1px solid var(--line);margin:.8em 0}
+.ia-tw{overflow-x:auto;margin:.5em 0}
+.ia-m table{border-collapse:collapse;font-size:13px;min-width:100%}
+.ia-m th,.ia-m td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.ia-m th{background:var(--line2);font-weight:700}
+.ia-m.err{background:var(--low-soft);color:var(--ink)}
+.ia-m.err button{appearance:none;border:0;margin-top:8px;padding:6px 14px;border-radius:99px;background:var(--hema);color:var(--on-fill);font:600 13px var(--f-body);cursor:pointer}
+.ia-nt{font-size:12.5px;color:var(--ink2)}
+.ia-dots{display:inline-flex;gap:4px;padding:4px 2px}
+.ia-dots i{width:7px;height:7px;border-radius:50%;background:var(--ink2);opacity:.4;animation:ia-b 1.1s infinite ease-in-out}
+.ia-dots i:nth-child(2){animation-delay:.15s}.ia-dots i:nth-child(3){animation-delay:.3s}
+@keyframes ia-b{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-4px);opacity:1}}
+.ia-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 10px;scrollbar-width:none}
+.ia-chips::-webkit-scrollbar{display:none}
+.ia-chip{appearance:none;flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 13px;border-radius:99px;font:600 13px var(--f-body);cursor:pointer;white-space:nowrap;transition:background-color .2s,border-color .2s}
+.ia-chip:hover{background:var(--line2);border-color:var(--hema)}
+.ia-f{padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line2);display:flex;flex-direction:column;gap:6px}
+.ia-prev{display:flex;align-items:center;gap:10px;padding:2px 4px}
+.ia-prev img{width:44px;height:44px;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.ia-prev button{appearance:none;border:0;background:none;color:var(--ink2);font:600 12.5px var(--f-body);cursor:pointer;text-decoration:underline}
+.ia-row{display:flex;align-items:flex-end;gap:6px}
+.ia-ta{flex:1;min-width:0;resize:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:20px;padding:9px 14px;font:400 16px/1.4 var(--f-body);max-height:140px;box-sizing:border-box}
+.ia-ta::placeholder{color:var(--ink2)}
+.ia-send{appearance:none;border:0;width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--hema);color:var(--on-fill);cursor:pointer;transition:transform .2s,opacity .2s}
+.ia-send:active{transform:scale(.92)}
+.ia-send:disabled{opacity:.4;cursor:default}
+.ia-note{margin:0;text-align:center;font:500 11.5px var(--f-body);color:var(--ink2)}
+@media (max-width:700px){
+  .ia-fab{padding:0;width:52px}
+  .ia-fab span{display:none}
+  .ia-fab[aria-expanded="true"]{display:none}
+  .ia-panel{left:0;right:0;bottom:var(--ia-off,0px);width:auto;height:min(calc(var(--ia-h,100dvh) - 10px),780px);border-radius:22px 22px 0 0;border-bottom:0;transform-origin:50% 100%;animation-name:ia-up}
+  @keyframes ia-up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+}
+@media (prefers-reduced-motion:reduce){.ia-panel{animation:none}.ia-dots i{animation:none;opacity:.7}.ia-log{scroll-behavior:auto}.ia-fab{transition:none}}
+</style></head><body>
 <!-- ======================================================================
   MÉDISAM : PLAN DU FICHIER (commentaires de repérage, sans effet sur la page)
   Un seul fichier, dans cet ordre :
@@ -14,6 +189,22 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index87 : le bouton IA (§J42) s'affiche TOUJOURS une fois connecté ; si la capacité « sample » est indisponible dans la vue (fichier HTML seul,
+              autorisation refusée), le panneau l'explique au lieu de cacher le bouton. Attente de window.claude jusqu'à 6 s au chargement.
+    index86 : NOUVEAU bouton rond « IA » (bas droite, visible partout une fois connecté) + panneau de discussion (§J42, script indépendant
+              en fin de fichier, CSS « index86 » en fin de feuille de style). L'IA explique une notion de cours, une erreur de QCM (énoncé collé ou
+              capture jointe), crée des QCM / fiches flash et interroge Sam. Réponses en streaming, bouton Stop, format fixe avec niveau de confiance,
+              contexte automatique (onglet, collège affiché). Utilise la capacité « sample » des artefacts Claude (déclarée avec images) :
+              hors artefact Claude (fichier .html seul), le bouton n'apparaît pas. '.ia-panel,.ia-fab' ajoutés à NOTIP (info-bulles §J40).
+    index85 : NOUVEAU bouton rond « Heatmap » (3e pastille, sous le carnet d'erreurs ; hmBtnHTML dans stBtnHTML). Il ouvre une feuille de verre
+              (§J41) : une case par item de référence (★ jaune, une case par clé, donc 385 cases), colorée selon les tours : gris = non vu,
+              jaune = 1-2 tours, vert = ≥ 3 tours, orange = à réviser (dernier tour il y a plus de REVIEW_DAYS = 14 jours, quelle que soit la note du tour ; l'orange
+              passe avant jaune/vert). Survol = nom de l'item + nombre de vues ; clic = ouvre l'item ; légende cliquable (filtre) ; vue Liste
+              avec recherche ; barre de progression en bas. La feuille sort du bouton (WAAPI) ; sur téléphone feuille du bas, glissable.
+              CORRECTIF : stGo (§J30) contenait « editor = null » alors que `editor` n'existe plus nulle part : ReferenceError en mode strict, donc
+              « Ouvrir l'item » (carnet d'erreurs, statistiques) n'allait pas jusqu'au bout. Ligne retirée.
+              Le bouton a sa propre couleur (--hm-btn, vert) pour se distinguer des stats (couleur du collège) et du carnet (rouge).
+              CSS : bloc « index85 » en fin de feuille de style. '.hm-c' ajouté à NOTIP (info-bulles §J40).
     index81 : message discret sous chaque collège ouvert (onglet Items) : « N cours non planifiés » ou « Tous les cours sont planifiés »
               (colUnplanned, §J renderList ; CSS .colpn). Un cours est « planifié » s'il a une carte dans le planning, quelle qu'en soit
               l'origine ; les items « non prévus » et déjà commencés ne comptent pas.
@@ -2931,6 +3122,7 @@ window.MEDISAM_CONFIG = {
      §J34  Aperçu sans compte (démo)
      §J35  Décompte jusqu'au 21 octobre 2028
      §J36  Démarrage
+     §J42  Assistant IA flottant (script indépendant, en fin de fichier, après le script principal)
      §J37  Rattrapage d'hier, fenêtre #cx, sauvegarde .json (placée juste avant §J36 dans le fichier)
 
    FORME DE state (§J6)
@@ -4363,7 +4555,7 @@ function erBtnHTML(){
   var n = errCount();
   return '<button type="button" class="st-btn er-btn" data-act="er-open" aria-label="Ouvrir mon carnet d’erreurs" data-tip="Carnet d’erreurs'+(n ? ' : '+n+' note'+(n>1?'s':'') : '')+'">'+ICON_ERR_S.replace('width="13" height="13"','width="18" height="18"')+'</button>';
 }
-function stBtnHTML(name){ return '<button type="button" class="st-btn" id="st-btn" aria-haspopup="dialog" aria-expanded="'+(stOpen?'true':'false')+'" aria-label="Statistiques de '+esc(name)+'" title="Statistiques"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3.5 15V10M7.2 15V6M10.8 15V8.5M14.5 15V3"/></svg></button>'+erBtnHTML(); }
+function stBtnHTML(name){ return '<button type="button" class="st-btn" id="st-btn" aria-haspopup="dialog" aria-expanded="'+(stOpen?'true':'false')+'" aria-label="Statistiques de '+esc(name)+'" title="Statistiques"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3.5 15V10M7.2 15V6M10.8 15V8.5M14.5 15V3"/></svg></button>'+erBtnHTML()+hmBtnHTML(); }
 function renderHero(){
   if(tab === 'plan'){ renderHeroPlan(); if(stOpen) setTimeout(function(){ if(stOpen){ $('st-pop').innerHTML = stHTML(); stPlace(); } }, 0); return; }
   if(stOpen) setTimeout(function(){ if(stOpen){ $('st-pop').innerHTML = stHTML(); stPlace(); } }, 0);
@@ -6205,6 +6397,8 @@ document.addEventListener('click', function(e){
   } else if(a === 'ex-acc'){
     var exd = state.plan[el.dataset.day], exs = exd && exd[Number(el.dataset.i)];
     if(exs){ if(exs.k) exs.o = peOrigin(exs.k); delete exs.e; delete exs.p; persist(); renderAll(); }
+  } else if(a === 'hm-open'){
+    hmShow(!hmIsOpen, el);
   } else if(a === 'er-open'){
     erShow(true, 'all');
   } else if(a === 'pe-open'){
@@ -8101,7 +8295,7 @@ function stGo(key){
   var it = ITEM_BY_KEY[key]; if(!it) return;
   stShow(false);
   if(tab !== 'items' || (selCol !== 'all' && selCol !== it.col)){ selCol = it.col; lsSet(LS_COL, selCol); }
-  tab = 'items'; lsSet(LS_TAB, tab); openCols[it.col] = true; filter = 'all'; editor = null; $('q').value = '';
+  tab = 'items'; lsSet(LS_TAB, tab); openCols[it.col] = true; filter = 'all'; $('q').value = '';
   if(refOnly && it.star !== 'ref'){ refOnly = false; lsSet(LS_REF, '0'); }
   renderAll();
   var dot = document.querySelector('#list [data-num="'+(window.CSS && CSS.escape ? CSS.escape(key) : key)+'"]'), row = dot && dot.closest('.item');
@@ -10085,7 +10279,7 @@ function erClick(e){
     return t;
   }
   /* Exceptions (index49) : pas de bulle sur ces éléments, ni la bulle native du navigateur (title retiré). */
-  var NOTIP = '.refchip,.jmb,.jmnext,.colt,#chips .chip,.rmb,.nbtn';
+  var NOTIP = '.refchip,.jmb,.jmnext,.colt,#chips .chip,.rmb,.nbtn,.hm-c,.ia-panel,.ia-fab';
   function find(n){
     var el = n && n.closest ? n.closest(SEL) : null;
     if(el && el.closest(NOTIP)){ el.removeAttribute('title'); el.removeAttribute('data-tip'); return null; }
@@ -10134,11 +10328,549 @@ function erClick(e){
   window.addEventListener('scroll', hide, { passive:true });
 })();
 
+/* ======================================================================
+   §J41 — Heatmap des items de référence (index85)
+   Gère : bouton rond (hmBtnHTML, sous le carnet d'erreurs) + feuille « Heatmap des items » : une case par item de référence
+   (it.star === 'ref', une case par clé keyOf, donc un item présent dans 2 collèges = 2 cases « (cardio) », « (pneumo) »…),
+   vue Grille ou Liste, légende cliquable (filtre), info-bulle au survol, pastille de progression en bas.
+   Couleur d'une case (hmStat) : ne dépend QUE du nombre de tours et de leur date, jamais de la note (ok/mid/low). 0 = jamais vu (gris) ;
+   3 = À RÉVISER (orange) si le dernier tour date de plus de REVIEW_DAYS (14) jours ; sinon 2 = vert si ≥ 3 tours ; sinon 1 = jaune (1-2 tours).
+   L'orange l'emporte sur jaune/vert.
+   Données : lues seulement (state.tours via toursOf), rien n'est écrit. Clic sur une case = stGo(clé) (ouvre l'item dans l'onglet Items).
+   Utilise : §J5 §J6 (toursOf, isDue, lastDate, keyOf, ITEM_BY_KEY), §J30 (stGo, stShow), agoLabel, reducedFx, EZ
+   Utilisé par : le gestionnaire de clics data-act="hm-open" (§J22), stBtnHTML (§J30)
+   ⚠ Les info-bulles globales (§J40) ne doivent pas doubler celle-ci : '.hm-c' est dans la liste NOTIP.
+   ⚠ Animation : ouverture/fermeture en WAAPI (hmAnimIn/hmAnimOut), la feuille sort du bouton (grand écran) ou glisse du bas (≤ 700 px).
+   ====================================================================== */
+var hmIsOpen = false, hmView = 'grid', hmFilter = null, hmQ = '', hmFrom = null, hmSel = null, hmAnim = null, hmDrag = null, hmReady = 0;
+var HM_LAB = ['Non vu', '1-2', '≥3', 'À réviser'];
+var HM_NAME = ['Non vu', '1-2 tours', '3 tours ou plus', 'À réviser'];
+var ICON_HM = '<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="4" height="4" rx="1.2" opacity=".3"/><rect x="7" y="2" width="4" height="4" rx="1.2"/><rect x="12" y="2" width="4" height="4" rx="1.2" opacity=".6"/><rect x="2" y="7" width="4" height="4" rx="1.2" opacity=".75"/><rect x="7" y="7" width="4" height="4" rx="1.2" opacity=".3"/><rect x="12" y="7" width="4" height="4" rx="1.2"/><rect x="2" y="12" width="4" height="4" rx="1.2"/><rect x="7" y="12" width="4" height="4" rx="1.2" opacity=".6"/><rect x="12" y="12" width="4" height="4" rx="1.2" opacity=".3"/></svg>';
+var HM_I_GRID = '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="6.5" height="6.5" rx="1.8"/><rect x="12.5" y="3" width="6.5" height="6.5" rx="1.8"/><rect x="3" y="12.5" width="6.5" height="6.5" rx="1.8"/><rect x="12.5" y="12.5" width="6.5" height="6.5" rx="1.8"/></svg>';
+var HM_I_LIST = '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M8.5 5.5H19M8.5 11H19M8.5 16.5H19"/><circle cx="3.9" cy="5.5" r=".6"/><circle cx="3.9" cy="11" r=".6"/><circle cx="3.9" cy="16.5" r=".6"/></svg>';
+function hmBtnHTML(){
+  return '<button type="button" class="st-btn hm-btn" data-act="hm-open" aria-haspopup="dialog" aria-expanded="'+(hmIsOpen?'true':'false')+'" aria-label="Ouvrir la heatmap des items" data-tip="Heatmap des items">'+ICON_HM+'</button>';
+}
+(function(){
+  var sc = document.createElement('div'); sc.id = 'hm-scrim'; sc.className = 'hm-scrim'; sc.hidden = true;
+  var p = document.createElement('div'); p.id = 'hm-panel'; p.className = 'hm-panel'; p.tabIndex = -1; p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-labelledby', 'hm-title'); p.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(sc); document.body.appendChild(p);
+  sc.addEventListener('click', function(){ hmShow(false); });
+  p.addEventListener('click', hmClick);
+  p.addEventListener('input', function(e){ if(e.target.classList.contains('hm-q')){ hmQ = e.target.value; hmListFill(false); } });
+  p.addEventListener('mouseover', function(e){ var c = e.target.closest && e.target.closest('.hm-c'); if(c && !hmTouchy() && Date.now() > hmReady) hmTip(c); });
+  p.addEventListener('mouseout', function(e){ var c = e.target.closest && e.target.closest('.hm-c'); if(c && !hmTouchy() && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.hm-c'))) hmTipHide(); });
+  p.addEventListener('focusin', function(e){ var c = e.target.closest && e.target.closest('.hm-c'); if(c){ hmRove(c); if(!hmTouchy()) hmTip(c); } });
+  p.addEventListener('focusout', function(e){ if(!hmTouchy() && e.target.closest && e.target.closest('.hm-c') && !hmSel) hmTipHide(); });
+  p.addEventListener('keydown', hmKey);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && hmIsOpen && !cxCb){ e.preventDefault(); hmShow(false); } });
+  /* Téléphone : on ferme la feuille en la faisant glisser vers le bas par la poignée ou l'en-tête */
+  p.addEventListener('pointerdown', function(e){
+    if(!hmMobile() || e.pointerType === 'mouse' || !e.target.closest('.hm-grab,.hm-h') || e.target.closest('button,input')) return;
+    hmDrag = { y:e.clientY, dy:0 }; try{ p.setPointerCapture(e.pointerId); }catch(er){}
+  });
+  p.addEventListener('pointermove', function(e){
+    if(!hmDrag) return; hmDrag.dy = Math.max(0, e.clientY - hmDrag.y); p.style.transform = 'translateY(' + hmDrag.dy + 'px)';
+  });
+  function dragEnd(){
+    if(!hmDrag) return; var dy = hmDrag.dy; hmDrag = null;
+    if(dy > 110){ hmShow(false, dy); }
+    else { p.style.transform = ''; if(dy && p.animate && !reducedFx()) p.animate([{ transform:'translateY(' + dy + 'px)' }, { transform:'none' }], { duration:380, easing:EZ }); }
+  }
+  p.addEventListener('pointerup', dragEnd); p.addEventListener('pointercancel', dragEnd);
+})();
+function hmMobile(){ return !!(window.matchMedia && window.matchMedia('(max-width: 700px)').matches); }
+function hmTouchy(){ return !!(window.matchMedia && window.matchMedia('(hover: none)').matches); }
+function hmRefItems(){
+  var seen = {}, out = [];
+  COLLEGES.forEach(function(c){ c.items.forEach(function(it){ var k = keyOf(it); if(it.star === 'ref' && !seen[k]){ seen[k] = 1; out.push(it); } }); });
+  out.sort(function(a, b){ return (a[0] - b[0]) || keyOf(a).localeCompare(keyOf(b)); });
+  return out;
+}
+function hmStat(it){
+  var k = keyOf(it), t = toursOf(k);
+  if(!t.length) return 0;
+  if(daysBetween(lastDate(k), today()) > REVIEW_DAYS) return 3;
+  return t.length >= 3 ? 2 : 1;
+}
+function hmData(){
+  var items = hmRefItems(), cnt = [0, 0, 0, 0];
+  var rows = items.map(function(it){ var s = hmStat(it); cnt[s]++; return { it:it, k:keyOf(it), s:s }; });
+  return { rows:rows, cnt:cnt };
+}
+function hmShell(){
+  var d = hmData(), p = $('hm-panel');
+  p.innerHTML = '<div class="hm-grab" aria-hidden="true"></div><div class="hm-in">'+
+    '<header class="hm-h"><h2 id="hm-title">Heatmap des items <em>('+d.rows.length+')</em></h2>'+
+    '<div class="hm-hr"><div class="hm-leg" id="hm-leg" role="group" aria-label="Filtrer par état"></div>'+
+    '<div class="hm-seg" id="hm-seg" role="group" aria-label="Affichage" style="--i:'+(hmView === 'list' ? 1 : 0)+'">'+
+      '<button type="button" data-hm-v="grid" aria-pressed="'+(hmView === 'grid')+'" aria-label="Vue grille">'+HM_I_GRID+'</button>'+
+      '<button type="button" data-hm-v="list" aria-pressed="'+(hmView === 'list')+'" aria-label="Vue liste">'+HM_I_LIST+'</button></div>'+
+    '<button type="button" class="hm-x" data-hm-x="1" aria-label="Fermer">'+ICON_X+'</button></div></header>'+
+    '<div class="hm-body" id="hm-body"></div><footer class="hm-f" id="hm-f"></footer></div><div class="hm-tip" id="hm-tip" role="tooltip"></div>';
+  hmLegend(d); hmBody(true, d); hmFoot(d);
+}
+function hmLegend(d){
+  d = d || hmData();
+  $('hm-leg').innerHTML = [0, 1, 2, 3].map(function(s){
+    return '<button type="button" class="hm-lg" data-hm-f="'+s+'" aria-pressed="'+(hmFilter === s)+'" aria-label="'+HM_NAME[s]+' : '+d.cnt[s]+' item'+(d.cnt[s] > 1 ? 's' : '')+'"><i class="s'+s+'"></i><span>'+HM_LAB[s]+'</span><b>'+d.cnt[s]+'</b></button>';
+  }).join('');
+}
+function hmFoot(d){
+  d = d || hmData();
+  var n = d.rows.length || 1, seen = d.rows.length - d.cnt[0];
+  var bar = [2, 1, 3, 0].map(function(s){ return '<i class="s'+s+'" style="width:'+(d.cnt[s] / n * 100).toFixed(2)+'%"></i>'; }).join('');
+  $('hm-f').innerHTML = '<div class="hm-bar" role="img" aria-label="'+seen+' items vus sur '+d.rows.length+'">'+bar+'</div>'+
+    '<div class="hm-note"><span><b>'+seen+'</b> / '+d.rows.length+' items de référence vus'+(d.cnt[3] ? ' · <b>'+d.cnt[3]+'</b> à réviser' : '')+'</span>'+
+    '<span>À réviser : pas revu depuis plus de '+REVIEW_DAYS+' jours</span></div>';
+}
+function hmBody(anim, d){
+  d = d || hmData();
+  var b = $('hm-body'); if(!b) return;
+  b.classList.toggle('hm-noanim', !anim || reducedFx());
+  if(hmView === 'grid'){
+    b.innerHTML = '<div class="hm-grid" id="hm-grid" role="group" aria-label="Items de référence" data-f="'+(hmFilter === null ? '' : hmFilter)+'">'+d.rows.map(function(r, i){
+      var n = toursOf(r.k).length;
+      return '<button type="button" class="hm-c s'+r.s+'" data-k="'+esc(r.k)+'" tabindex="'+(i ? -1 : 0)+'" style="--d:'+Math.min(Math.round(i * 1.4), 520)+'ms" aria-label="Item '+esc(String(r.it[0]))+', '+esc(r.it[1])+' : '+(n ? n+' tour'+(n > 1 ? 's' : '')+(r.s === 3 ? ', à réviser' : '') : 'jamais vu')+'"></button>';
+    }).join('')+'</div>';
+  } else {
+    b.innerHTML = '<input type="search" class="hm-q" placeholder="Rechercher un item" aria-label="Rechercher un item" autocomplete="off" value="'+esc(hmQ)+'"><div class="hm-list" id="hm-list"></div>';
+    hmListFill(anim);
+  }
+}
+function hmListFill(anim){
+  var l = $('hm-list'); if(!l) return;
+  var q = norm(hmQ.trim()), d = hmData(), shown = 0;
+  var h = d.rows.filter(function(r){
+    if(hmFilter !== null && r.s !== hmFilter) return false;
+    return !q || norm(r.it[0] + ' ' + r.it[1]).indexOf(q) > -1;
+  }).map(function(r, i){
+    var t = toursOf(r.k), n = t.length, m = n ? n+' tour'+(n > 1 ? 's' : '')+' · '+agoLabel(lastDate(r.k)) : 'Jamais vu';
+    shown++;
+    return '<button type="button" class="hm-r" data-k="'+esc(r.k)+'" style="--d:'+Math.min(i * 18, 360)+'ms"><i class="s'+r.s+'"></i><span class="n">'+esc(String(r.it[0]))+'</span><span class="t">'+esc(r.it[1])+'</span><span class="m">'+esc(m)+(r.s === 3 ? ' · à réviser' : '')+'</span></button>';
+  }).join('');
+  l.classList.toggle('hm-noanim', !anim || reducedFx());
+  l.innerHTML = h || '<p class="hm-empty">Aucun item ne correspond.</p>';
+}
+function hmTip(c){
+  var p = $('hm-panel'), tip = $('hm-tip'); if(!tip || !c) return;
+  var it = ITEM_BY_KEY[c.dataset.k]; if(!it) return;
+  var k = c.dataset.k, n = toursOf(k).length, s = hmStat(it);
+  var l2 = n+' vue'+(n > 1 ? 's' : '')+(n ? ' · dernier tour '+agoLabel(lastDate(k)).replace(/^dernier tour\s*/i, '') : '')+(s === 3 ? ' · <em>à réviser</em>' : '');
+  tip.innerHTML = '<b>Item '+esc(String(it[0]))+' · '+esc(it[1])+'</b><span>'+l2+'</span>'+(hmSel === c && hmTouchy() ? '<u>Touche encore pour ouvrir l’item</u>' : '');
+  tip.classList.add('on');
+  var pr = p.getBoundingClientRect(), cr = c.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  var left = cr.left - pr.left + cr.width / 2 - tw / 2; left = Math.max(10, Math.min(pr.width - tw - 10, left));
+  var top = cr.top - pr.top - th - 12; if(top < 8) top = cr.bottom - pr.top + 12;
+  tip.style.left = left + 'px'; tip.style.top = top + 'px';
+}
+function hmTipHide(){ var t = $('hm-tip'); if(t) t.classList.remove('on'); }
+function hmRove(c){ Array.prototype.forEach.call(document.querySelectorAll('#hm-grid .hm-c'), function(x){ x.tabIndex = (x === c) ? 0 : -1; }); }
+function hmKey(e){
+  var c = e.target.closest && e.target.closest('.hm-c'); if(!c) return;
+  var all = Array.prototype.slice.call(document.querySelectorAll('#hm-grid .hm-c')), i = all.indexOf(c), cols = 0, y0 = all[0].offsetTop;
+  while(cols < all.length && all[cols].offsetTop === y0) cols++;
+  var j = i;
+  if(e.key === 'ArrowRight') j = i + 1; else if(e.key === 'ArrowLeft') j = i - 1;
+  else if(e.key === 'ArrowDown') j = i + cols; else if(e.key === 'ArrowUp') j = i - cols;
+  else if(e.key === 'Home') j = 0; else if(e.key === 'End') j = all.length - 1; else return;
+  e.preventDefault();
+  j = Math.max(0, Math.min(all.length - 1, j)); all[j].focus(); all[j].scrollIntoView({ block:'nearest' });
+}
+function hmClick(e){
+  var x = e.target.closest('[data-hm-x]'); if(x){ hmShow(false); return; }
+  var f = e.target.closest('[data-hm-f]');
+  if(f){
+    var s = Number(f.dataset.hmF); hmFilter = (hmFilter === s) ? null : s;
+    hmLegend(); var g = $('hm-grid'); if(g) g.dataset.f = hmFilter === null ? '' : hmFilter; else hmListFill(true);
+    return;
+  }
+  var v = e.target.closest('[data-hm-v]');
+  if(v){
+    if(v.dataset.hmV === hmView) return;
+    hmView = v.dataset.hmV; hmSel = null; hmTipHide(); $('hm-seg').style.setProperty('--i', hmView === 'list' ? 1 : 0);
+    Array.prototype.forEach.call($('hm-seg').querySelectorAll('button'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.hmV === hmView)); });
+    var body = $('hm-body');
+    if(reducedFx()){ hmBody(false); return; }
+    body.classList.add('swap'); setTimeout(function(){ hmBody(true); body.classList.remove('swap'); }, 190);
+    return;
+  }
+  var c = e.target.closest('.hm-c, .hm-r');
+  if(c){
+    if(c.classList.contains('hm-c')){
+      var touch = e.pointerType === 'touch' || (e.pointerType !== 'mouse' && hmTouchy());
+      if(touch && hmSel !== c){
+        if(hmSel) hmSel.classList.remove('sel'); hmSel = c; c.classList.add('sel'); hmTip(c); return;
+      }
+    }
+    hmOpenItem(c.dataset.k); return;
+  }
+  if(hmSel){ hmSel.classList.remove('sel'); hmSel = null; hmTipHide(); }
+}
+function hmOpenItem(k){ hmShow(false); setTimeout(function(){ stGo(k); }, 340); }
+function hmAnimIn(p, btn){
+  var inner = p.querySelector('.hm-in');
+  if(reducedFx() || !p.animate){ return; }
+  if(hmAnim) hmAnim.cancel();
+  if(hmMobile()){ hmAnim = p.animate([{ transform:'translateY(100%)' }, { transform:'none' }], { duration:560, easing:EZ }); return; }
+  var r = btn && btn.getBoundingClientRect ? btn.getBoundingClientRect() : null, pr = p.getBoundingClientRect();
+  if(!r || !r.width){ hmAnim = p.animate([{ opacity:0, transform:'scale(.94)' }, { opacity:1, transform:'none' }], { duration:360, easing:EZ }); return; }
+  var s = Math.max(.02, r.width / pr.width), dx = r.left + r.width / 2 - (pr.left + pr.width / 2), dy = r.top + r.height / 2 - (pr.top + pr.height / 2);
+  hmAnim = p.animate([
+    { transform:'translate('+dx+'px,'+dy+'px) scale('+s+')', borderRadius:(r.width / 2 / s)+'px', opacity:.2 },
+    { opacity:1, offset:.22 },
+    { transform:'none', borderRadius:'30px', opacity:1 }
+  ], { duration:640, easing:'cubic-bezier(.22,.9,.25,1)' });
+  if(inner && inner.animate) inner.animate([{ opacity:0 }, { opacity:1 }], { duration:360, delay:230, easing:'ease-out', fill:'backwards' });
+}
+function hmAnimOut(p, dy, done){
+  if(reducedFx() || !p.animate){ done(); return; }
+  if(hmAnim) hmAnim.cancel();
+  var inner = p.querySelector('.hm-in'), a;
+  if(hmMobile()){
+    a = p.animate([{ transform:'translateY('+(dy || 0)+'px)' }, { transform:'translateY(100%)' }], { duration:420, easing:'cubic-bezier(.4,0,.8,.4)', fill:'forwards' });
+  } else {
+    var b = document.querySelector('.hm-btn'), r = b && b.getBoundingClientRect(), pr = p.getBoundingClientRect();
+    if(!r || !r.width){ a = p.animate([{ opacity:1, transform:'none' }, { opacity:0, transform:'scale(.94)' }], { duration:260, easing:EZ, fill:'forwards' }); }
+    else {
+      var s = Math.max(.02, r.width / pr.width), ddx = r.left + r.width / 2 - (pr.left + pr.width / 2), ddy = r.top + r.height / 2 - (pr.top + pr.height / 2);
+      if(inner && inner.animate) inner.animate([{ opacity:1 }, { opacity:0 }], { duration:200, easing:'ease-in', fill:'forwards' });
+      a = p.animate([
+        { transform:'none', borderRadius:'30px', opacity:1 },
+        { opacity:1, offset:.7 },
+        { transform:'translate('+ddx+'px,'+ddy+'px) scale('+s+')', borderRadius:(r.width / 2 / s)+'px', opacity:0 }
+      ], { duration:520, easing:'cubic-bezier(.5,0,.75,.35)', fill:'forwards' });
+    }
+  }
+  hmAnim = a; a.onfinish = function(){ done(); };
+  a.oncancel = function(){};
+}
+function hmShow(on, arg){
+  var p = $('hm-panel'), sc = $('hm-scrim');
+  if(on === hmIsOpen) return;
+  hmIsOpen = on;
+  Array.prototype.forEach.call(document.querySelectorAll('.hm-btn'), function(b){ b.setAttribute('aria-expanded', String(on)); });
+  if(on){
+    if(typeof stOpen !== 'undefined' && stOpen) stShow(false);
+    hmFrom = arg || document.activeElement; hmFilter = null; hmQ = ''; hmSel = null; hmReady = Date.now() + 750;
+    hmShell();
+    sc.hidden = false; p.classList.add('on'); p.setAttribute('aria-hidden', 'false'); p.style.transform = '';
+    document.documentElement.classList.add('td-open-lock'); document.body.classList.add('td-open-lock');
+    requestAnimationFrame(function(){ sc.classList.add('on'); });
+    hmAnimIn(p, hmFrom);
+    setTimeout(function(){ if(hmIsOpen) p.focus({ preventScroll:true }); }, 60);
+  } else {
+    hmTipHide(); sc.classList.remove('on'); p.setAttribute('aria-hidden', 'true');
+    hmAnimOut(p, typeof arg === 'number' ? arg : 0, function(){
+      if(hmIsOpen) return;
+      p.classList.remove('on'); p.style.transform = ''; if(hmAnim){ try{ hmAnim.cancel(); }catch(er){} hmAnim = null; }
+      sc.hidden = true; document.documentElement.classList.remove('td-open-lock'); document.body.classList.remove('td-open-lock');
+      var b = (hmFrom && document.contains(hmFrom) && hmFrom.classList && hmFrom.classList.contains('hm-btn')) ? hmFrom : document.querySelector('.hm-btn');
+      if(b) try{ b.focus({ preventScroll:true }); }catch(er){}
+    });
+  }
+}
+
 /* ---------- Démarrage ---------- */
 $('today-label').innerHTML = '<span>'+esc(cap(fmtFull.format(new Date())))+'</span><span class="wkpill">Semaine '+isoWeek(mondayOf(today()))+'</span>';
 renderAll();
 initCapabilities();
 })();
 </script>
+<script>
+/* ===========================================================================================================
+   §J42  ASSISTANT IA FLOTTANT (index86)
+   Script indépendant du script principal (aucune variable partagée, aucun accès à `state`).
+   Utilise la capacité « sample » des artefacts Claude : l'IA répond depuis la page, sur le compte Claude du lecteur.
+   Sans cette capacité (fichier .html ouvert hors Claude), le bouton ne s'affiche pas.
+     RULES        consignes permanentes (rôle, format de réponse, garde-fous : pas de chiffre inventé, niveau de confiance…)
+     ctxLine()    contexte lu dans la page (date, onglet, collège ouvert), ajouté aux consignes à chaque appel
+     build()      consignes + 14 derniers tours de la discussion (l'IA n'a aucune mémoire entre deux appels)
+     md()         mini-rendu Markdown (titres, listes, tableaux, gras) ; tout le texte est échappé avant
+     run()        appel en streaming, bouton Stop, gestion des erreurs, bouton « Réessayer »
+   La discussion (texte seul, 30 tours max) est gardée dans localStorage « medisam_ia_v1 » (confort, jamais indispensable).
+   =========================================================================================================== */
+(function(){
+'use strict';
+var LSK='medisam_ia_v1', MAXKEEP=30, MAXSEND=14;
+var RULES=[
+'Tu es l’assistant de révision de Sam, étudiant en médecine en France (externat, préparation aux EDN). Tu es intégré à son outil personnel « Médisam ».',
+'',
+'MISSIONS : (1) expliquer une question ou une notion de cours ; (2) expliquer une erreur de QCM ; (3) créer des QCM, des cas cliniques ou des fiches flash ; (4) interroger Sam pour qu’il s’entraîne.',
+'',
+'RÈGLES',
+'- Réponds en français, directement, sans compliments ni remplissage. Va à l’essentiel (environ 250 mots sauf demande contraire).',
+'- Référentiel : pratique médicale française (recommandations HAS, sociétés savantes françaises, référentiels des Collèges). Si une donnée vient d’ailleurs ou fait débat, dis-le.',
+'- N’invente JAMAIS un chiffre (dose, seuil, durée, score, incidence). Si tu n’es pas sûr à 100 %, écris « à vérifier » et indique où vérifier (HAS, collège, Vidal, cours).',
+'- Tes connaissances peuvent être datées. Pour les recommandations qui évoluent vite (antibiothérapie, oncologie, dépistage, vaccination, anticoagulation…), invite à vérifier la dernière version.',
+'- NOTION DE COURS : structure ta réponse ainsi — **En 2 lignes** ; **Détail** (selon la pertinence : définition/physiopathologie, diagnostic, examens, prise en charge, pièges) ; **À retenir pour l’EDN**.',
+'- ERREUR DE QCM : si l’énoncé, les propositions ou la réponse de Sam manquent, demande-les (ou une capture d’écran) au lieu de deviner. Sinon, pour chaque proposition : Vrai/Faux, justification courte ; puis **Le piège** (pourquoi l’erreur est tentante) et **À retenir** (1-2 lignes). Si l’énoncé est ambigu ou discutable, dis-le franchement.',
+'- QCM / CAS CLINIQUES : style EDN (propositions multiples, dossiers progressifs). Donne la correction détaillée seulement après que Sam a répondu, sauf s’il la demande tout de suite.',
+'- Termine chaque explication par une ligne « **Confiance :** élevée / moyenne / à vérifier » (et ce qu’il faut vérifier, le cas échéant), puis une suite utile en une phrase (ex. « Je te fais 3 QCM dessus ? »).',
+'- Outil d’étude uniquement : pas de conseil médical pour un patient réel. Si Sam te donne des données de patients réels, rappelle de ne pas le faire.',
+'- Utilise le Markdown simple : **gras**, listes à tirets, petits titres (###), tableaux si utile pour comparer.'
+].join('\n');
 
+var CHIPS=[
+ ['🧠 Expliquer une notion','Explique-moi : '],
+ ['❌ J’ai raté un QCM','Voici un QCM que j’ai raté.\n\nQuestion et propositions :\n\nMa réponse :\n\nCorrection officielle (si tu l’as) :\n'],
+ ['📝 Me faire des QCM','Fais-moi 3 QCM style EDN sur : '],
+ ['🗂️ Fiche flash','Fais-moi une fiche flash sur : '],
+ ['🎯 Interroge-moi','Interroge-moi sur : ']
+];
+
+var ICO={
+ spark:'<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M10 2l2 6.2L18.2 10 12 12l-2 6.2L8 12 1.8 10 8 8.2zM19 14l1 3 3 1-3 1-1 3-1-3-3-1 3-1z"/></svg>',
+ x:'<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ pen:'<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
+ img:'<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>',
+ up:'<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+ stop:'<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="3"/></svg>'
+};
+
+var sampleFn=null, lim=null, turns=[], busy=false, ctl=null, img=null, lastFile=null, dead=false, open=false;
+var fab, panel, log, inp, send, form, chips, prev, att, file, ctxEl;
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inl(s){
+  s=esc(s);
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\*)/g,'$1<em>$2</em>');
+  return s;
+}
+function md(src){
+  var L=String(src).replace(/\r/g,'').split('\n'), out=[], i=0, list=null, m;
+  function close(){ if(list){ out.push('</'+list+'>'); list=null; } }
+  function cells(r){ return r.trim().replace(/^\||\|$/g,'').split('|').map(function(c){ return c.trim(); }); }
+  var isRow=/^\s*\|.*\|\s*$/, isSep=/^\s*\|[\s:|-]+\|\s*$/;
+  while(i<L.length){
+    var s=L[i];
+    if(isRow.test(s) && i+1<L.length && isSep.test(L[i+1])){
+      close();
+      var h=cells(s), t='<div class="ia-tw"><table><thead><tr>'+h.map(function(c){ return '<th>'+inl(c)+'</th>'; }).join('')+'</tr></thead><tbody>';
+      i+=2;
+      while(i<L.length && isRow.test(L[i])){ t+='<tr>'+cells(L[i]).map(function(c){ return '<td>'+inl(c)+'</td>'; }).join('')+'</tr>'; i++; }
+      out.push(t+'</tbody></table></div>');
+      continue;
+    }
+    if((m=/^\s{0,3}#{1,4}\s+(.*)$/.exec(s))){ close(); out.push('<h4>'+inl(m[1])+'</h4>'); }
+    else if((m=/^\s*[-*•]\s+(.*)$/.exec(s))){ if(list!=='ul'){ close(); out.push('<ul>'); list='ul'; } out.push('<li>'+inl(m[1])+'</li>'); }
+    else if((m=/^\s*\d+[.)]\s+(.*)$/.exec(s))){ if(list!=='ol'){ close(); out.push('<ol>'); list='ol'; } out.push('<li>'+inl(m[1])+'</li>'); }
+    else if(/^\s*(-{3,}|_{3,})\s*$/.test(s)){ close(); out.push('<hr>'); }
+    else if(!s.trim()){ close(); }
+    else { close(); out.push('<p>'+inl(s)+'</p>'); }
+    i++;
+  }
+  close();
+  return out.join('');
+}
+
+function ctxLine(){
+  var d=new Date(), tab=document.querySelector('.tab[aria-selected="true"]'), k=document.querySelector('.hmid .kick');
+  var bits=['date : '+d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})];
+  if(tab) bits.push('onglet ouvert : '+tab.textContent.trim());
+  if(k) bits.push('collège/matière affiché : '+k.textContent.replace(/\s+/g,' ').trim());
+  return 'Contexte dans Médisam (indicatif, peut ne pas concerner la question) — '+bits.join(' ; ')+'.';
+}
+function ctxShort(){
+  var tab=document.querySelector('.tab[aria-selected="true"]'), k=document.querySelector('.hmid .kick'), a=[];
+  if(k) a.push(k.textContent.replace(/\s+/g,' ').trim());
+  if(tab) a.push(tab.textContent.trim());
+  return a.join(' · ');
+}
+function build(){
+  var h=turns.slice(-MAXSEND);
+  while(h.length && h[0].role!=='user') h.shift();
+  return [{role:'user',content:RULES+'\n\n'+ctxLine()}].concat(h);
+}
+
+function save(){ try{ localStorage.setItem(LSK,JSON.stringify(turns.slice(-MAXKEEP))); }catch(e){} }
+function load(){ try{ var r=JSON.parse(localStorage.getItem(LSK)||'[]'); if(Array.isArray(r)) turns=r.filter(function(t){ return t&&(t.role==='user'||t.role==='assistant')&&typeof t.content==='string'&&t.content; }); }catch(e){ turns=[]; } while(turns.length && turns[turns.length-1].role!=='assistant') turns.pop(); }
+
+function scroll(){ log.scrollTop=log.scrollHeight; }
+function msg(cls,html){ var d=document.createElement('div'); d.className='ia-m '+cls; d.innerHTML=html; log.appendChild(d); return d; }
+function empty(){
+  log.innerHTML='<div class="ia-empty" id="ia-empty"><b>Qu’est-ce qu’on révise ?</b>Pose une question de cours, colle un QCM que tu as raté (tu peux joindre une capture), ou demande-moi de t’interroger.</div>';
+}
+function syncEmpty(){
+  var e=document.getElementById('ia-empty'); if(e && turns.length) e.remove();
+  chips.hidden=turns.length>0;
+}
+function render(){
+  log.innerHTML='';
+  if(!turns.length){ empty(); }
+  turns.forEach(function(t){ if(t.role==='user') msg('u',esc(t.content)); else msg('a',md(t.content)); });
+  syncEmpty(); scroll();
+}
+
+function setBusy(b){
+  busy=b;
+  send.innerHTML=b?ICO.stop:ICO.up;
+  send.setAttribute('aria-label',b?'Arrêter':'Envoyer');
+  send.disabled=false;
+}
+function errCopy(c){
+  switch(c){
+    case 'not_granted': return 'Tu n’as pas autorisé l’IA pour cette page. Recharge la page et accepte la demande pour l’utiliser.';
+    case 'sampling_disabled': case 'capability_disabled': case 'not_declared': case 'capability_removed': return 'L’IA n’est pas disponible sur ce compte ou dans cette vue.';
+    case 'rate_limited': return 'Trop de demandes (ou limite d’usage atteinte). Attends un peu avant de réessayer.';
+    case 'session_expired': return 'Ta session Claude a expiré : reconnecte-toi à Claude puis recharge la page.';
+    case 'prompt_too_large': return 'La conversation est trop longue. Lance une nouvelle discussion (bouton ✎).';
+    case 'refused': return 'Claude n’a pas pu répondre à cette demande. Reformule-la.';
+    case 'image_rejected': case 'images_unavailable': return 'Cette image n’a pas pu être envoyée (format ou taille). Essaie une autre capture.';
+    case 'empty_completion': return 'Pas de réponse reçue. Reformule ou réessaie.';
+    default: return 'Erreur temporaire. Réessaie dans un instant.';
+  }
+}
+
+function run(f){
+  if(busy||dead) return;
+  setBusy(true); ctl=new AbortController(); lastFile=f||null;
+  var bub=msg('a','<span class="ia-dots"><i></i><i></i><i></i></span>'); scroll();
+  var opts={cache:false,signal:ctl.signal,onText:function(u){ bub.innerHTML=md(u.text); scroll(); }};
+  if(f && lim && lim.images) opts.images=[f];
+  var p;
+  try{ p=sampleFn(build(),opts); }catch(e){ p=Promise.reject({code:'upstream_error',message:String(e)}); }
+  p.then(function(r){
+    turns.push({role:'assistant',content:r.text});
+    bub.innerHTML=md(r.text)+(r.truncated?'<p class="ia-nt">Réponse coupée : écris « continue » pour la suite.</p>':'');
+    save();
+  }).catch(function(e){
+    e=e||{};
+    var code=e.code||'upstream_error', part=(typeof e.text==='string')?e.text.trim():'';
+    if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'||code==='capability_removed'){ dead=true; inp.disabled=true; inp.placeholder='IA indisponible'; }
+    if(part && code!=='refused'){
+      turns.push({role:'assistant',content:part});
+      bub.innerHTML=md(part)+'<p class="ia-nt">'+(code==='cancelled'?'Interrompu.':'Réponse interrompue. '+esc(errCopy(code)))+'</p>';
+      save();
+    } else if(code==='cancelled'){
+      bub.remove();
+    } else {
+      bub.className='ia-m err';
+      var retry=(code==='upstream_error'||code==='rate_limited'||code==='empty_completion');
+      bub.innerHTML='<p>'+esc(errCopy(code))+'</p>'+(retry?'<button type="button" data-retry="1">Réessayer</button>':'');
+      var b=bub.querySelector('[data-retry]');
+      if(b) b.addEventListener('click',function(){ bub.remove(); run(lastFile); });
+    }
+  }).then(function(){ setBusy(false); ctl=null; syncEmpty(); scroll(); });
+}
+
+function clearImg(){ if(img){ try{ URL.revokeObjectURL(img.url); }catch(e){} } img=null; prev.hidden=true; prev.innerHTML=''; file.value=''; }
+function autosize(){ inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,140)+'px'; }
+function submit(){
+  if(busy){ if(ctl) ctl.abort(); return; }
+  if(dead) return;
+  var txt=inp.value.trim();
+  if(!txt && !img) return;
+  var content=txt||'Explique cette image (QCM ou question de cours).', f=img?img.file:null, url=img?img.url:null;
+  turns.push({role:'user',content:content+(f?'\n[image jointe]':'')});
+  var e=document.getElementById('ia-empty'); if(e) e.remove();
+  msg('u',(url?'<img alt="Image jointe" src="'+url+'">':'')+esc(content));
+  inp.value=''; autosize();
+  if(img){ img=null; prev.hidden=true; prev.innerHTML=''; file.value=''; }   /* l'URL reste utilisée par la bulle */
+  chips.hidden=true;
+  run(f);
+}
+
+function setOpen(o){
+  open=o; panel.hidden=!o; fab.setAttribute('aria-expanded',o?'true':'false');
+  if(o){ ctxEl.textContent=ctxShort(); place(); fit(); syncEmpty(); scroll(); setTimeout(function(){ try{ inp.focus({preventScroll:true}); }catch(e){} },60); }
+}
+function place(){
+  var bar=document.querySelector('.bar'), off=0;
+  if(bar){ var cs=getComputedStyle(bar); if(cs.position==='fixed' && cs.display!=='none'){ off=Math.round(window.innerHeight-bar.getBoundingClientRect().top); } }
+  fab.style.bottom=(off>0 && off<200)?(off+14)+'px':'';
+}
+function fit(){
+  var vv=window.visualViewport;
+  if(vv && window.innerWidth<=700){
+    panel.style.setProperty('--ia-h',Math.round(vv.height)+'px');
+    panel.style.setProperty('--ia-off',Math.max(0,Math.round(window.innerHeight-vv.height-vv.offsetTop))+'px');
+  } else { panel.style.removeProperty('--ia-h'); panel.style.removeProperty('--ia-off'); }
+}
+
+function build_ui(){
+  var wrap=document.createElement('div');
+  wrap.innerHTML=
+   '<button type="button" class="ia-fab" id="ia-fab" aria-label="Ouvrir l’assistant IA" aria-haspopup="dialog" aria-expanded="false" hidden>'+ICO.spark+'<span>IA</span></button>'+
+   '<section class="ia-panel" id="ia-panel" role="dialog" aria-label="Assistant IA Médisam" hidden>'+
+     '<header class="ia-h"><div class="ia-ht"><strong>Assistant Médisam</strong><span class="ia-ctx" id="ia-ctx"></span></div>'+
+       '<button type="button" class="ia-ib" id="ia-new" aria-label="Nouvelle discussion" title="Nouvelle discussion">'+ICO.pen+'</button>'+
+       '<button type="button" class="ia-ib" id="ia-x" aria-label="Fermer" title="Fermer">'+ICO.x+'</button></header>'+
+     '<div class="ia-log" id="ia-log" role="log" aria-live="polite"></div>'+
+     '<div class="ia-chips" id="ia-chips"></div>'+
+     '<form class="ia-f" id="ia-form" autocomplete="off"><div class="ia-prev" id="ia-prev" hidden></div>'+
+       '<div class="ia-row"><button type="button" class="ia-ib" id="ia-att" aria-label="Joindre une image" title="Joindre une capture" hidden>'+ICO.img+'</button>'+
+       '<input type="file" id="ia-file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>'+
+       '<textarea class="ia-ta" id="ia-in" rows="1" placeholder="Pose ta question, colle un QCM…" enterkeyhint="send" aria-label="Ton message"></textarea>'+
+       '<button type="submit" class="ia-send" id="ia-send" aria-label="Envoyer">'+ICO.up+'</button></div>'+
+       '<p class="ia-note">Outil de révision : vérifie doses et seuils dans tes sources.</p></form>'+
+   '</section>';
+  while(wrap.firstChild) document.body.appendChild(wrap.firstChild);
+  fab=document.getElementById('ia-fab'); panel=document.getElementById('ia-panel'); log=document.getElementById('ia-log');
+  inp=document.getElementById('ia-in'); send=document.getElementById('ia-send'); form=document.getElementById('ia-form');
+  chips=document.getElementById('ia-chips'); prev=document.getElementById('ia-prev'); att=document.getElementById('ia-att');
+  file=document.getElementById('ia-file'); ctxEl=document.getElementById('ia-ctx');
+
+  CHIPS.forEach(function(c){
+    var b=document.createElement('button'); b.type='button'; b.className='ia-chip'; b.textContent=c[0];
+    b.addEventListener('click',function(){ inp.value=c[1]; autosize(); inp.focus(); try{ inp.setSelectionRange(inp.value.length,inp.value.length); }catch(e){} });
+    chips.appendChild(b);
+  });
+
+  fab.addEventListener('click',function(){ setOpen(!open); });
+  document.getElementById('ia-x').addEventListener('click',function(){ setOpen(false); fab.focus(); });
+  document.getElementById('ia-new').addEventListener('click',function(){
+    if(busy&&ctl) ctl.abort();
+    turns=[]; save(); clearImg(); render(); inp.focus();
+  });
+  form.addEventListener('submit',function(e){ e.preventDefault(); submit(); });
+  inp.addEventListener('input',autosize);
+  inp.addEventListener('keydown',function(e){
+    if(e.key==='Enter' && !e.shiftKey && !e.isComposing && window.matchMedia('(hover:hover) and (pointer:fine)').matches){ e.preventDefault(); submit(); }
+  });
+  att.addEventListener('click',function(){ file.click(); });
+  file.addEventListener('change',function(){
+    var f=file.files&&file.files[0]; if(!f) return;
+    if(img){ try{ URL.revokeObjectURL(img.url); }catch(e){} }
+    img={file:f,url:URL.createObjectURL(f)};
+    prev.hidden=false; prev.innerHTML='<img alt="" src="'+img.url+'"><button type="button" id="ia-rm">Retirer l’image</button>';
+    document.getElementById('ia-rm').addEventListener('click',clearImg);
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && open && !document.querySelector('.hm-panel.on')){ setOpen(false); } });
+  window.addEventListener('resize',function(){ place(); fit(); });
+  window.addEventListener('orientationchange',function(){ setTimeout(function(){ place(); fit(); },200); });
+  if(window.visualViewport){ window.visualViewport.addEventListener('resize',fit); window.visualViewport.addEventListener('scroll',fit); }
+  try{ new MutationObserver(place).observe(document.body,{attributes:true,attributeFilter:['data-auth']}); }catch(e){}
+  setBusy(false);
+}
+
+/* Le bouton s'affiche TOUJOURS (une fois connecté) ; si l'IA est indisponible dans cette vue, le panneau l'explique. */
+function unavailable(why){
+  dead=true; inp.disabled=true; inp.placeholder='IA indisponible'; send.disabled=true; chips.hidden=true;
+  log.innerHTML='<div class="ia-empty"><b>IA indisponible ici</b>'+why+'</div>';
+}
+function link(s){
+  sampleFn=s;
+  var pl; try{ pl=s.limits(); }catch(e){ pl=null; }
+  if(pl && pl.then) pl.then(function(l){ lim=l; if(l && l.images) att.hidden=false; }).catch(function(){});
+}
+function boot(){
+  build_ui(); load(); render(); fab.hidden=false; place();
+  var tries=0;
+  (function find(){
+    if(window.claude && window.claude.use){
+      var pr; try{ pr=window.claude.use('sample'); }catch(e){ pr=null; }
+      Promise.resolve(pr).then(function(s){
+        if(s) link(s);
+        else unavailable('Cette vue n’a pas accès à Claude (autorisation « sample » non accordée ou non déclarée). Ouvre l’artefact depuis claude.ai et accepte la demande d’autorisation.');
+      }).catch(function(){ unavailable('Erreur au chargement de la capacité IA. Recharge la page.'); });
+    } else if(++tries<12){ setTimeout(find,500); }
+    else unavailable('Cette page n’est pas ouverte comme artefact Claude (fichier HTML seul ou aperçu externe) : l’IA n’y est pas disponible. Ouvre-la depuis claude.ai.');
+  })();
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot); else boot();
+})();
+</script>
 </body></html>
