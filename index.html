@@ -119,6 +119,157 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index146 : les boutons G/S/I de l'éditeur avaient un fond gris en permanence (toute la pastille), plutôt que
+              seulement quand le gras/souligné/italique est actif au curseur. Corrigé : plus de fond par défaut, et
+              chaque bouton devient gris uniquement quand sa mise en forme s'applique réellement à l'endroit où
+              se trouve le curseur ou la sélection (comme un vrai bouton à bascule, mis à jour à chaque déplacement
+              dans le texte).
+    index142-145 : quatre demandes indépendantes de Sam.
+              (1) Tableau de bord : le bouton « Lancer le chrono » ne disparaît plus une fois le chrono démarré —
+              il devient « Arrêter le chrono » (fond plein) et reste au même endroit, au lieu d'être remplacé sans
+              prévenir par la carte « Temps de travail » et la bulle en bas à gauche.
+              (2) Fiches LiSA : le bouton « revenir en arrière » annule maintenant le dernier surlignage/gomme fait
+              à l'instant, au lieu de naviguer dans l'historique — mais seulement si rien d'autre ne s'est passé
+              depuis (un vrai déplacement, un saut depuis le plan, ou fermer/changer de fiche l'efface, et le bouton
+              retrouve alors son rôle normal de navigation).
+              (3) Méthode des J : nouveau bouton « Désactiver pour ce collège » dans la fenêtre de réglage (à côté
+              de « Tout désactiver », qui coupait tous les collèges d'un coup) — pour retirer la méthode des J d'un
+              seul collège sans toucher aux autres. Techniquement : un réglage propre à ce collège avec aucun tour
+              (déjà traité partout comme « rien à proposer » par le code existant — aucun autre changement requis).
+              (4) Liste des items d'un collège : nouveau filtre « Vu 1 fois » (à côté de Tous / À démarrer / À
+              revoir), pour retrouver les cours qui n'ont eu qu'un seul tour jusqu'ici.
+    index141 : le correctif précédent (index140) déplaçait le problème au lieu de le régler — les pastilles se
+              coupaient maintenant sur les côtés plutôt qu'en haut, toujours à cause du masquage de débordement
+              utilisé pour l'animation d'ouverture de la rangée. Cette fois l'animation par largeur/débordement est
+              entièrement retirée : la rangée de couleurs s'affiche ou se cache d'un coup (avec juste un petit fondu),
+              sans jamais rogner les pastilles, quelle que soit leur taille au survol.
+    index140 : correction visuelle — au survol, les pastilles de couleur grandissaient légèrement (effet déjà prévu)
+              mais se faisaient couper à plat en haut, car la rangée qui les contient masque son débordement pour
+              l'animation d'ouverture/fermeture ; ce masquage s'appliquait aussi verticalement. Corrigé en ne masquant
+              le débordement qu'à l'horizontale — les pastilles restent de vrais cercles même agrandies au survol.
+    index139 : correction d'un vrai bug sur la palette flottante (index137-138) + comportement demandé par Sam.
+              (1) Bug trouvé : cliquer le bouton surligneur/A pour dérouler la rangée faisait perdre la sélection
+              de texte en cours (le clic déplaçait le focus hors de la zone de texte et le navigateur vidait la
+              sélection) — du coup choisir une couleur juste après n'avait plus rien à colorer, d'où l'impression
+              que « ça ne marchait pas ». Corrigé en empêchant ce comportement par défaut du navigateur sur la barre
+              d'outils (preventDefault au mousedown), comme le font les éditeurs de texte riches en général.
+              (2) La rangée de couleurs reste maintenant ouverte tant qu'on n'a pas re-cliqué sur le bouton
+              surligneur/A — plus de fermeture automatique après avoir choisi une couleur, pour pouvoir surligner
+              plusieurs passages de suite sans rouvrir le menu à chaque fois.
+    index137-138 : barre d'outils « palette flottante », sur le modèle des captures envoyées par Sam. Les pastilles
+              de couleur ne sont plus visibles en permanence : le surligneur et la couleur de texte sont maintenant
+              deux boutons repliés (icône surligneur, lettre « A ») avec un petit chevron ; un clic déroule la rangée
+              de pastilles juste à côté, un second clic (ou le choix d'une couleur) la referme — un seul groupe ouvert
+              à la fois. Couleur de texte : ajout du gris et d'une pastille « couleur par défaut » (le rond barré,
+              comme pour « aucun surlignage »), dans l'ordre noir / gris / rouge / bleu / défaut / personnalisé.
+    index136 : nouveaux retours sur la fenêtre d'édition. (1) Couleurs vraiment « Apple » : remplacées par la
+              palette exacte de l'outil Markup d'Apple (rouge #E8464A, jaune #F7D254, vert #79D475, bleu #3B7CF2,
+              noir), au lieu de teintes inventées — pour le surlignage (fond éclairci, comme Notes) et pour le
+              texte (bleu/noir désormais sur ces mêmes teintes, indépendantes de la couleur de thème du collège).
+              (2) Alignement : l'en-tête, la barre d'outils, la zone de texte et le pied partagent maintenant le même
+              retrait gauche (24px) — avant, le texte était centré dans une colonne étroite au milieu de la fenêtre,
+              ce qui le décalait loin à droite du bord de la barre d'outils et laissait un grand vide à gauche ;
+              la zone de texte s'aligne maintenant simplement sous la barre d'outils. (3) La ligne « Obj. N · titre »
+              insérée depuis le tiroir de fiche apparaît maintenant en couleur d'accent et en gras pendant l'édition,
+              pour qu'il soit clair qu'elle deviendra, une fois enregistrée, un bouton « Relire l'objectif N » cliquable
+              qui rouvre la fiche LiSA au bon endroit (mécanisme déjà en place, erObjHTML/MFiche.openObj — vérifié,
+              le format inséré correspond exactement à ce qu'il reconnaît).
+    index132-135 : corrections suite aux retours de Sam sur la barre d'outils « mode Apple » (index131).
+              (1) Pastilles de surlignage vraiment rondes : ".erw-tb button" l'emportait sur ".erw-hl" côté CSS
+              (spécificité), ce qui aplatissait les cercles en carrés arrondis — corrigé. (2) Couleurs de surlignage
+              plus franches/classiques (jaune, vert, bleu plus saturés, moins pastel). (3) Couleurs de texte : ajout
+              du bleu et du noir à côté du rouge. (4) Fenêtre d'édition : hauteur désormais libre (max-height au lieu
+              d'une hauteur fixe de 840px) — elle ne laisse plus un grand vide blanc sous un texte court, et grandit
+              normalement si le texte est long. (5) Bouton « effacer la mise en forme » : nouvelle icône gomme (plus
+              clair que « ⌫ ») et sélectionne désormais le paragraphe courant si rien n'est sélectionné, sinon il ne
+              faisait rien de visible et semblait inutile. (6) Dictée vocale : ajout d'une demande explicite de
+              permission micro avant de démarrer et d'un garde-fou contre les redémarrages silencieux en boucle
+              (cause probable du « ça ne marche pas » sur certains navigateurs/téléphones) ; les erreurs affichent
+              désormais un message clair (micro refusé, pas de micro, etc.) au lieu de rien dire. (7) Référence à un
+              objectif de fiche LiSA entièrement repensée : le petit popover confus est supprimé ; le bouton ouvre
+              maintenant directement le tiroir de la fiche (le même que partout ailleurs dans l'appli), avec un
+              bandeau « Choisis l'objectif à insérer » en haut — cliquer un objectif l'insère et referme le tiroir
+              (nouvelle méthode window.MFiche.pickObjective).
+    index131 : Redesign complet de la barre d'outils de la fenêtre d'édition (façon Apple) : les boutons G/S/I
+              sont regroupés dans une pastille segmentée grisée, les pastilles de couleur (surlignage/texte) perdent
+              leur contour visible pour un simple anneau interne discret, les deux boutons « autre couleur » (cercle
+              en pointillés + icône) sont remplacés par un rond plein en degradé arc-en-ciel façon roue de couleurs
+              iOS, les survols des boutons-icônes sont adoucis (fond semi-transparent au lieu d'un gris plat) et les
+              séparateurs sont allégés. Rien ne change côté comportement (mêmes data-ec/data-hl/data-fc).
+    index130 : (1) Fenêtre d'édition d'une erreur très agrandie (960px/86vh au lieu de 600px/86vh) et redessinée :
+              en-tête et barre d'outils façon ruban Word/Apple Notes (plus d'air, groupes séparés), colonne de texte
+              centrée à 760px façon document pour une lecture confortable pendant la frappe, couleur de l'en-tête
+              désormais celle de la matière de l'item (data-h posé dynamiquement dans erwOpen — avant, toujours
+              « red », qu'importe le collège). (2) Référence à un objectif de fiche LiSA : nouveau bouton dans la
+              barre d'outils (icône signet) qui ouvre une petite liste des objectifs de la fiche de l'item (nouvelle
+              méthode window.MFiche.objList) ; le choix ajoute une ligne « Obj. N · titre » à la fin du texte — exactement
+              le format que la lecture du carnet (erObjHTML) sait déjà transformer en bouton « Relire l'objectif N »,
+              qui ouvre la fiche au bon endroit. Rien de nouveau côté stockage.
+    index129 : (1) Correction : la carte « Carnet d'erreurs » du tableau de bord (errPanelHTML) et le panneau admin
+              affichaient encore le HTML brut stocké (balises visibles) au lieu du texte — reste du passage au format
+              HTML des erreurs en index125, non corrigé dans ces deux endroits précis quand la liste des items et le
+              carnet lui-même l'avaient déjà été en index127. (2) Création de flashcard repensée : « Créer une
+              flashcard » n'écrit plus automatiquement l'item et l'erreur dans la carte — elle ouvre une fenêtre avec
+              un recto et un verso vides (fcmOpen/fcmSave) que Sam remplit lui-même, avec le texte de l'erreur affiché
+              à côté (fcm-ref) comme aide-mémoire pour savoir quoi y mettre.
+    index128 : suite d'index127. (1) Consultation du carnet repensée en page à deux colonnes (liste à gauche,
+              lecture à droite — §J40, erShell/erList/erRow/erRead) à la place du panneau latéral « document
+              continu » ; sur petit écran une seule colonne à la fois (sélection → bouton « Retour »). Nouvelles
+              classes CSS (er-shell, er-nav2, er-read2…), le panneau n'hérite plus de .td-panel (pour ne pas
+              subir les habillages iOS/sombre de la to-do list, pensés pour un tiroir latéral). (2) Export PDF
+              (bouton dans l'en-tête, en plus de Google Doc et Copier) : pas de bibliothèque ajoutée — un document
+              imprimable est généré puis window.print() est appelé, « Enregistrer en PDF » dans la boîte de dialogue
+              du navigateur donne le fichier (erDocHTML commun aux deux exports, erToPdf). (3) Dictée vocale dans la
+              fenêtre d'édition d'une erreur (Web Speech API, bouton micro dans la barre d'outils, insère le texte
+              reconnu au curseur ; signale simplement l'absence de support sur les navigateurs qui ne l'ont pas).
+              (4) Flashcards : depuis la lecture d'une erreur, « Créer une flashcard » (question = item, réponse =
+              texte de l'erreur) ; bouton « Mes flashcards » dans l'en-tête du carnet ouvre une petite fenêtre de
+              révision (retourner la carte, précédent/suivant, retirer avec Annuler). Nouveau champ synchronisé
+              state.flash (sanitizeFlash, voir la règle des 6 endroits).
+    index127 : suite d'index126, 4 retours de Sam sur un premier essai réel. (1) L'aperçu du texte de l'erreur
+              (errHTML) ne s'affiche plus dans la liste des items (sous le titre, à côté de « Réf. ») — il s'affichait
+              là par erreur depuis index125 (avant, errHTML ne rendait rien hors édition en ligne, qui n'existe plus) ;
+              il ne reste que l'icône carnet colorée quand l'item a une erreur notée. Le texte complet reste visible
+              uniquement dans le carnet (erShow). (2) Séparation entre les lignes d'une erreur : les retours à la ligne
+              de la zone éditable (contenteditable) peuvent produire des <div> selon le navigateur, pas seulement des
+              <p> ; la marge entre paragraphes (.erw-edit, .er-txt) s'applique maintenant aux deux. (3) Les deux
+              sélecteurs de couleur natifs (surlignage libre, texte libre) avaient un rendu natif du système peu
+              soigné ; ils sont maintenant cachés (1px, invisible) et déclenchés par un petit bouton rond assorti aux
+              autres (icône « + », data-ec="pickhl"/"pickfc"), cohérent avec le reste de la barre d'outils. (4) Ajouts
+              demandés : une pastille « aucun surlignage » (data-hl="none", efface le surlignage de la sélection ou
+              empêche la frappe suivante de rester surlignée) et deux boutons Annuler/Rétablir (data-ec="undo"/"redo",
+              document.execCommand) à la fin de la barre d'outils.
+    index126 : suite directe d'index125, 3 retours de Sam. (1) Bug corrigé : les boutons de surlignage n'appliquaient
+              rien, car erwResolveVar lisait la valeur CSS brute de --hl-y/g/b (qui référence color-mix()+var(--surface),
+              jamais résolue) au lieu d'une couleur calculée ; elle est maintenant lue via un élément réellement posé
+              dans le document (getComputedStyle().color). (2) Couleur libre : un sélecteur de couleur natif
+              (input type="color") a été ajouté à côté des 3 pastilles de surlignage ET à côté du rouge par défaut pour
+              le texte — on peut donc choisir n'importe quelle couleur dans les deux cas, pas seulement rouge/jaune/
+              vert/bleu. La sélection dans la case de texte est maintenant sauvegardée au mousedown sur la barre d'outils
+              (erwSaveSel/erwRestoreSel) pour survivre à l'ouverture du sélecteur de couleur du système, qui sinon fait
+              perdre la sélection. (3) Images : nouveau bouton qui ouvre le sélecteur de photos de l'appareil ; l'image
+              est redimensionnée et recompressée sur l'appareil (max 900 px, JPEG ~0,72) puis insérée directement dans
+              le texte en data URL (pas d'hébergement externe, ça reste dans state.notes comme le reste) ; erwSanitize
+              autorise désormais la balise <img> uniquement avec un src en data:image/(png|jpeg|gif|webp);base64,. Le
+              garde-fou silencieux de taille passe de 50 000 à 400 000 caractères (erwClose et
+              window.MEDISAM_API.errSet) pour laisser la place à une ou deux photos par note.
+    index125 : carnet d'erreurs, à la demande de Sam (petite case à 300 caractères jugée trop contraignante). (1) Saisie :
+              la case en ligne est remplacée par une fenêtre centrée (#erw-scrim/.erw-win, data-h="red") avec une vraie
+              barre d'outils fixe (gras, souligné, italique, 3 surlignages --hl-y/g/b, texte en rouge, liste, effacer la
+              mise en forme) via document.execCommand ; plus de limite affichée (garde-fou silencieux à 50000 caractères
+              dans erwClose, pour la taille de synchro). (2) Stockage : state.notes['e:'+item] contient maintenant du HTML
+              (nettoyé par erwSanitize, liste blanche de balises) au lieu de texte brut ; errOf() migre à la lecture les
+              anciennes notes en texte brut vers des <p>, sans réécriture tant que l'item n'est pas réenregistré. (3) Page
+              de consultation (panneau #er-panel, erShell/erList/erCard) : élargie (min(880px,96%) sur desktop) et
+              restylée en document continu (titres de collège en Instrument Serif, entrées à la suite sans encadré) au
+              lieu des petites cartes encadrées ; « Modifier » ouvre désormais la même fenêtre centrée que la saisie.
+              (4) Nouveau bouton « Convertir en Google Doc » (erToGdoc) dans l'en-tête du panneau : copie le carnet (avec
+              sa mise en forme) dans le presse-papiers au format riche puis ouvre un nouveau Google Doc vierge — il reste
+              à coller (Cmd/Ctrl+V) dedans ; pas d'intégration directe à l'API Google Drive (demanderait de relier le
+              compte Google, pas fait ici). (5) Ajout rapide depuis une fiche LiSA (errAdd/errHas, §J1bis du module
+              fiches) : adapté au stockage HTML (paragraphes DOM au lieu de lignes texte séparées par \n), toujours sans
+              mise en forme (texte simple), et sans le plafond de 300 caractères (window.MEDISAM_API.errSet reprend le
+              même garde-fou à 50000).
     index120 : retouches du Tableau de bord et de la liste des collèges, sur retours écran par écran. (1) Retiré le bouton
               « Voir les statistiques du jour / de la semaine » (hero, heroWk) : redondant avec l'onglet Tableau de bord qui
               montre déjà les stats du jour. (2) Carnet d'erreurs (tableau de bord) : ligne décalée corrigée — collision de
@@ -2976,6 +3127,179 @@ button.qcm{appearance:none;-webkit-appearance:none;font-family:inherit;cursor:po
 .wk-pill,/* ===== Notification : petite capsule en verre ===== */
 :root[data-skin="ios"] .toast,/* Matière */
 .mfd,.ck,.ck-cat,.ck-in,.ck-panel,.cm-panel,.hm-panel,.mf-pal,.mf-tb,.st-btn,.st-pop,:root[data-skin="ios"] .tabs,:root[data-skin="ios"]:not([data-theme="light"]) .dmore,:root[data-skin="ios"]:not([data-theme="light"]) .hero,:root[data-skin="ios"]:not([data-theme="light"]) .nbtn,:root[data-skin="ios"]:not([data-theme="light"]) .sortseg,:root[data-skin="ios"]:not([data-theme="light"]) .tabs,:root[data-skin="ios"]:not([data-theme="light"]) .theme-btn,:root[data-skin="ios"]:not([data-theme="light"]) .todo-open,:root[data-skin="ios"]:not([data-theme="light"]) .topr .sync,:root[data-skin="ios"]:not([data-theme="light"]) .vseg,:root[data-skin="ios"][data-theme="dark"] .combo-pop,:root[data-skin="ios"][data-theme="dark"] .dkpop,:root[data-skin="ios"][data-theme="dark"] .dmore,:root[data-skin="ios"][data-theme="dark"] .hero,:root[data-skin="ios"][data-theme="dark"] .nbtn,:root[data-skin="ios"][data-theme="dark"] .sortseg,:root[data-skin="ios"][data-theme="dark"] .st-pop,:root[data-skin="ios"][data-theme="dark"] .sug,:root[data-skin="ios"][data-theme="dark"] .tabs,:root[data-skin="ios"][data-theme="dark"] .theme-btn,:root[data-skin="ios"][data-theme="dark"] .todo-open,:root[data-skin="ios"][data-theme="dark"] .topr .sync,:root[data-skin="ios"][data-theme="dark"] .tpop,:root[data-skin="ios"][data-theme="dark"] .vseg,[data-skin="ios"] .cg,[data-skin="ios"] .dkpop,[data-skin="ios"] .dmore,[data-skin="ios"] .hero,[data-skin="ios"] .nbtn,[data-skin="ios"] .skin,[data-skin="ios"] .sortseg,[data-skin="ios"] .sug,[data-skin="ios"] .tabs,[data-skin="ios"] .td-panel,[data-skin="ios"] .theme-btn,[data-skin="ios"] .toast,[data-skin="ios"] .todo-open,[data-skin="ios"] .topr .sync,[data-skin="ios"] .tpop,[data-skin="ios"] .vseg{background:var(--surface)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 0 0 1px var(--ink2)!important}}
+/* ===== index125 : carnet d'erreurs — fenetre d'ajout centree avec mise en forme (gras, souligne, surlignage,
+   rouge, liste), plus de limite de 300 caracteres (garde-fou silencieux a 50000, voir erwClose) ; page de consultation
+   (panneau existant) elargie et restylee en document continu plutot qu'en petites cartes. Stockage inchange
+   (state.notes['e:'+item]), la valeur est maintenant du HTML sur (voir erwSanitize) au lieu de texte brut ; les
+   anciennes notes sont migrees a la lecture (errOf). */
+:root{
+  /* index136 : palette exacte de l'outil Markup d'Apple (rouge/jaune/vert/bleu/noir) */
+  --hl-y:color-mix(in srgb,#F7D254 62%,var(--surface));
+  --hl-g:color-mix(in srgb,#79D475 55%,var(--surface));
+  --hl-b:color-mix(in srgb,#3B7CF2 42%,var(--surface));
+  --fc-red:#E8464A; --fc-blue:#3B7CF2; --fc-black:#000;
+}
+/* index130 : fenêtre d'édition d'une erreur agrandie et redessinée — grande fenêtre centrée façon document (colonne
+   de texte centrée, comme Word/Apple Notes), barre d'outils « ruban » regroupée avec plus d'air entre les boutons. */
+.erw-scrim{position:fixed;inset:0;z-index:60;background:color-mix(in srgb,var(--ink) 46%,transparent);opacity:0;pointer-events:none;transition:opacity .22s ease;display:flex;align-items:center;justify-content:center;padding:28px}
+.erw-scrim.on{opacity:1;pointer-events:auto}
+.erw-win{position:relative;width:min(960px,96vw);max-height:min(86vh,840px);min-height:0;display:flex;flex-direction:column;background:var(--surface);border-radius:22px;box-shadow:var(--shadow-pop);transform:scale(.96) translateY(14px);opacity:0;transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .2s ease;overflow:hidden}
+.erw-scrim.on .erw-win{transform:scale(1) translateY(0);opacity:1}
+.erw-h{display:flex;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line);flex:none}
+.erw-h b{font:600 1.0625rem var(--f-body);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.erw-h span{font:600 0.75rem var(--f-body);color:var(--c,var(--red));flex:none;text-transform:uppercase;letter-spacing:.04em}
+.erw-x{appearance:none;border:0;background:var(--line2);color:var(--ink2);width:30px;height:30px;border-radius:50%;font-size:1.125rem;line-height:1;cursor:pointer;flex:none}
+.erw-x:hover{background:var(--line);color:var(--ink)}
+.erw-tb{position:relative;display:flex;align-items:center;gap:2px;padding:9px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap;background:var(--surface);flex:none}
+.erw-tb button{appearance:none;border:0;background:none;color:var(--ink2);width:32px;height:32px;border-radius:8px;cursor:pointer;display:grid;place-items:center;font:600 0.8125rem var(--f-body);transition:background .12s ease,color .12s ease,transform .08s ease}
+.erw-tb button:hover{background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--ink)}
+.erw-tb button:active{background:color-mix(in srgb,var(--ink) 13%,transparent);transform:scale(.94)}
+.erw-grp{display:flex;align-items:center;gap:1px;margin-right:4px;flex:none}
+.erw-grp button{width:29px;height:29px;border-radius:8px}
+.erw-grp button.on{background:color-mix(in srgb,var(--ink) 11%,transparent);color:var(--ink)}
+.erw-sep{width:1px;height:20px;background:var(--line);margin:0 7px;align-self:center;flex:none;opacity:.7}
+.erw-cgrp{display:inline-flex;align-items:center;flex:none}
+.erw-ctoggle{display:flex!important;align-items:center;gap:3px;width:auto!important;padding:0 7px!important}
+.erw-ctoggle .erw-cdot{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14);flex:none}
+.erw-ctoggle .erw-chev{width:8px;height:8px;flex:none;transition:transform .15s ease;opacity:.6}
+.erw-ctoggle[aria-expanded="true"]{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+.erw-ctoggle[aria-expanded="true"] .erw-chev{transform:rotate(180deg)}
+.erw-crow{display:none;align-items:center;gap:6px}
+.erw-crow.show{display:inline-flex;margin-left:6px;animation:erwCrowIn .15s ease}
+@keyframes erwCrowIn{from{opacity:0}to{opacity:1}}
+.erw-hl{width:20px;height:20px;border-radius:50%;border:0;cursor:pointer;appearance:none;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);transition:transform .1s ease;flex:none}
+.erw-tb button.erw-hl{border-radius:50%}
+.erw-hl:hover{transform:scale(1.12)}
+.erw-hl:active{transform:scale(.96)}
+.erw-edit{flex:1 1 auto;min-height:220px;overflow:auto;padding:24px 24px 32px;outline:0;font:400 1.0625rem/1.75 var(--f-body);width:100%;box-sizing:border-box}
+.erw-edit:empty::before{content:attr(data-ph);color:var(--ink2)}
+.erw-edit p,.erw-edit div{margin:0 0 .8em}
+.erw-edit .er-objref{color:var(--c,var(--red));font-weight:600}
+.erw-f{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 24px;border-top:1px solid var(--line);flex:none}
+.erw-cnt{font:500 0.75rem var(--f-mono);color:var(--ink2)}
+@media (max-width:640px){
+  .erw-win{max-height:min(94vh,920px)}
+  .erw-h{padding:14px 16px}
+  .erw-tb{padding:7px 16px}
+  .erw-edit{padding:18px 16px 24px;min-height:160px}
+  .erw-f{padding:12px 16px}
+}
+/* index132 : tiroir de fiche LiSA en mode « choix d'objectif » (depuis l'éditeur d'erreur) */
+.mfd-pick{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 20px;background:color-mix(in srgb,var(--c,var(--red)) 12%,var(--surface));border-bottom:1px solid var(--line);flex:none}
+.mfd-pick b{font:600 0.875rem var(--f-body);color:var(--ink)}
+
+/* index128 : les anciennes règles !important de la vue « document continu » (.er-gh/.er-it/largeur de .er-panel)
+   ont été retirées — la consultation est repensée plus bas en page à deux colonnes (er-shell, er-nav2, er-read2). */
+.er-txt{white-space:normal!important}
+.er-txt p,.er-txt div{margin:0 0 .5em}
+.er-txt mark,.erw-edit mark{border-radius:3px;padding:0 1px}
+.erw-edit img,.er-txt img{max-width:100%;border-radius:8px;display:block;margin:6px 0}
+button.erw-hl.erw-pick{background:conic-gradient(from 210deg,#ff5f57,#ffbd2e,#28c840,#2fb8e8,#7c5cff,#ff5f57);border:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+button.erw-hl.erw-pick:hover{box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+button.erw-hl.erw-pick svg{display:none}
+.erw-hl.erw-none{background:var(--surface);position:relative;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.erw-hl.erw-none::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(to top right,transparent 47%,var(--ink2) 49%,var(--ink2) 51%,transparent 53%)}
+.erw-tb button#erw-mic.on{color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent)}
+.erw-tb button#erw-mic.on:hover{background:color-mix(in srgb,var(--red) 20%,transparent)}
+
+/* ===== index128 : consultation du carnet en page à deux colonnes (liste + lecture), à la place du panneau
+   latéral "document continu" — classes neuves (er-shell, er-nav2, er-read2…), aucune dépendance à .td-panel
+   pour que les habillages iOS/sombre de la to-do list n'interfèrent pas avec cette mise en page. ===== */
+.er-panel{position:fixed;inset:0;z-index:31;display:flex;align-items:center;justify-content:center;padding:18px;background:transparent;opacity:0;visibility:hidden;transition:opacity .22s ease,visibility 0s .22s}
+.er-panel.on{opacity:1;visibility:visible;transition:opacity .18s ease}
+.er-shell{width:min(1180px,100%);height:min(88vh,780px);background:var(--surface);border-radius:20px;box-shadow:var(--shadow-pop);display:flex;flex-direction:column;overflow:hidden;transform:scale(.96) translateY(10px);opacity:0;transition:transform .32s cubic-bezier(.22,1,.36,1),opacity .22s ease}
+.er-panel.on .er-shell{transform:none;opacity:1}
+.er-top{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);flex:none}
+.er-top h2{margin:0;flex:1;display:flex;align-items:center;gap:9px;font:600 1.0625rem var(--f-body);color:var(--red);min-width:0}
+.er-top h2 em{font-style:normal;min-width:24px;height:24px;padding:0 8px;border-radius:99px;display:grid;place-items:center;background:color-mix(in srgb,var(--red) 16%,var(--surface));font:600 0.7812rem var(--f-body);flex:none}
+.er-body2{flex:1;display:flex;min-height:0;position:relative}
+.er-nav2{width:330px;flex:none;display:flex;flex-direction:column;border-right:1px solid var(--line);background:var(--bg);min-width:0}
+.er-nsearch{padding:12px 14px 8px;flex:none}
+.er-nchips{padding:0 14px 10px;flex:none}
+.er-nlist{flex:1;overflow:auto;padding-bottom:10px}
+.er-ng{margin:14px 14px 4px;font:700 0.6875rem var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--c,var(--ink2));display:flex;align-items:center;gap:7px}
+.er-ng:first-child{margin-top:8px}
+.er-ng i{width:7px;height:7px;border-radius:50%;background:var(--c,var(--ink2));flex:none}
+.er-ng em{font-style:normal;opacity:.6;font-weight:600}
+.er-nrow{display:block;width:calc(100% - 16px);margin:0 8px 3px;text-align:left;appearance:none;border:0;border-left:3px solid transparent;background:none;border-radius:10px;padding:9px 10px;cursor:pointer}
+.er-nrow:hover{background:var(--line2)}
+.er-nrow[aria-pressed="true"]{background:var(--surface);border-left-color:var(--c,var(--red));box-shadow:var(--shadow-s)}
+.er-nrow b{display:block;font:600 0.8281rem var(--f-body);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.er-nrow span{display:block;font:400 0.75rem var(--f-body);color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.er-read2{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.er-back{display:none;appearance:none;border:0;background:none;color:var(--ink2);font:600 0.8125rem var(--f-body);align-items:center;gap:4px;padding:10px 14px 0;cursor:pointer;flex:none}
+.er-rhead{padding:20px 26px 14px;border-bottom:1px solid var(--line);flex:none}
+.er-rtag{display:inline-flex;align-items:center;gap:6px;font:700 0.6875rem var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--c,var(--red));margin-bottom:8px}
+.er-rhead h3{margin:0 0 5px;font:400 1.375rem var(--f-display);color:var(--ink)}
+.er-rbody{flex:1;overflow:auto;padding:20px 26px}
+.er-rbody .er-txt{white-space:normal;font-size:0.9688rem;line-height:1.7;color:var(--ink);overflow-wrap:anywhere}
+.er-rbody .er-txt p,.er-rbody .er-txt div{margin:0 0 .6em}
+.er-rbody .er-txt mark{border-radius:3px;padding:0 1px}
+.er-rbody .er-txt img{max-width:100%;border-radius:8px;display:block;margin:6px 0}
+.er-rfoot{padding:14px 26px;border-top:1px solid var(--line);flex:none;display:flex;justify-content:flex-end}
+.er-rfoot .er-acts button{height:32px;padding:0 15px}
+.er-rempty{flex:1;display:grid;justify-items:center;align-content:center;gap:6px;text-align:center;padding:40px;color:var(--ink2);font-size:0.875rem}
+@media (max-width:879px){
+  .er-panel{padding:0}
+  .er-shell{width:100%;height:100%;border-radius:0}
+  .er-nav2{width:100%;border-right:0}
+  .er-read2{position:absolute;inset:0;background:var(--surface);transform:translateX(100%);transition:transform .28s cubic-bezier(.22,1,.36,1);display:flex}
+  .er-panel.show-read .er-nav2{display:none}
+  .er-panel.show-read .er-read2{transform:none}
+  .er-back{display:flex}
+}
+#er-print-doc{display:none}
+@media print{
+  body.er-printing>*:not(#er-print-doc){display:none!important}
+  body.er-printing #er-print-doc{display:block!important;padding:28px;font-family:var(--f-body,sans-serif);color:#111}
+  body.er-printing #er-print-doc h1{font-family:var(--f-display,serif);font-size:1.6rem;margin-bottom:4px}
+  body.er-printing #er-print-doc h2{margin:22px 0 8px;font-size:1.05rem;border-bottom:1px solid #ccc;padding-bottom:4px}
+  body.er-printing #er-print-doc img{max-width:100%}
+}
+
+/* ===== index128 : flashcards créées depuis une erreur du carnet — petite fenêtre de révision (retourner la carte,
+   naviguer, retirer). Stockage : state.flash (voir sanitizeFlash). ===== */
+.fcr-scrim{position:fixed;inset:0;z-index:70;background:color-mix(in srgb,var(--ink) 45%,transparent);opacity:0;pointer-events:none;transition:opacity .22s ease;display:flex;align-items:center;justify-content:center;padding:20px}
+.fcr-scrim.on{opacity:1;pointer-events:auto}
+.fcr-win{width:min(520px,100%);background:var(--surface);border-radius:20px;box-shadow:var(--shadow-pop);display:flex;flex-direction:column;transform:scale(.95) translateY(10px);opacity:0;transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .2s ease;overflow:hidden}
+.fcr-scrim.on .fcr-win{transform:none;opacity:1}
+.fcr-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.fcr-h b{flex:1;font:600 0.9375rem var(--f-body)}
+.fcr-h span{font:500 0.75rem var(--f-mono);color:var(--ink2)}
+.fcr-x{appearance:none;border:0;background:var(--line2);color:var(--ink2);width:28px;height:28px;border-radius:50%;font-size:1.0625rem;line-height:1;cursor:pointer;flex:none}
+.fcr-card{margin:22px 22px 6px;min-height:220px;border:1px solid var(--line);border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;padding:26px;cursor:pointer;background:var(--bg)}
+.fcr-card b{display:block;font:700 0.6875rem var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:10px}
+.fcr-card .txt{font:400 1.0625rem/1.5 var(--f-display)}
+.fcr-card.back .txt{font:400 0.9375rem/1.65 var(--f-body);text-align:left}
+.fcr-card.back .txt p,.fcr-card.back .txt div{margin:0 0 .5em}
+.fcr-hint{text-align:center;font:500 0.75rem var(--f-body);color:var(--ink2);margin:0 0 14px}
+.fcr-f{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid var(--line)}
+.fcr-nav{display:flex;gap:6px}
+.fcr-nav button,.fcr-del{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink2);height:32px;padding:0 13px;border-radius:99px;font:600 0.75rem var(--f-body);cursor:pointer}
+.fcr-del{color:var(--low);border-color:color-mix(in srgb,var(--low) 40%,var(--line))}
+.fcr-empty{padding:50px 24px;text-align:center;color:var(--ink2);font-size:0.875rem}
+
+/* ===== index129 : fenêtre de création d'une flashcard — recto/verso vides à remplir à la main, avec le texte de
+   l'erreur affiché à côté (fcm-ref) pour aider à savoir quoi y mettre. ===== */
+.fcm-scrim{position:fixed;inset:0;z-index:65;background:color-mix(in srgb,var(--ink) 42%,transparent);opacity:0;pointer-events:none;transition:opacity .22s ease;display:flex;align-items:center;justify-content:center;padding:20px}
+.fcm-scrim.on{opacity:1;pointer-events:auto}
+.fcm-win{width:min(760px,100%);max-height:88vh;background:var(--surface);border-radius:20px;box-shadow:var(--shadow-pop);display:flex;flex-direction:column;transform:scale(.95) translateY(10px);opacity:0;transition:transform .28s cubic-bezier(.22,1,.36,1),opacity .2s ease;overflow:hidden}
+.fcm-scrim.on .fcm-win{transform:none;opacity:1}
+.fcm-h{display:flex;align-items:center;gap:10px;padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+.fcm-h b{flex:1;font:600 1rem var(--f-body)}
+.fcm-h span{font:500 0.75rem var(--f-mono);color:var(--ink2)}
+.fcm-x{appearance:none;border:0;background:var(--line2);color:var(--ink2);width:28px;height:28px;border-radius:50%;font-size:1.0625rem;line-height:1;cursor:pointer;flex:none}
+.fcm-body{flex:1;display:flex;min-height:0;overflow:hidden}
+.fcm-ref{width:280px;flex:none;border-right:1px solid var(--line);background:var(--bg);overflow:auto;padding:16px 18px}
+.fcm-ref b{display:block;font:700 0.6875rem var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--teal);margin-bottom:8px}
+.fcm-ref .er-txt{font-size:0.875rem;line-height:1.6}
+.fcm-form{flex:1;display:flex;flex-direction:column;overflow:auto;padding:16px 18px;gap:14px}
+.fcm-fld label{display:block;font:700 0.6875rem var(--f-body);text-transform:uppercase;letter-spacing:.06em;color:var(--ink2);margin-bottom:6px}
+.fcm-fld textarea{width:100%;min-height:90px;resize:vertical;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:400 0.9375rem/1.5 var(--f-body);color:var(--ink);background:var(--surface);box-sizing:border-box}
+.fcm-fld textarea:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 16%,transparent)}
+.fcm-f{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
+@media (max-width:620px){.fcm-body{flex-direction:column}.fcm-ref{width:100%;border-right:0;border-bottom:1px solid var(--line);max-height:160px}}
+</style>
 </style>
 
 <!-- §H1 — Écran de connexion. Les id (au-*, auth-*) sont lus par §J27 : ne pas les renommer. -->
@@ -3094,7 +3418,7 @@ button.qcm{appearance:none;-webkit-appearance:none;font-family:inherit;cursor:po
 <div class="jm-sw"><div><b>Tenir l’échéance</b><small>Resserre les écarts pour finir avant l’échéance du collège.</small></div><button type="button" class="set-sw" role="switch" data-jmw="dl" aria-checked="true" aria-label="Tenir l’échéance du collège"></button></div>
 <div class="jm-sw"><div><b>Semaines de stage plus légères</b><small>Moitié moins d’items proposés les jours de stage.</small></div><button type="button" class="set-sw" role="switch" data-jmw="stg" aria-checked="true" aria-label="Alléger les semaines de stage"></button></div></div>
 </div>
-<div class="jm-act"><button type="button" class="jm-one" id="jm-one"></button><button type="button" class="jm-all" id="jm-all">Appliquer pour tous les collèges</button><p class="jm-note" id="jm-note" hidden></p><div class="jm-foot"><button type="button" class="jm-ghost" id="jm-cancel">Annuler</button><button type="button" class="jm-ghost warn" id="jm-off" hidden>Tout désactiver</button></div></div></div></div>
+<div class="jm-act"><button type="button" class="jm-one" id="jm-one"></button><button type="button" class="jm-all" id="jm-all">Appliquer pour tous les collèges</button><p class="jm-note" id="jm-note" hidden></p><div class="jm-foot"><button type="button" class="jm-ghost" id="jm-cancel">Annuler</button><button type="button" class="jm-ghost warn" id="jm-offcol" hidden>Désactiver pour ce collège</button><button type="button" class="jm-ghost warn" id="jm-off" hidden>Tout désactiver</button></div></div></div></div>
 <div id="pe" class="cf" hidden><div class="cf-box jm-box pe-box" role="dialog" aria-modal="true" aria-label="Planifier jusqu’à l’échéance"><div id="pe-intro" hidden></div><div id="pe-set" hidden></div></div></div>
 <div id="pc" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="pc-t"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8h8M7.5 4.5L11 8l-3.5 3.5"/><path d="M13.6 3.5v9"/></svg></div><h2 id="pc-t">Continuer quel jour ?</h2><p class="tc-n" id="pc-n"></p><div class="pc-days" id="pc-days" role="group" aria-label="Jour de la suite"></div><label class="tc-date"><span>Un autre jour</span><input type="date" id="pc-date"></label><div class="cf-act"><button type="button" class="cf-no" data-pcs="no">Annuler</button><button type="button" class="cf-ok" id="pc-ok" data-pcs="ok" disabled>Choisir</button></div></div></div>
 <div id="pf" class="cf" hidden><div class="cf-box tc-box" role="dialog" aria-modal="true" aria-labelledby="pf-t"><div class="cf-ic tc-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg></div><h2 id="pf-t">Comment s’est passé ce tour ?</h2><p class="tc-n" id="pf-n"></p><div class="tc-seg" role="group" aria-label="Ressenti"><button type="button" data-pfs="ok" class="tc-ok-b"><i></i>Bien compris</button><button type="button" data-pfs="mid" class="tc-mid-b"><i></i>À consolider</button><button type="button" data-pfs="low" class="tc-low-b"><i></i>Difficile</button></div><div class="cf-act"><button type="button" class="cf-no" data-pfs="no">Annuler</button></div></div></div>
@@ -3195,6 +3519,8 @@ h3.dsh-t{margin:16px 0 0;font:650 1.125rem/1.25 var(--f-body);letter-spacing:0}
 .dsh-hdr{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
 .dsh-chrono{appearance:none;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px 0 9px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--ink2);font:500 0.7812rem var(--f-body);cursor:pointer;transition:background .15s,color .15s,border-color .15s}@media (hover:hover){
 .dsh-chrono:hover{color:var(--ink);border-color:var(--ink2)}} .dsh-chrono:active{transform:scale(.96)}
+.dsh-chrono.on{background:var(--c,var(--red));border-color:transparent;color:#fff}@media (hover:hover){
+.dsh-chrono.on:hover{background:var(--c,var(--red));color:#fff;opacity:.9}}
 .dsh-h1{margin:0;font:700 clamp(28px,3.4vw,38px)/1.08 var(--f-display,var(--f-body));letter-spacing:-.032em;color:var(--ink)}
 .dsh-date{margin:6px 0 0;font:500 0.9375rem var(--f-body);color:var(--ink2)}
 .dsh-hd .tdy-streak{display:inline-flex;align-items:center;gap:7px;padding:0;background:none;box-shadow:none;border:0;border-radius:0;font:500 0.9375rem var(--f-body);color:var(--ink2)}
@@ -4329,23 +4655,17 @@ function offsetsIn(box, range){
 
 /* ---------- Carnet d'erreurs ---------- */
 function errLinePrefix(n){ return 'Obj. ' + n + ' · '; }
-function errHas(key, n){ var a = API(); if(!a) return false; return (a.errOf(key) || '').split('\n').some(function(l){ return l.indexOf(errLinePrefix(n)) === 0; }); }
+function errHas(key, n){ var a = API(); if(!a) return false; return a.errPlain(a.errOf(key) || '').split('\n').some(function(l){ return l.indexOf(errLinePrefix(n)) === 0; }); }
 function errAdd(key, n, extra){
   var a = API(), o = objOf(key, n); if(!a || !o) return false;
   var line = errLinePrefix(n) + o.short + (extra ? ' : ' + extra.replace(/\s+/g, ' ').trim() : '');
-  var cur = a.errOf(key) || '', lines = cur ? cur.split('\n') : [], pre = errLinePrefix(n), done = false;
-  lines = lines.map(function(l){ if(l.indexOf(pre) === 0){ done = true; return line; } return l; });
-  if(!done) lines.push(line);
-  var txt = lines.join('\n');
-  if(txt.length > 300){
-    var room = 300 - (txt.length - line.length);
-    if(room < pre.length + 12){ a.toast('Le carnet de cet item est plein (300 caractères). Libère de la place dans le carnet d’erreurs.'); return false; }
-    line = line.slice(0, room - 1) + '…';
-    lines = lines.map(function(l){ return l.indexOf(pre) === 0 ? line : l; }); if(!done) lines[lines.length - 1] = line;
-    txt = lines.join('\n');
-    a.toast('Texte raccourci : 300 caractères au maximum par item.');
-  }
-  a.errSet(key, txt);
+  var cur = a.errOf(key) || '', pre = errLinePrefix(n), done = false;
+  var box = document.createElement('div'); box.innerHTML = cur;
+  Array.prototype.forEach.call(box.children, function(p){
+    if(!done && a.errPlain(p.outerHTML).indexOf(pre) === 0){ p.textContent = line; done = true; }
+  });
+  if(!done){ var p = document.createElement('p'); p.textContent = line; box.appendChild(p); }
+  a.errSet(key, box.innerHTML);
   return true;
 }
 
@@ -4518,7 +4838,17 @@ function goTo(id, instant){
 
 /* ----- barre de surlignage ----- */
 var tbState = null, hlMode = null;   /* hlMode : null = surlignage désactivé, 0 = gomme, 1..5 = couleur active */
+var lastHl = null;   /* index142 : { key, n, raw } — état d'une section juste avant le dernier surlignage/gomme, pour
+   que le bouton "revenir en arrière" l'annule d'abord s'il n'y a eu aucune autre action depuis (sinon, navigue). */
 function hideTb(){ if(tb){ tb.hidden = true; tbState = null; } }
+function hlUndoLast(){
+  if(!lastHl) return;
+  var key = lastHl.key, n = lastHl.n;
+  p('h:' + key + ':' + n, lastHl.raw || '');
+  lastHl = null;
+  if(cur === key && sheet){ var sec = sheet.querySelector('#mf-s' + n); if(sec) applyHL(sec, key); }
+  toast('Surlignage annulé.');
+}
 function showTb(rect, st){
   tbState = st; tb.hidden = false;
   qa(tb, '[data-hl]').forEach(function(b){ b.classList.toggle('on', st.c && Number(b.dataset.hl) === st.c); });
@@ -4542,6 +4872,7 @@ function onSelection(){
 }
 function paintNow(st, c){
   var h = hlRead(cur, st.n), iv = h.len === st.len ? h.iv : [];
+  lastHl = { key:cur, n:st.n, raw:g('h:' + cur + ':' + st.n) };
   hlWrite(cur, st.n, st.len, hlPaint(iv, st.s, st.e, c));
   var sel = window.getSelection(); if(sel) sel.removeAllRanges();
   hideTb(); applyHL(sheet.querySelector('#mf-s' + st.n), cur);
@@ -4559,6 +4890,7 @@ function onToolbar(e){
   var b = e.target.closest('[data-hl]'); if(!b || !tbState) return;
   var c = Number(b.dataset.hl), st = tbState, h = hlRead(cur, st.n);
   var iv = h.len === st.len ? h.iv : [];
+  lastHl = { key:cur, n:st.n, raw:g('h:' + cur + ':' + st.n) };
   hlWrite(cur, st.n, st.len, hlPaint(iv, st.s, st.e, c));
   var sel = window.getSelection(); if(sel) sel.removeAllRanges();
   hideTb(); applyHL(sheet.querySelector('#mf-s' + st.n), cur);
@@ -4632,9 +4964,9 @@ function onSheetClick(e){
   if(a === 'close') closeAll();
   else if(a === 'plan') sheet.classList.toggle('plan-on');
   else if(a === 'print') window.print();
-  else if(a === 'go'){ navBefore(); goTo(b.dataset.t); navPush({ k:cur, t:b.dataset.t }); }   /* index100 : un saut du plan s'inscrit dans l'historique */
-  else if(a === 'back') navGo(hpos - 1);
-  else if(a === 'fwd') navGo(hpos + 1);
+  else if(a === 'go'){ lastHl = null; navBefore(); goTo(b.dataset.t); navPush({ k:cur, t:b.dataset.t }); }   /* index100 : un saut du plan s'inscrit dans l'historique */
+  else if(a === 'back'){ if(lastHl && lastHl.key === cur) hlUndoLast(); else navGo(hpos - 1); }
+  else if(a === 'fwd'){ lastHl = null; navGo(hpos + 1); }
   else if(a === 'legend'){ var l = sheet.querySelector('.mf-pal'); l.hidden = !l.hidden; b.setAttribute('aria-expanded', String(!l.hidden)); if(l.hidden) setHlMode(null); }
   else if(a === 'hlc'){ var cc = Number(b.dataset.c); setHlMode(hlMode === cc ? null : cc); }
   else if(a === 'hlend'){ setHlMode(null); sheet.querySelector('.mf-pal').hidden = true; sheet.querySelector('[data-mf="legend"]').setAttribute('aria-expanded', 'false'); }
@@ -4736,23 +5068,33 @@ function mfFindClose(){
 /* ----- tiroir d'aperçu ----- */
 function buildDrawer(key){
   var F = MF[key], r = resumeInfo(), mine = r && r.key === key ? r : null, d = doneCount(key);
+  var pickBar = pickCb ? '<div class="mfd-pick"><b>Choisis l’objectif à insérer</b><button type="button" class="mf-ib" data-mfd="cancelpick" aria-label="Annuler">'+I.x+'</button></div>' : '';
   return '<div class="mfd-grab" aria-hidden="true"></div>'+
     '<header class="mfd-h"><div class="mfd-ht"><span class="mf-kick">Fiche LiSA · Item '+F.num+'</span><h2>'+esc(F.title)+'</h2></div>'+
     '<div class="mfd-ha"><button type="button" class="mf-ib" data-mfd="full" aria-label="Ouvrir en plein écran">'+I.expand+'</button><button type="button" class="mf-ib" data-mfd="close" aria-label="Fermer l’aperçu">'+I.x+'</button></div></header>'+
+    pickBar+
     '<div class="mfd-b"><p class="mfd-prog"><b>'+d+'</b> sur '+F.obj.length+' objectifs maîtrisés</p><div class="mf-bar"><i style="--p:'+((Math.round(100 * d / F.obj.length))/100)+'"></i></div>'+
     '<h3 class="mfd-lb">Chaîne de raisonnement</h3><ol class="mfd-chain">'+F.chain.map(function(c){ return '<li><span>'+c+'</span></li>'; }).join('')+'</ol>'+
     '<h3 class="mfd-lb">Objectifs</h3><ul class="mfd-ol">'+F.obj.map(function(o){
       var dn = on('d', key, o.n);
       return '<li><button type="button" data-mfd="obj" data-n="'+o.n+'"><span class="mf-pn">'+o.n+'</span><span class="mf-pt"><b>'+esc(o.rub)+'</b><small>'+esc(o.short)+'</small></span><span class="mf-pr '+o.r.toLowerCase()+'">'+o.r+'</span><span class="mfd-ck'+(dn ? ' on' : '')+'" aria-label="'+(dn ? 'Maîtrisé' : 'Pas encore maîtrisé')+'">'+(dn ? I.check : '')+'</span></button></li>';
     }).join('')+'</ul></div>'+
-    '<footer class="mfd-f"><button type="button" class="mfd-btn" data-mfd="full">'+(mine ? 'Reprendre à l’objectif ' + mine.n : 'Lire la fiche')+'</button></footer>';
+    (pickCb ? '' : '<footer class="mfd-f"><button type="button" class="mfd-btn" data-mfd="full">'+(mine ? 'Reprendre à l’objectif ' + mine.n : 'Lire la fiche')+'</button></footer>');
 }
 function onDrawerClick(e){
   var b = e.target.closest('[data-mfd]'); if(!b) return;
   var a = b.dataset.mfd;
-  if(a === 'close') closeAll();
-  else if(a === 'full'){ var r = resumeInfo(); openSheet(cur, r && r.key === cur ? r.n : 0, lastFrom, true); }
-  else if(a === 'obj') openSheet(cur, Number(b.dataset.n), lastFrom, true);
+  if(a === 'close' || a === 'cancelpick'){ closeAll(); }
+  else if(a === 'full'){ if(pickCb) return; var r = resumeInfo(); openSheet(cur, r && r.key === cur ? r.n : 0, lastFrom, true); }
+  else if(a === 'obj'){
+    if(pickCb){
+      var n = Number(b.dataset.n), o = objOf(cur, n), cb = pickCb;
+      pickCb = null; closeAll();
+      cb({ n:n, title:(o ? o.rub + ' · ' + o.short : '') });
+      return;
+    }
+    openSheet(cur, Number(b.dataset.n), lastFrom, true);
+  }
 }
 var dragY = null, dSpr = null, dArm = null;
 function dBegin(e, cap){
@@ -4826,6 +5168,7 @@ function openDrawerNow(key, from){
 function openSheet(key, n, from, fromDrawer){ if(!MF[key]) return; gate(key, function(){ openSheetNow(key, n, from, fromDrawer); }); }
 function openSheetNow(key, n, from, fromDrawer){
   if(!MF[key]) return;
+  lastHl = null;
   ensureSheet();
   if(!navLock){ if(view === 'sheet') navBefore(); else { hist = []; hpos = -1; } }   /* index100 : position de départ, ou historique neuf à l'ouverture */
   var fresh = cur !== key || !sheet.firstChild || sheet.dataset.k !== key;
@@ -4842,6 +5185,7 @@ function openSheetNow(key, n, from, fromDrawer){
 }
 function closeAll(){
   if(!view) return;
+  pickCb = null; lastHl = null;
   if(sheet){ sheet.classList.remove('on', 'plan-on'); } if(drawer) drawer.classList.remove('on'); if(scrim) scrim.classList.remove('on');
   mfFindClose();   /* index120f : pas de recherche ni de <mark class="mf-fm"> qui traîne à la prochaine ouverture */
   hideTb(); if(sheet && hlMode !== null){ setHlMode(null); var lg0 = sheet.querySelector('.mf-pal'); if(lg0) lg0.hidden = true; var pn0 = sheet.querySelector('[data-mf="legend"]'); if(pn0) pn0.setAttribute('aria-expanded', 'false'); }
@@ -5074,6 +5418,7 @@ function purgeCache(){
 
 /* index107 : un item présent dans plusieurs collèges (clé « numéro@collège », ou suffixe b) ouvre la fiche de l’item de référence (clé = le numéro seul). */
 function nk(k){ k = (k == null) ? '' : String(k); var m = k.match(/^(\d+)/); return m ? m[1] : k; }
+var pickCb = null;
 var api = {
   has: function(key){ return !!MF[nk(key)]; },
   mention: function(key){ return mention(nk(key)); },
@@ -5086,6 +5431,15 @@ var api = {
   index: index,
   objTitle: function(key, n){ var o = objOf(nk(key), n); return o ? o.short : ''; },
   hasObj: function(key, n){ return !!objOf(nk(key), n); },
+  objList: function(key){ var F = MF[nk(key)]; return F ? F.obj.map(function(o){ return { n:o.n, title:o.rub + ' · ' + o.short }; }) : []; },
+  /* index132 : ouvre le tiroir de la fiche en mode "choix d'objectif" — cb reçoit {n, title}
+     si Sam choisit un objectif, ou null s'il annule/ferme le tiroir. Utilisé par l'éditeur
+     d'erreur pour insérer une référence claire à un objectif, sans popover séparé. */
+  pickObjective: function(key, from, cb){
+    if(!MF[nk(key)]){ cb(null); return; }
+    pickCb = function(res){ cb(res); };
+    openDrawer(nk(key), from);
+  },
   sync: function(){ if(sheet && view === 'sheet' && cur) refreshSheet(); },
   init: lisaInit, purgeCache: purgeCache, ensureFull: ensureFull, searchReady: function(){ return !!LISA.srchP; }, searchRetry: function(){ lisaRetry(false); },
   searchState: function(){ return { limited:searchLimited(), missing:searchMissing().length, loading:!!LISA.srchP }; },
@@ -6253,9 +6607,21 @@ var ICON_CHEV = '<svg class="chev" width="16" height="16" viewBox="0 0 16 16" fi
    ⚠ Ajouter un champ à state : voir la règle des 6 endroits dans le sommaire.
    ====================================================================== */
 /* ---------- État ---------- */
-var LS_DL = 'carnet-edn-dl', LS_JM = 'carnet-edn-jm', LS_IGN = 'medisam-ign', LS_PIN = 'medisam-pins', LS_CUR = 'medisam-cur', LS_MF = 'medisam-mf';
-var state = { tours:{}, plan:{}, anki:{}, todos:[], days:{}, stw:{}, notes:{}, deadlines:{}, ign:{}, pins:[], cur:'', mf:{}, work:{}, jm:{ all:null, cols:{}, max:8, x:{}, adapt:true, dl:true, stg:true, pe:peDef() } };
+var LS_DL = 'carnet-edn-dl', LS_JM = 'carnet-edn-jm', LS_IGN = 'medisam-ign', LS_PIN = 'medisam-pins', LS_CUR = 'medisam-cur', LS_MF = 'medisam-mf', LS_FLASH = 'medisam-flash';
+var state = { tours:{}, plan:{}, anki:{}, todos:[], days:{}, stw:{}, notes:{}, deadlines:{}, ign:{}, pins:[], cur:'', mf:{}, work:{}, flash:{}, jm:{ all:null, cols:{}, max:8, x:{}, adapt:true, dl:true, stg:true, pe:peDef() } };
 function sanitizeNotes(o){ var r = {}; if(o && typeof o === 'object') Object.keys(o).slice(0,1500).forEach(function(k){ if(typeof o[k] === 'string' && o[k].trim()) r[k.slice(0,40)] = o[k].slice(0,4000); }); return r; }
+/* Flashcards créées depuis le carnet d'erreurs (index128). Un id → { k:clé item, front:texte court, back:HTML (même
+   format assaini que les erreurs), ts:horodatage }. Voir la règle des 6 endroits (sommaire). */
+function sanitizeFlash(o){
+  var r = {};
+  if(o && typeof o === 'object') Object.keys(o).slice(0,4000).forEach(function(id){
+    var f = o[id];
+    if(f && typeof f === 'object' && typeof f.front === 'string' && typeof f.back === 'string' && f.back.trim()){
+      r[id.slice(0,24)] = { k:(typeof f.k === 'string' ? f.k.slice(0,40) : ''), front:f.front.slice(0,300), back:f.back.slice(0,20000), ts:(typeof f.ts === 'number' ? f.ts : Date.now()) };
+    }
+  });
+  return r;
+}
 /* Items qu'on ne compte pas faire (clé → 1) et collèges épinglés (liste d'identifiants, dans l'ordre d'épinglage) */
 function sanitizeIgn(o){ var r = {}; if(o && typeof o === 'object') Object.keys(o).slice(0,800).forEach(function(k){ if(ITEM_BY_KEY[k] && o[k]) r[k] = 1; }); return r; }
 function sanitizeCur(v){ return typeof v === 'string' && COLLEGES.some(function(c){ return c.id === v; }) ? v : ''; }
@@ -6419,6 +6785,7 @@ try{ var rawwk = lsGet(LS_WORK); if(rawwk) state.work = sanitizeWork(JSON.parse(
 try{ var rawpin = lsGet(LS_PIN); if(rawpin) state.pins = sanitizePins(JSON.parse(rawpin)); }catch(e){}
 try{ var rawdl = lsGet(LS_DL); if(rawdl) state.deadlines = sanitizeDeadlines(JSON.parse(rawdl)); }catch(e){}
 try{ var rawn = lsGet(LS_NOTES); if(rawn) state.notes = sanitizeNotes(JSON.parse(rawn)); }catch(e){}
+try{ var rawfl = lsGet(LS_FLASH); if(rawfl) state.flash = sanitizeFlash(JSON.parse(rawfl)); }catch(e){}
 try{ var rawt = lsGet(LS_TODO); if(rawt) state.todos = sanitizeTodos(JSON.parse(rawt)); }catch(e){}
 try{ var rawa = lsGet(LS_ANKI); if(rawa) state.anki = sanitizeAnki(JSON.parse(rawa)); }catch(e){}
 try{ var raw = lsGet(LS); if(raw) state.tours = sanitize(JSON.parse(raw)); }catch(e){}
@@ -6493,6 +6860,7 @@ function saveLocal(){
   lsSet(LS_ANKI, JSON.stringify(state.anki));
   lsSet(LS_TODO, JSON.stringify(state.todos));
   lsSet(LS_NOTES, JSON.stringify(state.notes));
+  lsSet(LS_FLASH, JSON.stringify(state.flash));
   lsSet(LS_DL, JSON.stringify(state.deadlines));
   lsSet(LS_JM, JSON.stringify(state.jm));
   lsSet(LS_IGN, JSON.stringify(state.ign));
@@ -6503,7 +6871,7 @@ function saveLocal(){
 }
 /* Ce qui part en ligne (et dans la sauvegarde .json) : noms courts, voir la règle des 6 endroits */
 function dataObj(){
-  return { v:1, tours:state.tours, plan:state.plan, days:state.days, stw:state.stw, anki:state.anki, todos:state.todos, notes:state.notes, dl:state.deadlines, jm:state.jm, ign:state.ign, pin:state.pins, cur:state.cur, mf:state.mf, work:state.work, skip:seedSkip, tour:(tourSeen ? 1 : 0), prefs:prefsObj() };
+  return { v:1, tours:state.tours, plan:state.plan, days:state.days, stw:state.stw, anki:state.anki, todos:state.todos, notes:state.notes, flash:state.flash, dl:state.deadlines, jm:state.jm, ign:state.ign, pin:state.pins, cur:state.cur, mf:state.mf, work:state.work, skip:seedSkip, tour:(tourSeen ? 1 : 0), prefs:prefsObj() };
 }
 /* Préférences gardées sur le compte (index39) : réglages (cfg), tri, filtre « références », durées pomodoro perso */
 function prefsObj(){
@@ -6704,9 +7072,10 @@ function renderChips(){
   var cnt = {
     all: items.length,
     'new': items.filter(function(it){ return !toursOf(keyOf(it)).length; }).length,
-    due: items.filter(function(it){ return isDue(toursOf(keyOf(it))) && !state.ign[keyOf(it)]; }).length
+    due: items.filter(function(it){ return isDue(toursOf(keyOf(it))) && !state.ign[keyOf(it)]; }).length,
+    once: items.filter(function(it){ return toursOf(keyOf(it)).length === 1; }).length
   };
-  $('chips').innerHTML = [['all','Tous'],['new','À démarrer'],['due','À revoir']].map(function(p){
+  $('chips').innerHTML = [['all','Tous'],['new','À démarrer'],['due','À revoir'],['once','Vu 1 fois']].map(function(p){
     return '<button class="chip" data-act="filter" data-f="'+p[0]+'" aria-pressed="'+(filter===p[0])+'">'+p[1]+' <b>'+cnt[p[0]]+'</b></button>';
   }).join('') + '<span class="chipsep" aria-hidden="true"></span><button class="chip refchip" data-act="refonly" aria-pressed="'+refOnly+'" title="N’afficher que les items écrits par ce collège (étoile jaune)">'+ICON_STAR+'Référence <b>'+nRef+'</b></button>'+
     (tcol ? '<button type="button" class="chiptour" data-act="col-tour" data-id="'+tcol.id+'" aria-label="Un tour pour tout le collège" title="Un tour pour tout le collège : ajoute le même tour à tous les items de ce collège"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9"/><path d="M13.5 2.5v3h-3"/></svg></button>' : '');
@@ -6853,32 +7222,347 @@ document.addEventListener('focusout', function(e){
 document.addEventListener('keydown', function(e){
   if(e.target && e.target.id === 'nt-ta' && e.key === 'Escape'){ e.preventDefault(); clearTimeout(noteT); noteSave(); var k = noteOpen; noteOpen = null; renderList(); focusLater('[data-act="note"][data-num="'+k+'"]'); }
 });
-/* ---------- Carnet d'erreurs (index41) : une ligne « ce que j'ai raté » par item, à relire avant le tour suivant.
-   Stocké dans state.notes sous la clé 'e:'+item : il suit donc toute la chaîne de sauvegarde des notes (compte, fusion
-   multi-appareils, export). ⚠ Les notes « normales » n'ont jamais de clé commençant par 'e:'. */
-var errOpen = null, errT = null;
+/* ---------- Carnet d'erreurs (index41, enrichi en index125) : mise en forme (gras, souligné, surlignage, rouge,
+   liste) dans une fenêtre centrée (erw*), plus de limite de caractères. Stocké dans state.notes sous la clé 'e:'+item
+   (inchangé : suit la chaîne de sauvegarde des notes — compte, fusion multi-appareils, export). ⚠ Les notes « normales »
+   n'ont jamais de clé commençant par 'e:'. La valeur stockée est du HTML sûr (voir erwSanitize) ; les anciennes notes
+   en texte brut (avant index125) sont converties en paragraphes à la lecture (errOf), sans réécriture tant qu'on
+   n'enregistre pas. */
+function errOf(key){
+  var v = state.notes['e:' + key] || '';
+  if(v && !/<[a-z]/i.test(v)) v = v.split('\n').map(function(l){ return l ? '<p>' + esc(l) + '</p>' : ''; }).filter(Boolean).join('');
+  return v;
+}
+function errPlain(html){
+  var s = String(html || '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|li)>/gi, '\n');
+  var d = document.createElement('div'); d.innerHTML = s;
+  return (d.textContent || '').replace(/\n{3,}/g, '\n\n').replace(/[ \t]+\n/g, '\n').trim();
+}
+function erwSanitize(html){
+  var allow = { B:1, STRONG:1, U:1, I:1, EM:1, MARK:1, BR:1, P:1, DIV:1, UL:1, OL:1, LI:1, SPAN:1, IMG:1 };
+  var d = document.createElement('div'); d.innerHTML = html;
+  (function clean(node){
+    Array.prototype.slice.call(node.childNodes).forEach(function(n){
+      if(n.nodeType === 1){
+        if(!allow[n.tagName]){ while(n.firstChild) node.insertBefore(n.firstChild, n); node.removeChild(n); return; }
+        Array.prototype.slice.call(n.attributes).forEach(function(at){
+          if(n.tagName === 'IMG'){
+            if(at.name !== 'src' || !/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(at.value)) n.removeAttribute(at.name);
+            return;
+          }
+          if(at.name === 'style'){
+            var keep = [];
+            at.value.split(';').forEach(function(decl){
+              var m = /^\s*(color|background-color)\s*:\s*([^;]+)$/i.exec(decl);
+              if(m) keep.push(m[1].toLowerCase() + ':' + m[2].trim());
+            });
+            if(keep.length) n.setAttribute('style', keep.join(';')); else n.removeAttribute('style');
+          } else n.removeAttribute(at.name);
+        });
+        if(n.tagName === 'IMG' && !n.getAttribute('src')){ node.removeChild(n); return; }
+        clean(n);
+      } else if(n.nodeType !== 3) node.removeChild(n);
+    });
+  })(d);
+  return d.innerHTML;
+}
 var ICON_ERR_S = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="scale(.8)" stroke-width="2.1"><path d="M4 2.5h8a1.5 1.5 0 0 1 1.5 1.5v4"/><path d="M4 2.5v15h4.5"/><path d="M6.8 6.5h4M6.8 9.5h2"/><path d="M17 12.2a3.7 3.7 0 1 0-1 3"/><path d="M17 9.5v2.7h-2.7"/></g></svg>';
-function errOf(key){ return state.notes['e:' + key] || ''; }
 function errBtn(key){
   var has = !!errOf(key);
-  return '<button type="button" class="nt er'+(has?' has':'')+'" data-act="err" data-num="'+esc(key)+'" aria-expanded="'+(errOpen===key)+'" aria-label="'+(has?'Modifier le carnet d’erreurs':'Noter ce que j’ai raté')+'" data-tip="'+(has?'Carnet d’erreurs : relire ou modifier':'Carnet d’erreurs : ce que j’ai raté')+'">'+ICON_ERR_S+'</button>';
+  return '<button type="button" class="nt er'+(has?' has':'')+'" data-act="err" data-num="'+esc(key)+'" aria-label="'+(has?'Modifier le carnet d’erreurs':'Noter ce que j’ai raté')+'" data-tip="'+(has?'Carnet d’erreurs : relire ou modifier':'Carnet d’erreurs : ce que j’ai raté')+'">'+ICON_ERR_S+'</button>';
 }
 function errHTML(key){
-  if(errOpen === key) return '<div class="nbox ebox"><textarea id="er-ta" rows="2" maxlength="300" placeholder="Ce que j’ai raté (à relire avant le prochain tour)…" aria-label="Carnet d’erreurs" data-key="'+esc(key)+'">'+esc(errOf(key))+'</textarea></div>';
-  return '';   /* index43 : le texte n'est visible que dans la boîte ouverte ; sinon seul le triangle rouge signale une erreur */
-}
-function errSave(){
-  var ta = $('er-ta'); if(!ta) return;
-  var k = 'e:' + ta.dataset.key, v = ta.value.trim();
-  if(v) state.notes[k] = ta.value.slice(0,300); else delete state.notes[k];
-  persist();
+  return '';   /* index127 : l'aperçu ne s'affiche plus dans la liste des items — seulement dans le carnet (erShow) */
 }
 function errCount(){ var n = 0; Object.keys(state.notes).forEach(function(k){ if(k.indexOf('e:') === 0) n++; }); return n; }
-document.addEventListener('input', function(e){ if(e.target && e.target.id === 'er-ta'){ clearTimeout(errT); errT = setTimeout(errSave, 500); } });
-document.addEventListener('focusout', function(e){ if(e.target && e.target.id === 'er-ta'){ clearTimeout(errT); errSave(); } });
-document.addEventListener('keydown', function(e){
-  if(e.target && e.target.id === 'er-ta' && e.key === 'Escape'){ e.preventDefault(); clearTimeout(errT); errSave(); var k = errOpen; errOpen = null; renderList(); focusLater('[data-act="err"][data-num="'+k+'"]'); }
-});
+
+/* ---------- Fenêtre centrée de saisie (index125, couleurs libres + images en index126) ---------- */
+var erwKey = null, erwFrom = null, erwPanel = false, erwRange = null;
+var ERW_CAP = 400000;   /* garde-fou silencieux (caractères de HTML stocké) — relevé en index126 pour laisser la place aux images */
+(function(){
+  var sc = document.createElement('div'); sc.id = 'erw-scrim'; sc.className = 'erw-scrim';
+  sc.innerHTML = '<div class="erw-win" id="erw-win" data-h="hema" role="dialog" aria-modal="true" aria-labelledby="erw-title">'+
+    '<div class="erw-h"><b id="erw-title"></b><span id="erw-sub"></span><button type="button" class="erw-x" id="erw-x" aria-label="Fermer">×</button></div>'+
+    '<div class="erw-tb">'+
+      '<div class="erw-grp">'+
+        '<button type="button" data-ec="bold" aria-label="Gras" data-tip="Gras"><b>G</b></button>'+
+        '<button type="button" data-ec="underline" aria-label="Souligné" data-tip="Souligné"><u>S</u></button>'+
+        '<button type="button" data-ec="italic" aria-label="Italique" data-tip="Italique"><i>I</i></button>'+
+      '</div>'+
+      '<div class="erw-cgrp">'+
+        '<button type="button" class="erw-ctoggle" id="erw-hltoggle" data-ec="hltoggle" aria-label="Surligner" data-tip="Surligner" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13.2l1.3-3.8L9.8 3.9l2.3 2.3L6.6 11.7z"/><path d="M4.3 9.4L6.6 11.7"/><path d="M2.5 13.6h3.2"/></svg><svg class="erw-chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+
+        '<span class="erw-crow" id="erw-hlrow">'+
+          '<button type="button" class="erw-hl" style="background:var(--hl-y)" data-hl="--hl-y" aria-label="Surligner jaune" data-tip="Surligner jaune"></button>'+
+          '<button type="button" class="erw-hl" style="background:var(--hl-g)" data-hl="--hl-g" aria-label="Surligner vert" data-tip="Surligner vert"></button>'+
+          '<button type="button" class="erw-hl" style="background:var(--hl-b)" data-hl="--hl-b" aria-label="Surligner bleu" data-tip="Surligner bleu"></button>'+
+          '<button type="button" class="erw-hl erw-none" data-hl="none" aria-label="Aucun surlignage" data-tip="Aucun surlignage"></button>'+
+          '<button type="button" class="erw-hl erw-pick" data-ec="pickhl" aria-label="Autre couleur de surlignage" data-tip="Autre couleur de surlignage"></button>'+
+          '<input type="color" id="erw-hl-custom" value="#FFC53D" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">'+
+        '</span>'+
+      '</div>'+
+      '<span class="erw-sep"></span>'+
+      '<div class="erw-cgrp">'+
+        '<button type="button" class="erw-ctoggle" id="erw-fctoggle" data-ec="fctoggle" aria-label="Couleur du texte" data-tip="Couleur du texte" aria-expanded="false"><b>A</b><svg class="erw-chev" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+
+        '<span class="erw-crow" id="erw-fcrow">'+
+          '<button type="button" class="erw-hl" style="background:var(--fc-black)" data-fc="--fc-black" aria-label="Texte en noir" data-tip="Texte en noir"></button>'+
+          '<button type="button" class="erw-hl" style="background:var(--ink2)" data-fc="--ink2" aria-label="Texte en gris" data-tip="Texte en gris"></button>'+
+          '<button type="button" class="erw-hl" style="background:var(--red)" data-fc="--red" aria-label="Texte en rouge" data-tip="Texte en rouge"></button>'+
+          '<button type="button" class="erw-hl" style="background:var(--fc-blue)" data-fc="--fc-blue" aria-label="Texte en bleu" data-tip="Texte en bleu"></button>'+
+          '<button type="button" class="erw-hl erw-none" data-fc="none" aria-label="Couleur par défaut" data-tip="Couleur par défaut"></button>'+
+          '<button type="button" class="erw-hl erw-pick" data-ec="pickfc" aria-label="Autre couleur de texte" data-tip="Autre couleur de texte"></button>'+
+          '<input type="color" id="erw-fc-custom" value="#D13B57" tabindex="-1" aria-hidden="true" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none">'+
+        '</span>'+
+      '</div>'+
+      '<span class="erw-sep"></span>'+
+      '<button type="button" data-ec="ul" aria-label="Liste" data-tip="Liste">•≡</button>'+
+      '<button type="button" data-ec="img" aria-label="Insérer une image" data-tip="Insérer une image"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="12" height="10" rx="1.5"/><circle cx="5.5" cy="6.5" r="1"/><path d="M2 11l3.5-3.5 2.5 2.5L12 6l2 2"/></svg></button>'+
+      '<button type="button" data-ec="clear" aria-label="Effacer la mise en forme" data-tip="Effacer la mise en forme"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2.5 2.8 9.2a1.6 1.6 0 0 0 0 2.26l1.74 1.74a1.6 1.6 0 0 0 2.26 0l6.7-6.7a1.6 1.6 0 0 0 0-2.26L11.76 2.5a1.6 1.6 0 0 0-2.26 0Z"/><path d="M6 13.2H14"/><path d="M6.6 5.4 10.6 9.4"/></svg></button>'+
+      '<span class="erw-sep"></span>'+
+      '<button type="button" id="erw-obj" data-ec="obj" aria-label="Insérer un objectif de fiche LiSA" data-tip="Insérer un objectif de fiche LiSA"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 2.5h7a1 1 0 0 1 1 1v10.5l-4.5-3-4.5 3V3.5a1 1 0 0 1 1-1z"/></svg></button>'+
+      '<span class="erw-sep"></span>'+
+      '<button type="button" data-ec="undo" aria-label="Annuler" data-tip="Annuler"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h7a3 3 0 0 1 0 6H7"/><path d="M6.5 5.5L4 8l2.5 2.5"/></svg></button>'+
+      '<button type="button" data-ec="redo" aria-label="Rétablir" data-tip="Rétablir"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8H5a3 3 0 0 0 0 6h4"/><path d="M9.5 5.5L12 8l-2.5 2.5"/></svg></button>'+
+      '<span class="erw-sep"></span>'+
+      '<button type="button" id="erw-mic" data-ec="mic" aria-label="Dictée vocale" data-tip="Dictée vocale"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 1.6a2.3 2.3 0 0 0-2.3 2.3v3.8a2.3 2.3 0 0 0 4.6 0V3.9A2.3 2.3 0 0 0 8 1.6z"/><path d="M4.2 7.4v.5a3.8 3.8 0 0 0 7.6 0v-.5M8 11.7v2.3M6.1 14h3.8"/></svg></button>'+
+      '<input type="file" id="erw-img-input" accept="image/*" hidden>'+
+    '</div>'+
+    '<div class="erw-edit" id="erw-edit" contenteditable="true" data-ph="Ce que j’ai raté, à relire avant le prochain tour…"></div>'+
+    '<div class="erw-f"><span class="erw-cnt" id="erw-cnt"></span><span><button type="button" class="btn" id="erw-cancel">Annuler</button> <button type="button" class="btn primary" id="erw-save">Enregistrer</button></span></div>'+
+  '</div>';
+  document.body.appendChild(sc);
+  sc.querySelector('.erw-tb').addEventListener('mousedown', function(e){ e.preventDefault(); erwSaveSel(); });   /* preventDefault : empêche le clic sur un bouton de vider la sélection de texte en cours, avant de la sauvegarder */
+  sc.addEventListener('mousedown', function(e){ if(e.target === sc) erwClose(false); });
+  sc.addEventListener('click', erwToolClick);
+  sc.querySelector('#erw-x').addEventListener('click', function(){ erwClose(false); });
+  sc.querySelector('#erw-cancel').addEventListener('click', function(){ erwClose(false); });
+  sc.querySelector('#erw-save').addEventListener('click', function(){ erwClose(true); });
+  sc.querySelector('#erw-edit').addEventListener('input', erwCnt);
+  sc.querySelector('#erw-hl-custom').addEventListener('input', function(e){ erwRestoreSel(); document.execCommand('hiliteColor', false, e.target.value); erwCnt(); });
+  sc.querySelector('#erw-fc-custom').addEventListener('input', function(e){ erwRestoreSel(); document.execCommand('foreColor', false, e.target.value); erwCnt(); });
+  sc.querySelector('#erw-img-input').addEventListener('change', erwImgChange);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && erwKey && !cxCb){
+      var hlOpen = $('erw-hlrow') && $('erw-hlrow').classList.contains('show');
+      var fcOpen = $('erw-fcrow') && $('erw-fcrow').classList.contains('show');
+      if(hlOpen || fcOpen){ e.preventDefault(); erwColCloseAll(); return; }
+      e.preventDefault(); erwClose(false);
+    }
+  });
+})();
+function erwCnt(){
+  var n = (($('erw-edit').innerText || '').replace(/\n+$/, '')).length;
+  $('erw-cnt').textContent = n ? (n + ' caractère' + (n > 1 ? 's' : '')) : 'Vide';
+  erwFmtState();
+}
+function erwFmtState(){
+  var ed = $('erw-edit'), win = $('erw-win'); if(!ed || !win) return;
+  var s = window.getSelection();
+  var inEdit = s && s.rangeCount && ed.contains(s.anchorNode);
+  var b = inEdit && document.queryCommandState('bold');
+  var u = inEdit && document.queryCommandState('underline');
+  var i = inEdit && document.queryCommandState('italic');
+  var bb = win.querySelector('[data-ec="bold"]'), ub = win.querySelector('[data-ec="underline"]'), ib = win.querySelector('[data-ec="italic"]');
+  if(bb) bb.classList.toggle('on', !!b);
+  if(ub) ub.classList.toggle('on', !!u);
+  if(ib) ib.classList.toggle('on', !!i);
+}
+document.addEventListener('selectionchange', function(){ if(erwKey) erwFmtState(); });
+/* Résout une variable CSS (y compris quand sa valeur référence elle-même color-mix()/var()) en une couleur calculée
+   utilisable par execCommand, en la posant sur un élément réellement rattaché au document (index126 : la version
+   précédente lisait la valeur brute non résolue via getPropertyValue, d'où les boutons de surlignage inopérants). */
+function erwResolveVar(name){
+  var el = document.createElement('span'); el.style.position = 'absolute'; el.style.opacity = '0'; el.style.color = 'var(' + name + ')';
+  document.body.appendChild(el);
+  var v = getComputedStyle(el).color;
+  document.body.removeChild(el);
+  return v;
+}
+function erwColToggle(which){
+  var hlRow = $('erw-hlrow'), fcRow = $('erw-fcrow'), hlBtn = $('erw-hltoggle'), fcBtn = $('erw-fctoggle');
+  if(!hlRow || !fcRow) return;
+  var openHl = which === 'hl' ? !hlRow.classList.contains('show') : false;
+  var openFc = which === 'fc' ? !fcRow.classList.contains('show') : false;
+  hlRow.classList.toggle('show', openHl); hlBtn.setAttribute('aria-expanded', String(openHl));
+  fcRow.classList.toggle('show', openFc); fcBtn.setAttribute('aria-expanded', String(openFc));
+}
+function erwColCloseAll(){
+  var hlRow = $('erw-hlrow'), fcRow = $('erw-fcrow');
+  if(hlRow){ hlRow.classList.remove('show'); $('erw-hltoggle').setAttribute('aria-expanded', 'false'); }
+  if(fcRow){ fcRow.classList.remove('show'); $('erw-fctoggle').setAttribute('aria-expanded', 'false'); }
+}
+function erwSaveSel(){
+  var s = window.getSelection(), ed = $('erw-edit');
+  erwRange = (s.rangeCount && ed.contains(s.anchorNode)) ? s.getRangeAt(0).cloneRange() : null;
+}
+function erwRestoreSel(){
+  var ed = $('erw-edit'); ed.focus();
+  var s = window.getSelection(); s.removeAllRanges();
+  if(erwRange && ed.contains(erwRange.startContainer)) s.addRange(erwRange);
+  else { var r = document.createRange(); r.selectNodeContents(ed); r.collapse(false); s.addRange(r); }
+}
+function erwToolClick(e){
+  var b = e.target.closest('[data-ec],[data-hl],[data-fc]'); if(!b) return;
+  e.preventDefault();
+  if(b.dataset.ec === 'hltoggle'){ erwColToggle('hl'); return; }
+  if(b.dataset.ec === 'fctoggle'){ erwColToggle('fc'); return; }
+  if(b.dataset.ec === 'pickhl'){ $('erw-hl-custom').click(); return; }
+  if(b.dataset.ec === 'pickfc'){ $('erw-fc-custom').click(); return; }
+  if(b.dataset.ec === 'mic'){ erwRestoreSel(); erwMicToggle(); return; }
+  if(b.dataset.ec === 'obj'){ erwColCloseAll(); erwObjPick(b); return; }
+  erwRestoreSel();
+  var hl = b.dataset.hl, fc = b.dataset.fc, c = b.dataset.ec;
+  if(hl) document.execCommand('hiliteColor', false, hl === 'none' ? 'transparent' : erwResolveVar(hl));
+  else if(fc) document.execCommand('foreColor', false, fc === 'none' ? erwResolveVar('--ink') : erwResolveVar(fc));
+  else if(c === 'ul') document.execCommand('insertUnorderedList');
+  else if(c === 'clear'){
+    var cSel = window.getSelection();
+    if(cSel && cSel.rangeCount && cSel.getRangeAt(0).collapsed){
+      var cEd = $('erw-edit'), cNode = cSel.anchorNode, cBlk = cNode && (cNode.nodeType === 1 ? cNode : cNode.parentElement);
+      while(cBlk && cBlk !== cEd && !/^(P|DIV|LI|H[1-6])$/.test(cBlk.tagName)) cBlk = cBlk.parentElement;
+      if(cBlk && cBlk !== cEd){ var cR = document.createRange(); cR.selectNodeContents(cBlk); cSel.removeAllRanges(); cSel.addRange(cR); }
+    }
+    document.execCommand('removeFormat'); document.execCommand('hiliteColor', false, 'transparent');
+  }
+  else if(c === 'img'){ $('erw-img-input').click(); return; }
+  else if(c === 'undo' || c === 'redo') document.execCommand(c);
+  else document.execCommand(c);
+  erwCnt();
+}
+/* Image collée dans le carnet (index126) : redimensionnée et recompressée côté appareil (max 900 px, JPEG ~0.72) avant
+   d'être insérée en data URL — pas d'hébergement externe, tout reste dans state.notes['e:'+item] comme le reste. */
+function erwReadImage(file, cb){
+  var fr = new FileReader();
+  fr.onload = function(){
+    var img = new Image();
+    img.onload = function(){
+      var max = 900, w = img.width, h = img.height;
+      if(w > max || h > max){ if(w >= h){ h = Math.round(h * max / w); w = max; } else { w = Math.round(w * max / h); h = max; } }
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(c.toDataURL('image/jpeg', 0.72));
+    };
+    img.onerror = function(){ cb(null); };
+    img.src = fr.result;
+  };
+  fr.onerror = function(){ cb(null); };
+  fr.readAsDataURL(file);
+}
+function erwImgChange(e){
+  var f = e.target.files && e.target.files[0]; e.target.value = '';
+  if(!f) return;
+  erwReadImage(f, function(dataURL){
+    if(!dataURL){ toast('Photo illisible.'); return; }
+    erwRestoreSel();
+    document.execCommand('insertHTML', false, '<img src="'+dataURL+'">');
+    if($('erw-edit').innerHTML.length > ERW_CAP){ document.execCommand('undo'); toast('Photo trop lourde une fois ajoutée : réessaie avec une image plus petite.'); }
+    erwCnt();
+  });
+}
+/* Dictée vocale (index128) : Web Speech API, insère le texte reconnu directement dans la zone d'édition — pas de
+   dépendance externe ; sur un navigateur qui ne la supporte pas (Firefox notamment), le bouton le signale. */
+var erwSR = null, erwSRActive = false, erwMicStartTs = 0, erwMicQuickFails = 0, erwMicGotSpeech = false;
+var ERW_MIC_ERR = { 'not-allowed':'Micro refusé : autorise l’accès au micro pour ce site dans les réglages du navigateur.', 'service-not-allowed':'Micro refusé : autorise l’accès au micro pour ce site dans les réglages du navigateur.', 'audio-capture':'Aucun micro détecté.', 'network':'Dictée indisponible sans connexion.', 'language-not-supported':'Dictée indisponible dans cette langue sur ce navigateur.' };
+function erwMicToggle(){
+  var Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!Ctor){ toast('Dictée vocale non disponible sur ce navigateur.'); return; }
+  if(erwSRActive){ erwMicStop(); return; }
+  /* Demande explicite de la permission micro d'abord : plus fiable que de laisser
+     SpeechRecognition la gérer seule (surtout sur Safari/iOS), et ça évite une boucle
+     de redémarrages silencieux quand le micro est refusé sans déclencher onerror. */
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+      try{ stream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){}
+      erwMicStart(Ctor);
+    }, function(){ toast('Micro refusé : autorise l’accès au micro pour ce site dans les réglages du navigateur.'); });
+  } else erwMicStart(Ctor);
+}
+function erwMicStart(Ctor){
+  erwSR = new Ctor();
+  erwSR.lang = 'fr-FR'; erwSR.continuous = true; erwSR.interimResults = false;
+  erwMicQuickFails = 0; erwMicGotSpeech = false;
+  erwSR.onresult = function(e){
+    erwMicGotSpeech = true;
+    var ed = $('erw-edit'); ed.focus();
+    for(var i = e.resultIndex; i < e.results.length; i++){
+      if(!e.results[i].isFinal) continue;
+      var t = e.results[i][0].transcript.trim(); if(!t) continue;
+      document.execCommand('insertText', false, t + ' ');
+    }
+    erwCnt();
+  };
+  erwSR.onerror = function(e){
+    if(e.error === 'no-speech') return;
+    erwMicStop();
+    toast(ERW_MIC_ERR[e.error] || 'Dictée interrompue (' + e.error + ').');
+  };
+  erwSR.onend = function(){
+    if(!erwSRActive) return;
+    /* fin anormalement rapide sans aucun résultat reçu entre-temps : signe d'un échec
+       silencieux (permission, service indisponible…) plutôt qu'une vraie pause de parole */
+    if(!erwMicGotSpeech && Date.now() - erwMicStartTs < 900){
+      erwMicQuickFails++;
+      if(erwMicQuickFails >= 2){ erwMicStop(); toast('La dictée vocale ne démarre pas sur ce navigateur ou ce micro.'); return; }
+    } else erwMicQuickFails = 0;
+    erwMicGotSpeech = false; erwMicStartTs = Date.now();
+    try{ erwSR.start(); }catch(e){ erwMicStop(); }
+  };
+  try{ erwMicStartTs = Date.now(); erwSR.start(); erwSRActive = true; erwMicUI(true); }catch(e){ toast('Impossible de démarrer la dictée.'); }
+}
+function erwMicStop(){
+  erwSRActive = false; erwMicUI(false);
+  if(erwSR){ try{ erwSR.onend = null; erwSR.onerror = null; erwSR.stop(); }catch(e){} erwSR = null; }
+}
+function erwMicUI(on){ var b = $('erw-mic'); if(b) b.classList.toggle('on', on); }
+/* Référence à un objectif de fiche LiSA (index130) : la petite popover liste les objectifs de la fiche de l'item en
+   cours (window.MFiche.objList) ; le choix ajoute une ligne « Obj. N · titre » à la fin du texte — c'est exactement
+   le format que erObjHTML sait déjà repérer pour afficher, à la lecture, un bouton « Relire l'objectif N » qui ouvre
+   la fiche (voir §J40, erRead). Rien de nouveau côté stockage : juste un moyen simple d'écrire ce format sans y penser. */
+function erwObjPick(from){
+  if(!window.MFiche || !window.MFiche.has(erwKey)){ toast('Pas de fiche LiSA pour cet item.'); return; }
+  if(!window.MFiche.pickObjective){ toast('Choix d’objectif indisponible.'); return; }
+  window.MFiche.pickObjective(erwKey, from || erwFrom, function(res){
+    if(res) erwObjInsert(res.n, res.title);
+    setTimeout(function(){ var ed = $('erw-edit'); if(ed) ed.focus(); }, 60);
+  });
+}
+function erwObjInsert(n, title){
+  var ed = $('erw-edit'), p = document.createElement('p');
+  p.className = 'er-objref';
+  p.textContent = 'Obj. ' + n + ' · ' + title;
+  ed.appendChild(p);
+  ed.focus();
+  var r = document.createRange(); r.selectNodeContents(p); r.collapse(false);
+  var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  erwCnt();
+}
+function erwOpen(key, fromPanel){
+  erwKey = key; erwFrom = document.activeElement; erwPanel = !!fromPanel; erwRange = null; erwColCloseAll();
+  var it = ITEM_BY_KEY[key], col = collegeOfKey(key);
+  $('erw-win').setAttribute('data-h', col ? col.hue : 'hema');
+  $('erw-title').textContent = it ? (it[0] + ' — ' + it[1]) : '';
+  $('erw-sub').textContent = col ? col.name.split(' – ')[0] : '';
+  try{ document.execCommand('defaultParagraphSeparator', false, 'p'); }catch(e){}
+  var ed = $('erw-edit'); ed.innerHTML = errOf(key);
+  $('erw-scrim').classList.add('on');
+  setTimeout(function(){ ed.focus(); }, 180);
+  erwCnt();
+}
+function erwClose(save){
+  erwMicStop(); erwColCloseAll();
+  var sc = $('erw-scrim'), ed = $('erw-edit');
+  if(save){
+    var html = erwSanitize(ed.innerHTML);
+    if(!errPlain(html)) html = '';
+    if(html.length > ERW_CAP) html = html.slice(0, ERW_CAP);
+    if(html) state.notes['e:' + erwKey] = html; else delete state.notes['e:' + erwKey];
+    persist();
+  }
+  sc.classList.remove('on');
+  var fromPanel = erwPanel, from = erwFrom;
+  erwKey = null; erwFrom = null; erwRange = null;
+  if(fromPanel && erIsOpen) erList(false); else renderList();
+  if(from && document.contains(from)) try{ from.focus({ preventScroll:true }); }catch(e){}
+}
 /* index81 : petit message discret sous l'en-tête d'un collège : nombre de cours « non planifiés » = cours du collège qui n'ont
    AUCUNE carte dans le planning (posée par l'utilisateur, par « Planifier jusqu'à l'échéance » ou par la méthode des J, provisoire
    ou fixée, passée ou à venir). Ne comptent pas : les items « non prévus » (state.ign). Un cours déjà commencé (tour validé) a une
@@ -6899,6 +7583,7 @@ function renderList(){
       if(refOnly && it.star !== 'ref') return false;
       if(filter === 'new') return !t.length;
       if(filter === 'due') return isDue(t) && !state.ign[keyOf(it)];
+      if(filter === 'once') return t.length === 1;
       return true;
     }).sort(cmpItems);
     var open = openCols[col.id] !== false;
@@ -7047,6 +7732,7 @@ function jmLabels(){
   var nt = over ? 'Les réglages propres à d’autres collèges seront remplacés.' : (!id ? 'Pour l’appliquer à un seul collège depuis ici, marque-le\u00a0«\u00a0en\u00a0cours\u00a0» dans l’onglet\u00a0Collèges.' : '');
   $('jm-note').hidden = !nt; $('jm-note').textContent = nt;
   $('jm-off').hidden = !jmAny();
+  var oc = $('jm-offcol'); if(oc){ var cfNow = id ? jmFor(id) : null; oc.hidden = !id || (cfNow && !cfNow.g.length); oc.textContent = 'Désactiver pour ' + jmShort(nm); }
   var ok = jmD.g.length > 0; $('jm-one').disabled = !ok; $('jm-all').disabled = !ok;
 }
 function jmOpen(colId, from){
@@ -7085,7 +7771,7 @@ function jmApply(all){
 document.addEventListener('click', function(e){
   if(!jmOpened) return;
   if(e.target === $('jm')){ jmClose(); return; }
-  var b = e.target.closest && e.target.closest('[data-jmadv],[data-jm],[data-jmp],[data-jmb],[data-jmm],[data-jmw],#jm-one,#jm-all,#jm-off,#jm-cancel'); if(!b) return;
+  var b = e.target.closest && e.target.closest('[data-jmadv],[data-jm],[data-jmp],[data-jmb],[data-jmm],[data-jmw],#jm-one,#jm-all,#jm-off,#jm-offcol,#jm-cancel'); if(!b) return;
   if(b.id === 'jm-cancel'){ jmClose(); return; }
   if(b.dataset.jmadv !== undefined){
     var adv = $('jm-adv'), op = b.getAttribute('aria-expanded') === 'true';
@@ -7099,6 +7785,11 @@ document.addEventListener('click', function(e){
   if(b.id === 'jm-off'){
     var bf = JSON.stringify(state.jm); state.jm = { all:null, cols:{}, max:state.jm.max, x:{}, adapt:state.jm.adapt, dl:state.jm.dl, stg:state.jm.stg, pe:state.jm.pe }; persist(); jmClose(); renderAll();
     toast('Méthode des J désactivée', function(){ state.jm = sanitizeJm(JSON.parse(bf)); persist(); renderAll(); }); return;
+  }
+  if(b.id === 'jm-offcol'){
+    var cidOff = jmD.col; if(!cidOff) return;
+    var bfc = JSON.stringify(state.jm); state.jm.cols[cidOff] = { g:[], b:'p' }; persist(); jmClose(); renderAll();
+    toast('Méthode des J désactivée · ' + jmColName(cidOff), function(){ state.jm = sanitizeJm(JSON.parse(bfc)); persist(); renderAll(); }); return;
   }
   if(b.dataset.jmp !== undefined){ jmD.g = JM_PRESETS[Number(b.dataset.jmp)][1].slice(); jmRender(); flashRows(); return; }
   if(b.dataset.jmb !== undefined){ jmD.b = b.dataset.jmb; jmRender(); return; }
@@ -7928,7 +8619,9 @@ function todayHTML(t0){
      l'écran Heure (swGo, §J26) sans y aller ; disparaît une fois le chrono lancé (il vit alors dans la bulle en bas
      à gauche et dans l'écran Heure, inutile de le proposer deux fois). */
   var streakHTML = (tdyChipsHTML(t0).match(/<span class="tdy-streak[\s\S]*?<\/span>/) || [''])[0];
-  var chronoHTML = (typeof sw !== 'undefined' && sw.on) ? '' : '<button type="button" class="dsh-chrono" data-act="dash-chrono" aria-label="Lancer le chronomètre"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="9" r="5.8"/><path d="M8 6.2v3l1.9 1.2M6.3 1.8h3.4"/></svg>Lancer le chrono</button>';
+  var chronoHTML = (typeof sw !== 'undefined' && sw.on)
+    ? '<button type="button" class="dsh-chrono on" data-act="dash-chrono-stop" aria-label="Arrêter le chronomètre"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="4.5" width="7" height="7" rx="1.3"/></svg>Arrêter le chrono</button>'
+    : '<button type="button" class="dsh-chrono" data-act="dash-chrono" aria-label="Lancer le chronomètre"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="9" r="5.8"/><path d="M8 6.2v3l1.9 1.2M6.3 1.8h3.4"/></svg>Lancer le chrono</button>';
   var head = '<div class="dsh-hd"><div><h2 class="dsh-h1">'+dashGreet()+'</h2><p class="dsh-date">'+esc(cap(fmtLong.format(dd)))+' · Semaine '+isoWeek(mondayOf(t0))+'</p></div>'+
     (streakHTML || chronoHTML ? '<div class="dsh-hdr">'+streakHTML+chronoHTML+'</div>' : '')+'</div>'+dashSearchBtn();
 
@@ -8489,10 +9182,12 @@ document.addEventListener('click', function(e){
       applyHue(); renderHero(); renderBanner(); renderTabs(); if(tab === 'plan') renderPlan(); if(tab === 'colleges') renderColleges(); if(tab === 'plan') setTimeout(catchupMaybe, 450);
     });
   } else if(a === 'dash-chrono'){
-    /* index120b : toast de confirmation — sans lui, le bouton disparaît du tableau de bord (remplacé par la carte
-       « Temps de travail » et la bulle en bas à gauche) d'un coup, sans rien dire ; ça pouvait donner l'impression
-       que le bouton avait juste changé de nom plutôt que d'avoir vraiment démarré quelque chose de nouveau. */
     swGo(); toast('Chrono lancé'); try{ renderPlan(); }catch(e){}
+  } else if(a === 'dash-chrono-stop'){
+    /* index142 : le bouton reste en place et devient « Arrêter » plutôt que de disparaître (avant : remplacé sans
+       prévenir par la carte « Temps de travail » et la bulle en bas à gauche, ce qui donnait l'impression que le
+       chrono n'avait pas de bouton pour l'arrêter directement depuis le tableau de bord). */
+    swStop(); toast('Chrono arrêté'); try{ renderPlan(); }catch(e){}
   } else if(a === 'hw-toggle'){
     heroWk = !heroWk; renderHero();
     var hb = document.querySelector('#hero .hw-btn'); if(hb){ try{ hb.focus({ preventScroll:true }); }catch(e){} }
@@ -8508,10 +9203,7 @@ document.addEventListener('click', function(e){
     noteOpen = key; renderList();
     if(noteOpen){ var ta = $('nt-ta'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
   } else if(a === 'err'){
-    var ek = el.dataset.num, wasE = errOpen === ek;
-    if(errOpen && $('er-ta')){ clearTimeout(errT); errSave(); }
-    errOpen = wasE ? null : ek; renderList();
-    if(errOpen){ var eta = $('er-ta'); if(eta){ eta.focus(); eta.setSelectionRange(eta.value.length, eta.value.length); } }
+    erwOpen(el.dataset.num);
   } else if(a === 'ex-acc'){
     var exd = state.plan[el.dataset.day], exs = exd && exd[Number(el.dataset.i)];
     if(exs){ if(exs.k) exs.o = peOrigin(exs.k); delete exs.e; delete exs.p; persist(); renderAll(); }
@@ -9783,6 +10475,7 @@ function applyRemote(d){
   state.anki = sanitizeAnki(d.anki);
   state.todos = sanitizeTodos(d.todos);
   state.notes = sanitizeNotes(d.notes);
+  state.flash = sanitizeFlash(d.flash);
   state.deadlines = sanitizeDeadlines(d.dl);
   state.jm = sanitizeJm(d.jm);
   state.ign = sanitizeIgn(d.ign);
@@ -9800,6 +10493,7 @@ function applyRemote(d){
   lsSet(LS_ANKI, JSON.stringify(state.anki));
   lsSet(LS_TODO, JSON.stringify(state.todos));
   lsSet(LS_NOTES, JSON.stringify(state.notes));
+  lsSet(LS_FLASH, JSON.stringify(state.flash));
   lsSet(LS_DL, JSON.stringify(state.deadlines));
   lsSet(LS_JM, JSON.stringify(state.jm));
   lsSet(LS_IGN, JSON.stringify(state.ign));
@@ -9808,7 +10502,7 @@ function applyRemote(d){
   lsSet(LS_MF, JSON.stringify(state.mf));
   lsSet(LS_WORK, JSON.stringify(state.work));
 }
-function snapKey(){ return JSON.stringify([state.tours, state.plan, state.days, state.stw, state.anki, state.todos, state.notes, state.deadlines, state.jm, state.ign, state.pins, state.cur, state.mf, state.work]); }
+function snapKey(){ return JSON.stringify([state.tours, state.plan, state.days, state.stw, state.anki, state.todos, state.notes, state.flash, state.deadlines, state.jm, state.ign, state.pins, state.cur, state.mf, state.work]); }
 /* ---------- Protection contre l'écrasement entre appareils (index31) ----------
    remoteStamp = updated_at de la ligne telle qu'on l'a lue ou écrite en dernier. Avant chaque écriture on
    relit updated_at : s'il a changé, un autre appareil a écrit entre-temps. On fusionne alors ce qu'il a
@@ -9819,7 +10513,7 @@ var remoteStamp = null, mergeNotice = false;
 function stampOf(row){ return row && row.updated_at ? row.updated_at : null; }
 function sameStamp(a, b){ var x = Date.parse(a), y = Date.parse(b); return isNaN(x) || isNaN(y) || x === y; }
 function mergeRemote(d){
-  var R = { tours:sanitize(d.tours), plan:sanitizePlan(d.plan), days:sanitizeDays(d.days), stw:sanitizeStw(d.stw), anki:sanitizeAnki(d.anki), todos:sanitizeTodos(d.todos), notes:sanitizeNotes(d.notes), dl:sanitizeDeadlines(d.dl), ign:sanitizeIgn(d.ign), mf:sanitizeMf(d.mf), work:sanitizeWork(d.work) };
+  var R = { tours:sanitize(d.tours), plan:sanitizePlan(d.plan), days:sanitizeDays(d.days), stw:sanitizeStw(d.stw), anki:sanitizeAnki(d.anki), todos:sanitizeTodos(d.todos), notes:sanitizeNotes(d.notes), flash:sanitizeFlash(d.flash), dl:sanitizeDeadlines(d.dl), ign:sanitizeIgn(d.ign), mf:sanitizeMf(d.mf), work:sanitizeWork(d.work) };
   function fill(mine, theirs){ Object.keys(theirs).forEach(function(k){ if(mine[k] === undefined) mine[k] = theirs[k]; }); }
   Object.keys(R.tours).forEach(function(k){
     var mine = state.tours[k] = state.tours[k] || [];
@@ -9835,7 +10529,7 @@ function mergeRemote(d){
       else if(x.x && !m.x){ m.x = 1; if(x.d) m.d = x.d; }
     });
   });
-  fill(state.days, R.days); fill(state.stw, R.stw); fill(state.anki, R.anki); fill(state.notes, R.notes); fill(state.deadlines, R.dl); fill(state.ign, R.ign); fill(state.mf, R.mf); state.work = workMax(state.work, R.work);
+  fill(state.days, R.days); fill(state.stw, R.stw); fill(state.anki, R.anki); fill(state.notes, R.notes); fill(state.flash, R.flash); fill(state.deadlines, R.dl); fill(state.ign, R.ign); fill(state.mf, R.mf); state.work = workMax(state.work, R.work);
   R.todos.forEach(function(x){
     var m = null; state.todos.forEach(function(y){ if(y.id === x.id) m = y; });
     if(!m) state.todos.push(x); else if(x.x && !m.x) m.x = 1;
@@ -10782,7 +11476,7 @@ function admProfCard(r, d){
     kv('Calendrier de la promo appliqué', i.promoDone ? PROMO_CAL[i.promoDone].lab : 'non') + kv('Semaines de stage', i.stw) + kv('Échéances de collèges', i.dl) +
     kv('Collège en cours', i.cur || '—') + kv('Faits aujourd’hui', i.done) + kv('Série', i.streak + ' jour' + (i.streak > 1 ? 's' : '')) +
     kv('Focus collège en cours', i.focus ? 'activé' : 'désactivé') + kv('Carnet d’erreurs', i.errs.length + ' ligne' + (i.errs.length > 1 ? 's' : '')) + '</div>';
-  if(i.errs.length) h += '<h3 style="margin-top:14px">Carnet d’erreurs</h3>' + i.errs.slice(0, 15).map(function(e){ var it = ITEM_BY_KEY[e.k]; return '<div class="adm-er"><b>' + (it ? it[0] : esc(String(e.k).split('@')[0])) + '</b><span>' + (it ? esc(it[1]) + ' — ' : '') + esc(e.t.slice(0, 200)) + '</span></div>'; }).join('');
+  if(i.errs.length) h += '<h3 style="margin-top:14px">Carnet d’erreurs</h3>' + i.errs.slice(0, 15).map(function(e){ var it = ITEM_BY_KEY[e.k]; return '<div class="adm-er"><b>' + (it ? it[0] : esc(String(e.k).split('@')[0])) + '</b><span>' + (it ? esc(it[1]) + ' — ' : '') + esc(errPlain(e.t).slice(0, 200)) + '</span></div>'; }).join('');
   return h + '</section>';
 }
 var isAdmin = false, admOpen = false, admTab = 'over', admData = null, admErr = '', admBusy = false, admQ = '', admSortBy = 'recent';
@@ -11939,7 +12633,8 @@ window.MEDISAM_API = {
     clearTimeout(mfT); mfT = setTimeout(function(){ persist(); }, 500);
   },
   errOf: function(key){ return errOf(key); },
-  errSet: function(key, txt){ if(txt) state.notes['e:' + key] = String(txt).slice(0, 300); else delete state.notes['e:' + key]; persist(); try{ renderList(); }catch(e){} },
+  errPlain: function(h){ return errPlain(h); },
+  errSet: function(key, txt){ if(txt) state.notes['e:' + key] = String(txt).slice(0, 400000); else delete state.notes['e:' + key]; persist(); try{ renderList(); }catch(e){} },
   toast: function(m){ toast(m); },
   confirm: function(title, text, ok, fn){ cxAsk({ title:title, text:text, ok:ok, no:'Annuler', danger:true, onOk:fn }); }
 };
@@ -11979,8 +12674,8 @@ document.addEventListener('keydown', function(e){
 /* ---------- Carnet d'erreurs : « Relire l'objectif N » (I) ---------- */
 function erObjHTML(k, txt){
   if(!window.MFiche || !window.MFiche.has(k) || !txt) return '';
-  var seen = {}, out = '';
-  String(txt).replace(/(?:^|\n)\s*Obj\.\s*(\d+)\s*·/g, function(m, n){
+  var seen = {}, out = '', plain = errPlain(txt);
+  plain.replace(/(?:^|\n)\s*Obj\.\s*(\d+)\s*·/g, function(m, n){
     n = Number(n);
     if(!seen[n] && window.MFiche.hasObj(k, n)){ seen[n] = 1; out += '<button type="button" data-er="obj" data-k="'+esc(k)+'" data-n="'+n+'">'+ICON_BOOK_S+'<span>Relire l’objectif '+n+' · '+esc(window.MFiche.objTitle(k, n))+'</span></button>'; }
     return m;
@@ -12626,7 +13321,7 @@ function errPanelHTML(){
   if(!keys.length) return '';
   keys.sort(function(a, b){ return ITEM_BY_KEY[a.slice(2)][0] - ITEM_BY_KEY[b.slice(2)][0]; });
   var rows = keys.slice(0, 4).map(function(k){
-    var key = k.slice(2), it = ITEM_BY_KEY[key], tx = String(state.notes[k] || '').replace(/\s*\n+\s*/g, ' · ').trim();
+    var key = k.slice(2), it = ITEM_BY_KEY[key], tx = errPlain(state.notes[k]).replace(/\s*\n+\s*/g, ' · ').trim();
     return '<button type="button" class="tdy-it tdy-er" data-h="'+collegeOfKey(key).hue+'" data-act="er-open" aria-label="Ouvrir le carnet d’erreurs : '+esc(it[1])+'"><b>'+it[0]+'</b><span class="er-t"><strong>'+esc(it[1])+'</strong><small>'+esc(tx)+'</small></span></button>';
   }).join('');
   var more = keys.length > 4 ? '<button type="button" class="tdy-more" data-act="er-open">Tout voir ('+keys.length+') →</button>' : '';
@@ -12984,10 +13679,10 @@ function flashDay(d){
    avec recherche, filtre par collège, modification sur place, « Résolu » (avec Annuler), « Copier » et « Ouvrir l'item ».
    Données : state.notes['e:'+item] (voir §J10). Entrées : panneau rouge d'Aujourd'hui, carte examen, Réglages > Révisions.
    ====================================================================== */
-var erIsOpen = false, erQ = '', erCol = 'all', erEdit = null, erFrom = null, erSaveT = null;
+var erIsOpen = false, erQ = '', erCol = 'all', erSel = null, erFrom = null;
 (function(){
   var sc = document.createElement('div'); sc.id = 'er-scrim'; sc.className = 'td-scrim'; sc.hidden = true;
-  var p = document.createElement('aside'); p.id = 'er-panel'; p.className = 'td-panel er-panel'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-labelledby', 'er-title'); p.setAttribute('aria-hidden', 'true');
+  var p = document.createElement('aside'); p.id = 'er-panel'; p.className = 'er-panel'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-labelledby', 'er-title'); p.setAttribute('aria-hidden', 'true');
   document.body.appendChild(sc); document.body.appendChild(p);
   sc.addEventListener('click', function(){ erShow(false); });
   p.addEventListener('click', erClick);
@@ -12995,12 +13690,28 @@ var erIsOpen = false, erQ = '', erCol = 'all', erEdit = null, erFrom = null, erS
   document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && erIsOpen && !cxCb){ e.preventDefault(); erShow(false); } });
 })();
 function erKeys(){ return Object.keys(state.notes).filter(function(k){ return k.indexOf('e:') === 0 && ITEM_BY_KEY[k.slice(2)]; }).map(function(k){ return k.slice(2); }); }
+/* index128 : consultation en page à deux colonnes — liste (er-nav2) + lecture (er-read2). Desktop : les deux
+   colonnes sont visibles ensemble, la sélection d'une ligne remplit la lecture. Mobile (<880px, voir CSS) : une
+   seule colonne à la fois, data-er="back" ramène à la liste. */
 function erShell(){
   var p = $('er-panel');
-  p.innerHTML = '<div class="er-head"><h2 id="er-title"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="scale(.8)" stroke-width="2.1"><path d="M4 2.5h8a1.5 1.5 0 0 1 1.5 1.5v4"/><path d="M4 2.5v15h4.5"/><path d="M6.8 6.5h4M6.8 9.5h2"/><path d="M17 12.2a3.7 3.7 0 1 0-1 3"/><path d="M17 9.5v2.7h-2.7"/></g></svg>Carnet d’erreurs<em id="er-n"></em></h2>'+
+  p.innerHTML = '<div class="er-shell"><div class="er-top"><h2 id="er-title"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="scale(.8)" stroke-width="2.1"><path d="M4 2.5h8a1.5 1.5 0 0 1 1.5 1.5v4"/><path d="M4 2.5v15h4.5"/><path d="M6.8 6.5h4M6.8 9.5h2"/><path d="M17 12.2a3.7 3.7 0 1 0-1 3"/><path d="M17 9.5v2.7h-2.7"/></g></svg>Carnet d’erreurs<em id="er-n"></em></h2>'+
+    '<button type="button" class="er-ib" data-er="deck" aria-label="Mes flashcards" data-tip="Mes flashcards"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4.3" width="9" height="7" rx="1.3" transform="rotate(-7 6.5 7.8)"/><rect x="4.5" y="3.2" width="9" height="7" rx="1.3"/></svg></button>'+
+    '<button type="button" class="er-ib" data-er="pdf" aria-label="Exporter en PDF" data-tip="Exporter en PDF"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2h5l3 3v9H4z"/><path d="M9 2v3h3"/><path d="M8 8.3v4.2M6 10.6l2 1.9 2-1.9"/></svg></button>'+
+    '<button type="button" class="er-ib" data-er="gdoc" aria-label="Convertir en Google Doc" data-tip="Convertir en Google Doc"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2h5l3 3v9H4z"/><path d="M9 2v3h3"/><path d="M6 9.2h4M6 11.4h4"/></svg></button>'+
     '<button type="button" class="er-ib" data-er="copy" aria-label="Copier le carnet" title="Copier le carnet"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="2"/><path d="M10.5 5.5V4a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"/></svg></button>'+
     '<button type="button" class="er-ib" data-er="x" aria-label="Fermer">×</button></div>'+
-    '<div class="er-tools"><input type="search" class="er-q" id="er-q" placeholder="Chercher dans mes erreurs" aria-label="Chercher dans mes erreurs" autocomplete="off" value="'+esc(erQ)+'"><div class="er-chips" id="er-chips"></div></div><div class="er-list" id="er-list"></div>';
+    '<div class="er-body2">'+
+      '<div class="er-nav2">'+
+        '<div class="er-nsearch"><input type="search" class="er-q" id="er-q" placeholder="Chercher dans mes erreurs" aria-label="Chercher dans mes erreurs" autocomplete="off" value="'+esc(erQ)+'"></div>'+
+        '<div class="er-nchips"><div class="er-chips" id="er-chips"></div></div>'+
+        '<div class="er-nlist" id="er-list"></div>'+
+      '</div>'+
+      '<div class="er-read2" id="er-read">'+
+        '<button type="button" class="er-back" data-er="back"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>Retour</button>'+
+        '<div id="er-read-in"></div>'+
+      '</div>'+
+    '</div></div>';
   erList();
 }
 function erFiltered(){
@@ -13023,31 +13734,49 @@ function erList(anim){
   else COLLEGES.forEach(function(c){
     var mine = ks.filter(function(k){ return collegeOfKey(k).id === c.id; }).sort(function(a, b){ return ITEM_BY_KEY[a][0] - ITEM_BY_KEY[b][0]; });
     if(!mine.length) return;
-    h += '<h3 class="er-gh" data-h="'+c.hue+'"><i></i>'+esc(c.name)+'<em>'+mine.length+'</em></h3>' + mine.map(erCard).join('');
+    h += '<h3 class="er-ng" data-h="'+c.hue+'"><i></i>'+esc(c.name.split(' – ')[0])+'<em>'+mine.length+'</em></h3>' + mine.map(erRow).join('');
   });
   list.innerHTML = h;
-  if(anim && !reducedFx()) Array.prototype.forEach.call(list.querySelectorAll('.er-it, .er-gh'), function(c, i){ if(c.animate) c.animate([{ opacity:0, translate:'0 10px' }, { opacity:1, translate:'0 0' }], { duration:380, delay:Math.min(i, 12) * 40, easing:EZ, fill:'backwards' }); });
+  if(anim && !reducedFx()) Array.prototype.forEach.call(list.querySelectorAll('.er-nrow, .er-ng'), function(c, i){ if(c.animate) c.animate([{ opacity:0, translate:'0 8px' }, { opacity:1, translate:'0 0' }], { duration:320, delay:Math.min(i, 14) * 30, easing:EZ, fill:'backwards' }); });
+  if(ks.length && (!erSel || ks.indexOf(erSel) < 0)) erSel = ks[0];
+  if(!ks.length) erSel = null;
+  erRead(erSel);
 }
-function erCard(k){
-  var it = ITEM_BY_KEY[k], txt = state.notes['e:' + k], t = toursOf(k), last = t.length ? t[t.length - 1] : null;
+function erRow(k){
+  var it = ITEM_BY_KEY[k];
+  return '<button type="button" class="er-nrow" data-k="'+esc(k)+'" aria-pressed="'+(k === erSel)+'"><b>'+it[0]+' — '+esc(it[1])+'</b><span>'+esc(errPlain(errOf(k)).split('\n')[0].slice(0, 90))+'</span></button>';
+}
+function erRead(k){
+  var host = $('er-read-in'); if(!host) return;
+  if(!k || !ITEM_BY_KEY[k] || !errOf(k)){
+    host.innerHTML = '<div class="er-rempty"><b>Aucune erreur sélectionnée</b><span>Choisis une ligne dans la liste pour la relire.</span></div>';
+    return;
+  }
+  var it = ITEM_BY_KEY[k], col = collegeOfKey(k), txt = errOf(k), t = toursOf(k), last = t.length ? t[t.length - 1] : null;
   var meta = last ? 'Dernier tour ' + agoLabel(lastDate(k)).replace(/^dernier tour\s*/i, '') + ' · ' + (STAT[last.s] || '') : 'Pas encore révisé';
-  var body = erEdit === k ? '<textarea class="er-ta" rows="3" maxlength="300" data-k="'+esc(k)+'" aria-label="Ce que j’ai raté">'+esc(txt)+'</textarea>' : '<p class="er-txt">'+esc(txt)+'</p>'+erObjHTML(k, txt);
-  var acts = erEdit === k ? '<button type="button" data-er="done" data-k="'+esc(k)+'" class="pri">Terminé</button>' : '<button type="button" data-er="edit" data-k="'+esc(k)+'">Modifier</button><button type="button" data-er="go" data-k="'+esc(k)+'">Ouvrir l’item</button><button type="button" data-er="del" data-k="'+esc(k)+'" class="ok">Résolu</button>';
-  return '<article class="er-it" data-h="'+collegeOfKey(k).hue+'" data-k="'+esc(k)+'"><header><b>'+it[0]+'</b><span>'+esc(it[1])+'</span></header>'+body+'<footer><span class="er-meta">'+esc(meta)+'</span><span class="er-acts">'+acts+'</span></footer></article>';
+  host.innerHTML =
+    '<div class="er-rhead"><div class="er-rtag" data-h="'+col.hue+'">● '+esc(col.name.split(' – ')[0])+'</div><h3>'+it[0]+' — '+esc(it[1])+'</h3><span class="er-meta">'+esc(meta)+'</span></div>'+
+    '<div class="er-rbody"><div class="er-txt">'+txt+'</div>'+erObjHTML(k, txt)+'</div>'+
+    '<div class="er-rfoot"><span class="er-acts">'+
+      '<button type="button" data-er="flash" data-k="'+esc(k)+'">Créer une flashcard</button>'+
+      '<button type="button" data-er="edit" data-k="'+esc(k)+'">Modifier</button>'+
+      '<button type="button" data-er="go" data-k="'+esc(k)+'">Ouvrir l’item</button>'+
+      '<button type="button" data-er="del" data-k="'+esc(k)+'" class="ok">Résolu</button>'+
+    '</span></div>';
 }
 function erShow(on, col){
   var p = $('er-panel'), sc = $('er-scrim');
-  if(on === erIsOpen){ if(on && col){ erCol = col; erList(true); } return; }
+  if(on === erIsOpen){ if(on && col){ erCol = col; erSel = null; erList(true); } return; }
   erIsOpen = on;
   if(on){
-    erFrom = document.activeElement; erQ = ''; erEdit = null; erCol = col || 'all';
+    erFrom = document.activeElement; erQ = ''; erCol = col || 'all'; erSel = null;
+    p.classList.remove('show-read');
     erShell(); sc.hidden = false; p.setAttribute('aria-hidden', 'false');
     document.documentElement.classList.add('td-open-lock'); document.body.classList.add('td-open-lock');
     requestAnimationFrame(function(){ p.classList.add('on'); sc.classList.add('on'); });
     setTimeout(function(){ var x = p.querySelector('[data-er="x"]'); if(x) x.focus({ preventScroll:true }); }, 80);
-    var l = $('er-list'); if(l && !reducedFx()) Array.prototype.forEach.call(l.querySelectorAll('.er-it, .er-gh'), function(c, i){ if(c.animate) c.animate([{ opacity:0, translate:'0 12px' }, { opacity:1, translate:'0 0' }], { duration:420, delay:260 + Math.min(i, 12) * 45, easing:EZ, fill:'backwards' }); });
+    var l = $('er-list'); if(l && !reducedFx()) Array.prototype.forEach.call(l.querySelectorAll('.er-nrow, .er-ng'), function(c, i){ if(c.animate) c.animate([{ opacity:0, translate:'0 10px' }, { opacity:1, translate:'0 0' }], { duration:380, delay:260 + Math.min(i, 14) * 35, easing:EZ, fill:'backwards' }); });
   } else {
-    clearTimeout(erSaveT); erSaveFromDom();
     p.classList.remove('on'); sc.classList.remove('on'); p.setAttribute('aria-hidden', 'true');
     document.documentElement.classList.remove('td-open-lock'); document.body.classList.remove('td-open-lock');
     setTimeout(function(){ if(!erIsOpen) sc.hidden = true; }, 420);
@@ -13055,33 +13784,187 @@ function erShow(on, col){
     if(erFrom && document.contains(erFrom)) try{ erFrom.focus({ preventScroll:true }); }catch(e){}
   }
 }
-function erSaveFromDom(){
-  var ta = document.querySelector('#er-panel .er-ta'); if(!ta) return;
-  var k = ta.dataset.k, v = ta.value.trim();
-  if(v) state.notes['e:' + k] = ta.value.slice(0, 300);
-  persist();
-}
 function erInput(e){
-  if(e.target.id === 'er-q'){ erQ = e.target.value; erList(false); return; }
-  if(e.target.classList.contains('er-ta')){ clearTimeout(erSaveT); erSaveT = setTimeout(erSaveFromDom, 500); }
+  if(e.target.id === 'er-q'){ erQ = e.target.value; erList(false); }
 }
 function erClick(e){
+  var row = e.target.closest('.er-nrow');
+  if(row){
+    erSel = row.dataset.k; erRead(erSel);
+    Array.prototype.forEach.call($('er-list').querySelectorAll('.er-nrow'), function(r){ r.setAttribute('aria-pressed', String(r === row)); });
+    $('er-panel').classList.add('show-read');
+    return;
+  }
   var c = e.target.closest('[data-ec]');
-  if(c){ erCol = c.dataset.ec; erList(true); return; }
+  if(c){ erCol = c.dataset.ec; erSel = null; erList(true); return; }
   var b = e.target.closest('[data-er]'); if(!b) return;
-  var a = b.dataset.er, k = b.dataset.k;
+  var a = b.dataset.er, k = b.dataset.k || erSel;
   if(a === 'x'){ erShow(false); }
-  else if(a === 'edit'){ erSaveFromDom(); erEdit = k; erList(false); var ta = document.querySelector('#er-panel .er-ta'); if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
-  else if(a === 'done'){ clearTimeout(erSaveT); erSaveFromDom(); erEdit = null; erList(false); }
+  else if(a === 'back'){ $('er-panel').classList.remove('show-read'); }
+  else if(a === 'edit'){ erwOpen(k, true); }
   else if(a === 'go'){ erShow(false); setTimeout(function(){ stGo(k); }, 300); }
   else if(a === 'obj'){ if(window.MFiche) window.MFiche.openObj(k, Number(b.dataset.n), b); }
   else if(a === 'del'){
-    var old = state.notes['e:' + k]; delete state.notes['e:' + k]; persist(); erEdit = null; erList(false);
+    var old = state.notes['e:' + k]; delete state.notes['e:' + k]; persist(); erSel = null; erList(false);
     toast('Erreur marquée comme résolue.', function(){ state.notes['e:' + k] = old; persist(); if(erIsOpen) erList(false); renderAll(); });
   }
+  else if(a === 'flash'){ fcmOpen(k); }
+  else if(a === 'deck'){ fcrOpen(erCol !== 'all' ? erCol : null); }
   else if(a === 'copy'){
-    var txt = erKeys().sort(function(x, y){ return ITEM_BY_KEY[x][0] - ITEM_BY_KEY[y][0]; }).map(function(q){ return ITEM_BY_KEY[q][0] + ' ' + ITEM_BY_KEY[q][1] + '\n  ' + state.notes['e:' + q].replace(/\n/g, '\n  '); }).join('\n\n');
+    var txt = erKeys().sort(function(x, y){ return ITEM_BY_KEY[x][0] - ITEM_BY_KEY[y][0]; }).map(function(q){ return ITEM_BY_KEY[q][0] + ' ' + ITEM_BY_KEY[q][1] + '\n  ' + errPlain(state.notes['e:' + q]).replace(/\n/g, '\n  '); }).join('\n\n');
     try{ navigator.clipboard.writeText(txt).then(function(){ toast('Carnet copié.'); }, function(){ toast('Copie impossible.'); }); }catch(err){ toast('Copie impossible.'); }
+  }
+  else if(a === 'gdoc'){ erToGdoc(); }
+  else if(a === 'pdf'){ erToPdf(); }
+}
+/* Assemble le carnet (filtré par la recherche/le collège en cours) en HTML — réutilisé par l'export Google Doc
+   et l'export PDF (index128), pour ne pas dupliquer la mise en page du document exporté. */
+function erDocHTML(){
+  var ks = erFiltered().sort(function(x, y){ return ITEM_BY_KEY[x][0] - ITEM_BY_KEY[y][0]; });
+  if(!ks.length) return null;
+  var html = '<h1>Carnet d’erreurs — Médisam</h1>', curCol = null;
+  ks.forEach(function(k){
+    var c = collegeOfKey(k);
+    if(c.name !== curCol){ html += '<h2>'+esc(c.name)+'</h2>'; curCol = c.name; }
+    html += '<p><b>'+ITEM_BY_KEY[k][0]+' — '+esc(ITEM_BY_KEY[k][1])+'</b></p>'+errOf(k);
+  });
+  return html;
+}
+/* ---------- Export « Convertir en Google Doc » (index125) : copie le carnet (mise en forme conservée) dans le
+   presse-papiers au format riche, puis ouvre un nouveau Google Doc vierge ; il reste à coller (Cmd/Ctrl+V) dedans.
+   Pas d'intégration directe à l'API Google Drive (demanderait de relier le compte Google). */
+function erToGdoc(){
+  var html = erDocHTML(); if(!html){ toast('Aucune erreur à exporter.'); return; }
+  var plain = errPlain(html);
+  try{
+    if(navigator.clipboard && window.ClipboardItem){
+      var item = new ClipboardItem({ 'text/html': new Blob([html], { type:'text/html' }), 'text/plain': new Blob([plain], { type:'text/plain' }) });
+      navigator.clipboard.write([item]).then(function(){
+        window.open('https://docs.google.com/document/create', '_blank');
+        toast('Carnet copié : colle-le (Cmd/Ctrl+V) dans le Google Doc qui vient de s’ouvrir.');
+      }, function(){ toast('Copie impossible sur cet appareil ; utilise plutôt « Copier le carnet ».'); });
+    } else toast('La mise en forme ne peut pas être copiée sur cet appareil ; utilise plutôt « Copier le carnet ».');
+  }catch(err){ toast('Copie impossible.'); }
+}
+/* ---------- Export PDF (index128) : pas de bibliothèque externe — un document imprimable est construit dans un
+   conteneur caché (#er-print-doc), affiché seul pendant l'impression (@media print, body.er-printing), puis
+   window.print() est déclenché ; « Enregistrer en PDF » dans la boîte de dialogue du navigateur donne le fichier. */
+function erToPdf(){
+  var html = erDocHTML(); if(!html){ toast('Aucune erreur à exporter.'); return; }
+  var host = $('er-print-doc');
+  if(!host){ host = document.createElement('div'); host.id = 'er-print-doc'; document.body.appendChild(host); }
+  host.innerHTML = html;
+  document.body.classList.add('er-printing');
+  setTimeout(function(){ window.print(); }, 60);
+}
+window.addEventListener('afterprint', function(){
+  document.body.classList.remove('er-printing');
+  var h = $('er-print-doc'); if(h) h.innerHTML = '';
+});
+/* ---------- Création d'une flashcard (index129) : fenêtre recto/verso vides que Sam remplit lui-même, avec le
+   texte de l'erreur affiché à côté (fcm-ref) pour l'aider à choisir quoi écrire — plus de pré-remplissage
+   automatique (avant index129, front/back étaient copiés depuis l'item et l'erreur sans passer par l'utilisateur). ---------- */
+var fcmKey = null, fcmFrom = null;
+(function(){
+  var sc = document.createElement('div'); sc.id = 'fcm-scrim'; sc.className = 'fcm-scrim';
+  sc.innerHTML = '<div class="fcm-win" role="dialog" aria-modal="true" aria-labelledby="fcm-title">'+
+    '<div class="fcm-h"><b id="fcm-title">Nouvelle flashcard</b><span id="fcm-sub"></span><button type="button" class="fcm-x" id="fcm-x" aria-label="Fermer">×</button></div>'+
+    '<div class="fcm-body"><div class="fcm-ref" id="fcm-ref"></div>'+
+      '<div class="fcm-form">'+
+        '<div class="fcm-fld"><label for="fcm-front">Recto (question)</label><textarea id="fcm-front" placeholder="Ce que tu te demanderas en révisant…"></textarea></div>'+
+        '<div class="fcm-fld"><label for="fcm-back">Verso (réponse)</label><textarea id="fcm-back" placeholder="La réponse, dans tes mots…"></textarea></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="fcm-f"><button type="button" class="btn" id="fcm-cancel">Annuler</button><button type="button" class="btn primary" id="fcm-save">Créer la flashcard</button></div>'+
+  '</div>';
+  document.body.appendChild(sc);
+  sc.addEventListener('mousedown', function(e){ if(e.target === sc) fcmClose(); });
+  sc.querySelector('#fcm-x').addEventListener('click', fcmClose);
+  sc.querySelector('#fcm-cancel').addEventListener('click', fcmClose);
+  sc.querySelector('#fcm-save').addEventListener('click', fcmSave);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && fcmKey && !cxCb){ e.preventDefault(); fcmClose(); } });
+})();
+function fcmOpen(k){
+  if(!ITEM_BY_KEY[k]) return;
+  fcmKey = k; fcmFrom = document.activeElement;
+  var it = ITEM_BY_KEY[k], col = collegeOfKey(k), txt = errOf(k);
+  $('fcm-sub').textContent = it[0] + ' — ' + it[1];
+  $('fcm-ref').innerHTML = '<b>Carnet d’erreurs · '+esc(col.name.split(' – ')[0])+'</b><div class="er-txt">'+(txt || '<i>Rien de noté pour cet item.</i>')+'</div>';
+  $('fcm-front').value = ''; $('fcm-back').value = '';
+  $('fcm-scrim').classList.add('on');
+  setTimeout(function(){ $('fcm-front').focus(); }, 180);
+}
+function fcmClose(){
+  $('fcm-scrim').classList.remove('on');
+  var from = fcmFrom; fcmKey = null; fcmFrom = null;
+  if(from && document.contains(from)) try{ from.focus({ preventScroll:true }); }catch(e){}
+}
+function fcmTextToHTML(s){ return esc(String(s || '').trim()).replace(/\n{2,}/g, '</p><p>').replace(/\n/g, '<br>'); }
+function fcmSave(){
+  var front = $('fcm-front').value.trim(), back = $('fcm-back').value.trim();
+  if(!front || !back){ toast('Remplis le recto et le verso avant de créer la carte.'); return; }
+  var id = 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  state.flash[id] = { k:fcmKey, front:front.slice(0, 300), back:'<p>'+fcmTextToHTML(back)+'</p>', ts:Date.now() };
+  persist();
+  fcmClose();
+  toast('Flashcard créée.', function(){ delete state.flash[id]; persist(); });
+}
+/* ---------- Flashcards créées depuis une erreur du carnet (index128) : petite fenêtre de révision, carte à
+   retourner, navigation précédent/suivant, retrait avec Annuler. Stockage : state.flash (voir sanitizeFlash). ---------- */
+var fcrDeck = [], fcrIdx = 0, fcrFlip = false;
+(function(){
+  var sc = document.createElement('div'); sc.id = 'fcr-scrim'; sc.className = 'fcr-scrim';
+  sc.innerHTML = '<div class="fcr-win" role="dialog" aria-modal="true" aria-labelledby="fcr-title">'+
+    '<div class="fcr-h"><b id="fcr-title">Mes flashcards</b><span id="fcr-count"></span><button type="button" class="fcr-x" id="fcr-x" aria-label="Fermer">×</button></div>'+
+    '<div id="fcr-body"></div>'+
+  '</div>';
+  document.body.appendChild(sc);
+  sc.addEventListener('mousedown', function(e){ if(e.target === sc) fcrClose(); });
+  sc.querySelector('#fcr-x').addEventListener('click', fcrClose);
+  sc.addEventListener('click', fcrClick);
+  document.addEventListener('keydown', function(e){
+    if(!sc.classList.contains('on')) return;
+    if(e.key === 'Escape'){ e.preventDefault(); fcrClose(); }
+    else if(e.key === 'ArrowRight'){ fcrNav(1); }
+    else if(e.key === 'ArrowLeft'){ fcrNav(-1); }
+    else if(e.key === ' '){ e.preventDefault(); fcrFlip = !fcrFlip; fcrRender(); }
+  });
+})();
+function fcrOpen(colId){
+  var ids = Object.keys(state.flash).filter(function(id){ var f = state.flash[id]; return f && (!colId || collegeOfKey(f.k).id === colId); });
+  ids.sort(function(a, b){ return (state.flash[b].ts || 0) - (state.flash[a].ts || 0); });
+  fcrDeck = ids; fcrIdx = 0; fcrFlip = false;
+  if(!fcrDeck.length){ toast('Pas encore de flashcard' + (colId ? ' pour ce collège.' : ' : touche « Créer une flashcard » depuis une erreur du carnet.')); return; }
+  $('fcr-scrim').classList.add('on');
+  fcrRender();
+}
+function fcrClose(){ $('fcr-scrim').classList.remove('on'); }
+function fcrCard(){ return state.flash[fcrDeck[fcrIdx]]; }
+function fcrRender(){
+  var f = fcrCard(), body = $('fcr-body');
+  if(!f){ body.innerHTML = '<div class="fcr-empty">Toutes les flashcards de ce lot ont été retirées.</div>'; $('fcr-count').textContent = ''; return; }
+  $('fcr-count').textContent = (fcrIdx + 1) + ' / ' + fcrDeck.length;
+  body.innerHTML =
+    '<div class="fcr-card'+(fcrFlip ? ' back' : '')+'" id="fcr-flipzone"><div class="txt">'+(fcrFlip ? f.back : ('<b>Question</b>' + esc(f.front)))+'</div></div>'+
+    '<div class="fcr-hint">Touche la carte pour '+(fcrFlip ? 'revoir la question' : 'voir la réponse')+'</div>'+
+    '<div class="fcr-f"><div class="fcr-nav"><button type="button" data-fc="prev">← Précédent</button><button type="button" data-fc="next">Suivant →</button></div><button type="button" class="fcr-del" data-fc="del">Retirer</button></div>';
+}
+function fcrNav(d){
+  if(!fcrDeck.length) return;
+  fcrIdx = (fcrIdx + d + fcrDeck.length) % fcrDeck.length; fcrFlip = false; fcrRender();
+}
+function fcrClick(e){
+  if(e.target.closest('#fcr-flipzone')){ fcrFlip = !fcrFlip; fcrRender(); return; }
+  var b = e.target.closest('[data-fc]'); if(!b) return;
+  var a = b.dataset.fc;
+  if(a === 'prev') fcrNav(-1);
+  else if(a === 'next') fcrNav(1);
+  else if(a === 'del'){
+    var id = fcrDeck[fcrIdx], old = state.flash[id], atIdx = fcrIdx;
+    delete state.flash[id]; persist(); fcrDeck.splice(fcrIdx, 1);
+    if(fcrIdx >= fcrDeck.length) fcrIdx = 0;
+    fcrFlip = false; fcrRender();
+    toast('Flashcard retirée.', function(){ state.flash[id] = old; persist(); fcrDeck.splice(atIdx, 0, id); fcrIdx = atIdx; fcrRender(); });
   }
 }
 /* Info-bulles partout (index48) : au survol (souris) ou au focus clavier, tout élément qui a data-tip, un title, ou
