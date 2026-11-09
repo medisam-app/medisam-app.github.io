@@ -119,6 +119,15 @@
   Pour aller à une section : chercher son repère, par exemple « §J17 ».
 
   JOURNAL DES VERSIONS (le plus récent en haut)
+    index147 : annonces ciblées. Dans l'espace modérateur (onglet Annonces), un choix « Tous les comptes / Comptes
+              choisis » permet de réserver un message à une liste de comptes (recherche + sélection, sur le même
+              principe que l'onglet Comptes) au lieu de l'envoyer à tout le monde. Technique : nouvelle colonne
+              announcements.target_ids (uuid[], vide = tout le monde comme avant) ; la policy de lecture Supabase
+              ne laisse un compte lire une annonce ciblée que s'il figure dans cette liste (script SQL à relancer
+              une fois, onglet Outils > « Annonces ciblées »). Un nouveau message « Tous les comptes » ne remplace
+              que les anciens messages eux aussi envoyés à tout le monde ; un message ciblé ne remplace jamais rien
+              automatiquement — il se retire à la main comme avant (bouton « Retirer »), pour pouvoir avoir en même
+              temps un message général et un ou plusieurs messages ciblés à des comptes différents.
     index146 : les boutons G/S/I de l'éditeur avaient un fond gris en permanence (toute la pastille), plutôt que
               seulement quand le gras/souligné/italique est actif au curseur. Corrigé : plus de fond par défaut, et
               chaque bouton devient gris uniquement quand sa mise en forme s'applique réellement à l'endroit où
@@ -2430,6 +2439,14 @@ body[data-auth="in"] #auth{display:none}
 .adm-ar small{display:block;margin-top:3px;font-size:0.75rem;color:var(--ink2)}
 .adm-tag{display:inline-block;padding:2px 8px;border-radius:99px;font:600 0.6875rem var(--f-body);background:var(--ok-soft);color:var(--ok);margin-right:6px}
 .adm-tag.off{background:var(--line2);color:var(--ink2)}
+.adm-pks{max-height:280px;overflow:auto;margin:4px 0 2px;-webkit-overflow-scrolling:touch}
+.adm-pk{margin:0 0 6px;padding:10px 12px}
+.adm-pk .adm-av{width:34px;height:34px;font-size:0.8125rem}
+.adm-ck{flex:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff;transition:background-color .2s,border-color .2s}
+.adm-ck svg{width:12px;height:12px;opacity:0;transform:scale(.5);transition:opacity .15s,transform .15s}
+.adm-pk[aria-pressed="true"]{border-color:var(--hema)}
+.adm-pk[aria-pressed="true"] .adm-ck{background:var(--hema);border-color:var(--hema)}
+.adm-pk[aria-pressed="true"] .adm-ck svg{opacity:1;transform:scale(1)}
 .adm-tl{display:flex;align-items:center;gap:14px;padding:13px 0;border-top:1px solid var(--line2)}
 .adm-tl:first-of-type{border-top:0}
 .adm-tl div{flex:1;min-width:0}
@@ -11447,6 +11464,14 @@ end $$;
 revoke all on function public.admin_restore_progress(uuid, jsonb) from public, anon;
 grant execute on function public.admin_restore_progress(uuid, jsonb) to authenticated;
 `;
+var ADM_SQL5 = `-- Médisam : annonces ciblées sur des comptes choisis. À exécuter UNE fois : Supabase > SQL Editor > New query > Run.
+-- Sans effet si la table announcements n'existe pas encore (lance d'abord le script principal, onglet Outils > Script SQL du serveur).
+alter table public.announcements add column if not exists target_ids uuid[];
+
+drop policy if exists "annonces lues par les comptes" on public.announcements;
+create policy "annonces lues par les comptes" on public.announcements
+  for select to authenticated using (active and (target_ids is null or auth.uid() = any(target_ids)));
+`;
 /* index41 : profil des comptes dans l'espace admin (lu dans progress.data : prefs.cfg, cur, tours, notes…) */
 var admProf = {};
 function admInfo(d){
@@ -11482,6 +11507,7 @@ function admProfCard(r, d){
 var isAdmin = false, admOpen = false, admTab = 'over', admData = null, admErr = '', admBusy = false, admQ = '', admSortBy = 'recent';
 var admSug = null, admSugErr = '', admSugBusy = false;
 var admSel = null, admDetail = null, admAnn = null, admAnnErr = '', admHideT = 0, admToastT = 0, admArm = null, admArmT = 0;
+var admAnnMode = 'all', admAnnSel = {}, admAnnQ = ''; /* index147 : destinataires d'une nouvelle annonce (tous ou comptes choisis) */
 var admEl = $('adm'), admBtn = $('adm-btn');
 var ADM_TABS = [['over', 'Vue d’ensemble'], ['users', 'Comptes'], ['ann', 'Annonces'], ['sug', 'Suggestions'], ['tools', 'Outils']];
 var ADM_SQL = `-- Médisam : espace modérateur. À exécuter UNE fois : Supabase > SQL Editor > New query > Run.
@@ -11554,17 +11580,18 @@ revoke all on function public.admin_overview(), public.admin_user_progress(uuid)
 grant execute on function public.admin_overview(), public.admin_user_progress(uuid),
   public.admin_reset_progress(uuid), public.admin_delete_user(uuid) to authenticated;
 
--- Annonces affichées à tous les comptes
+-- Annonces : affichées à tous les comptes, ou ciblées sur une liste de comptes (target_ids, vide = tout le monde)
 create table if not exists public.announcements (
   id bigint generated always as identity primary key,
   message text not null check (char_length(message) between 1 and 280),
   active boolean not null default true,
+  target_ids uuid[],
   created_at timestamptz not null default now()
 );
 alter table public.announcements enable row level security;
 drop policy if exists "annonces lues par les comptes" on public.announcements;
 create policy "annonces lues par les comptes" on public.announcements
-  for select to authenticated using (active);
+  for select to authenticated using (active and (target_ids is null or auth.uid() = any(target_ids)));
 drop policy if exists "annonces gerees par admin" on public.announcements;
 create policy "annonces gerees par admin" on public.announcements
   for all to authenticated using (public.is_medisam_admin()) with check (public.is_medisam_admin());
@@ -11755,7 +11782,7 @@ function admLoad(){
     function(e){ admData = null; admErr = admKind(e); }).then(function(){ admBusy = false; if(admOpen) admBody(false); if(admData) admEnrich(); });
 }
 function admAnnLoad(){
-  return sb.from('announcements').select('id,message,active,created_at').order('created_at', { ascending:false }).limit(8).then(function(r){
+  return sb.from('announcements').select('id,message,active,created_at,target_ids').order('created_at', { ascending:false }).limit(8).then(function(r){
     if(r.error){ admAnn = null; admAnnErr = admKind(r.error); } else { admAnn = r.data || []; admAnnErr = ''; }
     if(admOpen && admTab === 'ann') admBody(false);
   }, function(){ admAnn = null; admAnnErr = 'net'; if(admOpen && admTab === 'ann') admBody(false); });
@@ -11830,16 +11857,47 @@ function admSugHTML(){
   if(!admSug.length) return h + '<p class="adm-sub">Aucune suggestion pour l’instant.</p></section>';
   return h + admSug.map(function(a){ return '<div class="adm-ar"><div><p>' + esc(a.message) + '</p><small>' + esc(a.email || 'Anonyme') + ' · ' + admDate(a.created_at) + '</small></div><button type="button" class="adm-b" data-adm="sugdel" data-id="' + a.id + '">Supprimer</button></div>'; }).join('') + '</section>';
 }
+function admAnnSelCount(){ return Object.keys(admAnnSel).length; }
+/* index147 : liste à cocher des destinataires, filtrée par admAnnQ ; réutilise admData (chargé pour l'onglet Comptes) */
+function admAnnPickHTML(){
+  if(!admData) return '<div class="adm-sk"></div>';
+  var q = norm(admAnnQ.trim());
+  var rows = admData.filter(function(r){ return !q || norm(r.email + ' ' + admName(r)).indexOf(q) > -1; });
+  rows.sort(function(a, b){ return (admName(a) || a.email).localeCompare(admName(b) || b.email); });
+  if(!rows.length) return '<p class="adm-empty">Aucun compte ne correspond.</p>';
+  return rows.map(function(r){
+    return '<button type="button" class="adm-u adm-pk" data-adm-pick="' + esc(r.id) + '" aria-pressed="' + !!admAnnSel[r.id] + '">' + admAv(r.email) +
+      '<span class="adm-ut"><b>' + esc(admName(r) || r.email) + '</b>' + (admName(r) ? '<span>' + esc(r.email) + '</span>' : '') + '</span>' +
+      '<span class="adm-ck" aria-hidden="true">' + ICON_CHECK + '</span></button>';
+  }).join('');
+}
+/* index147 : à qui une annonce déjà publiée a été envoyée, pour la liste « Dernières annonces » */
+function admAnnTargetLabel(a){
+  if(!a.target_ids || !a.target_ids.length) return 'Tous les comptes';
+  var names = a.target_ids.map(function(id){ var r = (admData || []).filter(function(x){ return x.id === id; })[0]; return r ? (admName(r) || r.email) : null; }).filter(Boolean);
+  if(!names.length) return a.target_ids.length + ' compte' + (a.target_ids.length > 1 ? 's' : '') + ' ciblé' + (a.target_ids.length > 1 ? 's' : '');
+  var shown = names.slice(0, 2).join(', ');
+  return names.length > 2 ? shown + ' +' + (names.length - 2) : shown;
+}
 function admAnnHTML(){
-  var h = '<section class="adm-card"><h3>Message à tous les comptes</h3><p class="adm-sub">Il s’affiche en haut de Médisam chez chaque utilisateur, jusqu’à ce qu’il le ferme. Un nouveau message remplace le précédent.</p>' +
-    '<textarea class="adm-ta" id="adm-ann-t" maxlength="280" placeholder="Ex. Maintenance ce soir à 22 h, la sauvegarde sera brièvement indisponible." aria-label="Texte de l’annonce"></textarea>' +
+  var pick = admAnnMode === 'pick', n = admAnnSelCount();
+  var h = '<section class="adm-card"><h3>Nouveau message</h3><p class="adm-sub">Il s’affiche en haut de Médisam chez les comptes visés, jusqu’à ce qu’ils le ferment.</p>' +
+    '<div class="adm-seg" id="adm-ann-mode" role="group" aria-label="Destinataires">' +
+      '<button type="button" data-adm-annmode="all" aria-pressed="' + !pick + '">Tous les comptes</button>' +
+      '<button type="button" data-adm-annmode="pick" aria-pressed="' + pick + '">Comptes choisis</button></div>';
+  if(pick){
+    h += '<input type="search" class="adm-q" id="adm-ann-q" placeholder="Rechercher un nom ou un email" aria-label="Rechercher un compte" autocomplete="off" autocapitalize="off" spellcheck="false" value="' + esc(admAnnQ) + '" style="margin:10px 0">' +
+      '<div class="adm-pks" id="adm-ann-list">' + admAnnPickHTML() + '</div>' +
+      '<p class="adm-sub" id="adm-ann-selinfo">' + (n ? n + ' compte' + (n > 1 ? 's' : '') + ' sélectionné' + (n > 1 ? 's' : '') : 'Choisis au moins un compte ci-dessus.') + '</p>';
+  }
+  h += '<textarea class="adm-ta" id="adm-ann-t" maxlength="280" placeholder="Ex. Maintenance ce soir à 22 h, la sauvegarde sera brièvement indisponible." aria-label="Texte de l’annonce" style="margin-top:10px"></textarea>' +
     '<div class="adm-del"><button type="button" class="adm-b pri" data-adm="pub" id="adm-pub" disabled>Publier</button><span class="adm-cnt" id="adm-cnt">0 / 280</span></div></section>';
   if(admAnnErr === 'setup') return h + admErrHTML('setup');
   if(admAnnErr) return h + admErrHTML(admAnnErr);
   h += '<section class="adm-card"><h3>Dernières annonces</h3>';
   if(!admAnn) h += '<div class="adm-sk"></div>';
   else if(!admAnn.length) h += '<p class="adm-sub">Aucune annonce pour l’instant.</p>';
-  else h += admAnn.map(function(a){ return '<div class="adm-ar"><div><p>' + esc(a.message) + '</p><small><span class="adm-tag' + (a.active ? '' : ' off') + '">' + (a.active ? 'Affichée' : 'Retirée') + '</span>' + admDate(a.created_at) + '</small></div>' + (a.active ? '<button type="button" class="adm-b" data-adm="retire" data-id="' + a.id + '">Retirer</button>' : '') + '</div>'; }).join('');
+  else h += admAnn.map(function(a){ return '<div class="adm-ar"><div><p>' + esc(a.message) + '</p><small><span class="adm-tag' + (a.active ? '' : ' off') + '">' + (a.active ? 'Affichée' : 'Retirée') + '</span>' + esc(admAnnTargetLabel(a)) + ' · ' + admDate(a.created_at) + '</small></div>' + (a.active ? '<button type="button" class="adm-b" data-adm="retire" data-id="' + a.id + '">Retirer</button>' : '') + '</div>'; }).join('');
   return h + '</section>';
 }
 /* Sauvegarde / restauration complète de tous les comptes (index60) */
@@ -11924,7 +11982,8 @@ function admToolsHTML(){
     ['Script SQL du serveur', 'À relancer seulement si une fonction a été supprimée.', '<button type="button" class="adm-b" data-adm="copysql">Copier</button>'],
     ['Protection des données (SQL)', 'À lancer une fois : le serveur garde les champs qu’une ancienne page oublierait et archive les anciennes versions.', '<button type="button" class="adm-b pri" data-adm="copysql2">Copier</button>'],
     ['Suppression de compte (SQL)', 'À lancer une fois : permet à chaque utilisateur de supprimer son propre compte depuis les réglages.', '<button type="button" class="adm-b" data-adm="copysql3">Copier</button>'],
-    ['Restauration de sauvegarde (SQL)', 'À lancer une fois : nécessaire pour importer une sauvegarde complète.', '<button type="button" class="adm-b" data-adm="copysql4">Copier</button>']
+    ['Restauration de sauvegarde (SQL)', 'À lancer une fois : nécessaire pour importer une sauvegarde complète.', '<button type="button" class="adm-b" data-adm="copysql4">Copier</button>'],
+    ['Annonces ciblées (SQL)', 'À lancer une fois : permet de réserver une annonce (onglet Annonces) à des comptes choisis plutôt qu’à tout le monde.', '<button type="button" class="adm-b" data-adm="copysql5">Copier</button>']
   ];
   return '<section class="adm-card"><h3>Outils</h3>' + rows.map(function(r){ return '<div class="adm-tl"><div><b>' + r[0] + '</b><small>' + r[1] + '</small></div>' + r[2] + '</div>'; }).join('') + '</section>' +
     '<section class="adm-card"><h3>Sécurité</h3><p class="adm-sub">Ce panneau n’apparaît que pour ' + esc(ADMIN_EMAIL) + ', mais la vraie protection est côté serveur : les fonctions SQL refusent toute requête venant d’un autre email. Garde la confirmation d’email activée dans Supabase (Authentication).</p></section>';
@@ -12075,9 +12134,25 @@ function admDisarm(){ clearTimeout(admArmT); if(admArm){ admArm.classList.remove
 
 /* Clics dans l'espace modérateur */
 admEl.addEventListener('click', function(e){
-  var t = e.target.closest ? e.target.closest('[data-adm],[data-adm-tab],[data-adm-user],[data-adm-sort]') : null; if(!t) return;
+  var t = e.target.closest ? e.target.closest('[data-adm],[data-adm-tab],[data-adm-user],[data-adm-sort],[data-adm-annmode],[data-adm-pick]') : null; if(!t) return;
   if(t.dataset.admTab){ admGo(t.dataset.admTab); return; }
   if(t.dataset.admUser){ admUser(t.dataset.admUser); return; }
+  if(t.dataset.admAnnmode){
+    var taK = $('adm-ann-t'), vK = taK ? taK.value : '';
+    admAnnMode = t.dataset.admAnnmode; admBody(false);
+    var taK2 = $('adm-ann-t');
+    if(taK2){ taK2.value = vK; var nK = vK.trim().length; $('adm-cnt').textContent = vK.length + ' / 280'; $('adm-pub').disabled = !nK || (admAnnMode === 'pick' && !admAnnSelCount()); }
+    return;
+  }
+  if(t.dataset.admPick){
+    var pid = t.dataset.admPick, onP = !admAnnSel[pid];
+    if(onP) admAnnSel[pid] = true; else delete admAnnSel[pid];
+    t.setAttribute('aria-pressed', String(onP));
+    var nSel = admAnnSelCount(), infoP = $('adm-ann-selinfo');
+    if(infoP) infoP.textContent = nSel ? nSel + ' compte' + (nSel > 1 ? 's' : '') + ' sélectionné' + (nSel > 1 ? 's' : '') : 'Choisis au moins un compte ci-dessus.';
+    var taP = $('adm-ann-t'), nTx = taP ? taP.value.trim().length : 0, pubP = $('adm-pub'); if(pubP) pubP.disabled = !nTx || !nSel;
+    return;
+  }
   if(t.dataset.admSort){ admSortBy = t.dataset.admSort; Array.prototype.forEach.call(document.querySelectorAll('#adm-sort button'), function(b){ b.setAttribute('aria-pressed', String(b.dataset.admSort === admSortBy)); }); var l = $('adm-list'); if(l){ l.innerHTML = admListHTML(); admRise(l); } return; }
   var a = t.dataset.adm;
   if(a === 'close'){ admClose(); return; }
@@ -12085,6 +12160,7 @@ admEl.addEventListener('click', function(e){
   if(a === 'refresh'){ admErr = ''; admData = null; admAnn = null; admAnnErr = ''; admSug = null; admSugErr = ''; admBody(false); admLoad(); return; }
   if(a === 'copysql'){ admCopy(ADM_SQL, 'Script copié. Colle-le dans Supabase > SQL Editor.'); return; }
   if(a === 'copysql4'){ admCopy(ADM_SQL4, 'Script copié. Colle-le dans Supabase > SQL Editor puis Run.'); return; }
+  if(a === 'copysql5'){ admCopy(ADM_SQL5, 'Script copié. Colle-le dans Supabase > SQL Editor puis Run.'); return; }
   if(a === 'bkall' && admData){ admBackupAll(t); return; }
   if(a === 'bkimp' && admData){ admBackupPick(); return; }
   if(a === 'copysql3'){ admCopy(ADM_SQL3, 'Script copié. Colle-le dans Supabase > SQL Editor puis Run.'); return; }
@@ -12116,10 +12192,16 @@ admEl.addEventListener('click', function(e){
     return;
   }
   if(a === 'pub'){
-    var ta = $('adm-ann-t'), msg = ta ? ta.value.trim() : ''; if(!msg) return; t.disabled = true;
-    sb.from('announcements').insert({ message:msg }).select('id').single().then(function(r){
+    var ta = $('adm-ann-t'), msg = ta ? ta.value.trim() : ''; if(!msg) return;
+    var pickM = admAnnMode === 'pick', ids = pickM ? Object.keys(admAnnSel) : null;
+    if(pickM && !ids.length) return;
+    t.disabled = true;
+    var row = { message:msg }; if(ids) row.target_ids = ids;
+    sb.from('announcements').insert(row).select('id').single().then(function(r){
       if(r.error){ t.disabled = false; admToast(admKind(r.error) === 'setup' ? 'Lance d’abord le script SQL (onglet Outils)' : 'Publication impossible'); return; }
-      sb.from('announcements').update({ active:false }).eq('active', true).neq('id', r.data.id).then(function(){ admAnn = null; admToast('Annonce publiée'); admBody(false); lsSet('medisam-ann-seen', ''); annLoad(); });
+      var done = function(){ admAnn = null; admAnnMode = 'all'; admAnnSel = {}; admAnnQ = ''; admToast(ids ? 'Annonce publiée à ' + ids.length + ' compte' + (ids.length > 1 ? 's' : '') : 'Annonce publiée'); admBody(false); lsSet('medisam-ann-seen', ''); annLoad(); };
+      /* Un message « tous les comptes » ne remplace que les anciens messages eux aussi généraux ; un message ciblé ne remplace rien automatiquement (voir journal des versions, index147) */
+      if(ids) done(); else sb.from('announcements').update({ active:false }).eq('active', true).is('target_ids', null).neq('id', r.data.id).then(done);
     }, function(){ t.disabled = false; admToast('Publication impossible'); });
     return;
   }
@@ -12140,7 +12222,8 @@ admEl.addEventListener('click', function(e){
 admEl.addEventListener('input', function(e){
   if(e.target.id === 'adm-q'){ admQ = e.target.value; var l = $('adm-list'); if(l && admData) l.innerHTML = admListHTML(); }
   else if(e.target.id === 'adm-del-in'){ var b = $('adm-del'); if(b) { b.disabled = e.target.value.trim() !== 'SUPPRIMER'; b.classList.toggle('go', !b.disabled); } }
-  else if(e.target.id === 'adm-ann-t'){ var n = e.target.value.trim().length; $('adm-cnt').textContent = e.target.value.length + ' / 280'; $('adm-pub').disabled = !n; }
+  else if(e.target.id === 'adm-ann-t'){ var n = e.target.value.trim().length; $('adm-cnt').textContent = e.target.value.length + ' / 280'; $('adm-pub').disabled = !n || (admAnnMode === 'pick' && !admAnnSelCount()); }
+  else if(e.target.id === 'adm-ann-q'){ admAnnQ = e.target.value; var pl = $('adm-ann-list'); if(pl) pl.innerHTML = admAnnPickHTML(); }
 });
 admBtn.addEventListener('click', function(){ if(admOpen) admClose(); else admOpenPanel(); });
 document.addEventListener('keydown', function(e){
